@@ -135,13 +135,15 @@ function lessonVideoMarkup(game) {
   const labels = ["Notice", "Problem", "Kind Choice", "Lesson"];
   const symbols = ["!", "?", "+", "OK"];
   return `
-    <div class="video-box">
+    <div class="video-box has-generated-video">
       <video
         class="generated-lesson-video"
         src="assets/videos/${game.slug}.mp4"
         controls
-        preload="metadata"
+        preload="auto"
         playsinline
+        poster="assets/images/games/${game.slug}.jpg"
+        onloadedmetadata="this.closest('.video-box').classList.add('has-generated-video')"
         onloadeddata="this.closest('.video-box').classList.add('has-generated-video')"
         onerror="this.closest('.video-box').classList.remove('has-generated-video')"
       ></video>
@@ -163,7 +165,7 @@ function lessonVideoMarkup(game) {
       </div>
       <button class="video-button" type="button" data-video-control>Replay Lesson</button>
       <button class="video-button music-toggle" type="button" data-music-toggle aria-pressed="true">Music On</button>
-      <small>Animated lesson clip: changing scenes, changing text, motion, and browser-made music.</small>
+      <small>Generated lesson video for ${game.title}.</small>
     </div>
   `;
 }
@@ -985,47 +987,694 @@ function renderCrownBalance(arena) {
   }
 }
 
-function renderBridgeSequence(arena, data) {
+function renderBridgeSequence(arena) {
+  clearInterval(state.timer);
+  state.timer = null;
+
+  const correctOrder = [
+    "Admit what happened",
+    "Take responsibility",
+    "Explain without excuses",
+    "Make it right",
+    "Promise better action"
+  ];
+  const scenarios = [
+    {
+      text: "You borrowed your friend's colored pencils and forgot to return them. Now your friend needs them for class and feels upset.",
+      apology: [
+        "I forgot to return your colored pencils.",
+        "That was my responsibility because I borrowed them.",
+        "I got distracted, but I should have kept track of them.",
+        "I will return them now and help you find any missing ones.",
+        "Next time, I will put borrowed supplies in my backpack reminder pocket."
+      ]
+    },
+    {
+      text: "During a group project, you interrupted a teammate and made their idea seem unimportant.",
+      apology: [
+        "I interrupted you when you were sharing your idea.",
+        "That was unfair because you deserved a chance to speak.",
+        "I was excited, but that does not make it okay.",
+        "I want to hear your idea now and include it in our plan.",
+        "Next time, I will pause and let people finish before I talk."
+      ]
+    },
+    {
+      text: "You accidentally knocked over someone's tower during a game and laughed because you felt nervous.",
+      apology: [
+        "I knocked over your tower and laughed afterward.",
+        "That hurt your feelings, and I need to own that.",
+        "I felt nervous, but laughing made it worse.",
+        "I can help rebuild it with you.",
+        "Next time, I will say sorry right away instead of laughing."
+      ]
+    }
+  ];
+  let currentRound = 0;
+  let selectedSteps = [];
+  let selectedButtons = [];
+  let localScore = 0;
+  let repaired = 0;
+  let testedThisRound = false;
+
   arena.innerHTML = `
-    <div class="bridge-scene" aria-label="Broken apology bridge">
-      <div class="bridge-cliff left"></div>
-      <div class="bridge-gap">
-        ${data.map((item, index) => `<span class="bridge-plank" data-plank="${index}">${index + 1}</span>`).join("")}
+    <div class="apology-bridge-game">
+      <div class="ab-sky"></div>
+      <div class="ab-mountains"></div>
+      <section class="ab-screen" data-ab-start>
+        <div class="ab-screen-card">
+          <div class="ab-big">🌉</div>
+          <h2>Brave Apology Bridge</h2>
+          <p>Trust is like a bridge. When someone gets hurt, the bridge can crack. A brave apology repairs it step by step.</p>
+          <p>Choose the apology steps in the correct order to rebuild the bridge.</p>
+          <button class="ab-btn gold" type="button" data-ab-start-button>Begin Repair</button>
+        </div>
+      </section>
+      <section class="ab-screen hidden" data-ab-end>
+        <div class="ab-screen-card">
+          <div class="ab-big">✨</div>
+          <h2 data-ab-end-title>Bridge Restored!</h2>
+          <p data-ab-end-message></p>
+          <button class="ab-btn gold" type="button" data-ab-restart>Play Again</button>
+        </div>
+      </section>
+      <div class="ab-content">
+        <div class="ab-top">
+          <div class="ab-title-card">
+            <h2>🌉 Brave Apology Bridge</h2>
+            <p>Repair trust by building a sincere apology in the right order.</p>
+          </div>
+          <div class="ab-stats">
+            <div class="ab-pill">Round: <span data-ab-round>1</span>/3</div>
+            <div class="ab-pill">Score: <span data-ab-score>0</span></div>
+            <div class="ab-pill">Repairs: <span data-ab-repairs>0</span>/5</div>
+          </div>
+        </div>
+        <div class="ab-main">
+          <div class="ab-panel ab-bridge-panel">
+            <div class="ab-scenario" data-ab-scenario></div>
+            <div class="ab-bridge-stage">
+              <div class="ab-glow" data-ab-glow></div>
+              <div class="ab-void"></div>
+              <div class="ab-cliff left"></div>
+              <div class="ab-cliff right"></div>
+              <div class="ab-character player">🧒</div>
+              <div class="ab-character friend" data-ab-friend>😟</div>
+              <div class="ab-bridge">
+                <div class="ab-segment" style="--tilt:-9deg"></div>
+                <div class="ab-segment" style="--tilt:7deg"></div>
+                <div class="ab-segment" style="--tilt:-11deg"></div>
+                <div class="ab-segment" style="--tilt:10deg"></div>
+                <div class="ab-segment" style="--tilt:-6deg"></div>
+              </div>
+            </div>
+          </div>
+          <div class="ab-panel ab-controls">
+            <h2>Repair Blueprint</h2>
+            <div class="ab-step-slots" data-ab-slots></div>
+            <div class="ab-choice-bank" data-ab-choice-bank></div>
+            <div class="ab-meters">
+              <div>
+                <div class="ab-meter-label"><span>Trust Repaired</span><span data-ab-trust-text>0%</span></div>
+                <div class="ab-meter"><div data-ab-trust-fill></div></div>
+              </div>
+              <div>
+                <div class="ab-meter-label"><span>Apology Strength</span><span data-ab-strength-text>0%</span></div>
+                <div class="ab-meter"><div data-ab-strength-fill></div></div>
+              </div>
+            </div>
+            <div class="ab-feedback" data-ab-feedback>Pick the first step of a sincere apology.</div>
+            <div class="ab-btn-row">
+              <button class="ab-btn" type="button" data-ab-check>Test Bridge</button>
+              <button class="ab-btn gold" type="button" data-ab-reset>Reset Steps</button>
+              <button class="ab-btn" type="button" data-ab-next>Next Scenario</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="bridge-cliff right"></div>
-      <span class="bridge-spark one"></span>
-      <span class="bridge-spark two"></span>
     </div>
-    <div class="creative-grid apology-stones">${shuffle(data).map((item, index) => buttonHtml(item, index)).join("")}</div>
   `;
-  let next = 0;
-  arena.querySelectorAll(".token").forEach((button) => button.onclick = () => {
-    if (button.dataset.label !== data[next].label) {
-      arena.querySelector(".bridge-scene").classList.add("shake");
-      window.setTimeout(() => arena.querySelector(".bridge-scene")?.classList.remove("shake"), 260);
-      return miss("That apology step needs a stronger foundation first.");
+
+  const q = (selector) => arena.querySelector(selector);
+  q("[data-ab-start-button]").onclick = startBridgeGame;
+  q("[data-ab-restart]").onclick = restartBridgeGame;
+  q("[data-ab-check]").onclick = checkBlueprint;
+  q("[data-ab-reset]").onclick = resetChoices;
+  q("[data-ab-next]").onclick = nextRound;
+  loadRound();
+
+  function startBridgeGame() {
+    q("[data-ab-start]").classList.add("hidden");
+    loadRound();
+  }
+
+  function restartBridgeGame() {
+    currentRound = 0;
+    localScore = 0;
+    state.score = 0;
+    state.streak = 0;
+    q("[data-ab-end]").classList.add("hidden");
+    loadRound();
+    sync();
+  }
+
+  function loadRound() {
+    selectedSteps = [];
+    selectedButtons = [];
+    testedThisRound = false;
+    repaired = 0;
+    q("[data-ab-scenario]").textContent = scenarios[currentRound].text;
+    q("[data-ab-feedback]").textContent = "Pick the first step of a sincere apology.";
+    q("[data-ab-friend]").textContent = "😟";
+    renderSlots();
+    renderChoices();
+    updateMeters();
+    updateBridge();
+    updateStats();
+  }
+
+  function renderSlots() {
+    q("[data-ab-slots]").innerHTML = Array.from({ length: 5 }, (_, index) => `
+      <div class="ab-slot ${selectedSteps[index] ? "filled" : ""}">
+        <span>${index + 1}. ${selectedSteps[index] || "Waiting for apology step..."}</span>
+        <span>${selectedSteps[index] ? "🔧" : "□"}</span>
+      </div>
+    `).join("");
+  }
+
+  function renderChoices() {
+    q("[data-ab-choice-bank]").innerHTML = shuffle(correctOrder).map((choice) => (
+      `<button class="ab-choice" type="button">${choice}</button>`
+    )).join("");
+    q("[data-ab-choice-bank]").querySelectorAll(".ab-choice").forEach((button) => {
+      button.onclick = () => chooseStep(button.textContent, button);
+    });
+  }
+
+  function chooseStep(choice, button) {
+    if (selectedSteps.length >= 5 || testedThisRound) return;
+    selectedSteps.push(choice);
+    selectedButtons.push(button);
+    button.classList.add("used");
+
+    const index = selectedSteps.length - 1;
+    if (choice === correctOrder[index]) {
+      repaired += 1;
+      localScore += 15;
+      state.score = localScore;
+      state.streak += 1;
+      q("[data-ab-feedback]").textContent = `Good repair! Step ${index + 1} belongs here.`;
+      spark("✨");
+    } else {
+      state.streak = 0;
+      q("[data-ab-feedback]").textContent = `Careful, that step may not belong at position ${index + 1}. Apologies work best in a thoughtful order.`;
+      shakeSegment(index);
     }
-    const plank = arena.querySelector(`[data-plank="${next}"]`);
-    plank.textContent = button.dataset.label;
-    plank.classList.add("rebuilt");
-    button.disabled = true;
-    button.classList.add("complete");
-    next += 1;
-    point("A bridge segment locks into place.");
-    if (next >= data.length) {
-      arena.querySelector(".bridge-scene").classList.add("complete");
-      finish();
+    renderSlots();
+    updateMeters();
+    updateBridge();
+    updateStats();
+    sync();
+  }
+
+  function checkBlueprint() {
+    if (selectedSteps.length < 5) {
+      q("[data-ab-feedback]").textContent = "Complete all 5 apology steps before testing the bridge.";
+      return;
     }
-  });
+    if (testedThisRound) {
+      q("[data-ab-feedback]").textContent = "You already tested this bridge. Move to the next scenario.";
+      return;
+    }
+    testedThisRound = true;
+    const correct = selectedSteps.filter((step, index) => step === correctOrder[index]).length;
+
+    if (correct === 5) {
+      localScore += 75;
+      repaired = 5;
+      q("[data-ab-feedback]").innerHTML = `Perfect repair! Now here is the sincere apology:<br><br>“${scenarios[currentRound].apology.join(" ")}”`;
+      q("[data-ab-friend]").textContent = "😊";
+      spark("🌟");
+    } else if (correct >= 3) {
+      localScore += 35;
+      q("[data-ab-feedback]").textContent = "The bridge mostly holds, but some steps are out of order. A strong apology needs responsibility before repair.";
+      q("[data-ab-friend]").textContent = "🙂";
+    } else {
+      localScore += 10;
+      q("[data-ab-feedback]").textContent = "The bridge is still shaky. Try remembering: admit, responsibility, explain without excuses, make it right, promise better action.";
+      q("[data-ab-friend]").textContent = "😟";
+    }
+
+    repaired = correct;
+    state.score = localScore;
+    updateMeters();
+    updateBridge();
+    updateStats();
+    sync();
+  }
+
+  function resetChoices() {
+    if (testedThisRound) {
+      q("[data-ab-feedback]").textContent = "This round has already been tested. Go to the next scenario.";
+      return;
+    }
+    selectedSteps = [];
+    selectedButtons.forEach((button) => button.classList.remove("used"));
+    selectedButtons = [];
+    repaired = 0;
+    q("[data-ab-feedback]").textContent = "Steps reset. Try building the apology again.";
+    renderSlots();
+    updateMeters();
+    updateBridge();
+    updateStats();
+  }
+
+  function nextRound() {
+    if (!testedThisRound) {
+      q("[data-ab-feedback]").textContent = "Test the bridge first before moving on.";
+      return;
+    }
+    currentRound += 1;
+    if (currentRound >= scenarios.length) endBridgeGame();
+    else loadRound();
+  }
+
+  function updateMeters() {
+    const trust = Math.round((repaired / 5) * 100);
+    const strength = Math.round((selectedSteps.length / 5) * 100);
+    q("[data-ab-trust-fill]").style.width = `${trust}%`;
+    q("[data-ab-trust-text]").textContent = `${trust}%`;
+    q("[data-ab-strength-fill]").style.width = `${strength}%`;
+    q("[data-ab-strength-text]").textContent = `${strength}%`;
+    q("[data-ab-glow]").style.opacity = 0.25 + trust / 130;
+  }
+
+  function updateBridge() {
+    q(".apology-bridge-game").querySelectorAll(".ab-segment").forEach((segment, index) => {
+      segment.classList.toggle("fixed", index < repaired);
+    });
+  }
+
+  function shakeSegment(index) {
+    const segment = q(".apology-bridge-game").querySelectorAll(".ab-segment")[index];
+    if (!segment) return;
+    segment.classList.add("shake");
+    setTimeout(() => segment.classList.remove("shake"), 400);
+  }
+
+  function updateStats() {
+    q("[data-ab-round]").textContent = Math.min(currentRound + 1, scenarios.length);
+    q("[data-ab-score]").textContent = localScore;
+    q("[data-ab-repairs]").textContent = repaired;
+  }
+
+  function endBridgeGame() {
+    let title = "Bridge Journey Complete!";
+    let message = "";
+    if (localScore >= 250) {
+      title = "Trust Repair Master!";
+      message = `Amazing work! Your score was ${localScore}. You showed that a sincere apology admits the mistake, takes responsibility, and repairs trust.`;
+    } else if (localScore >= 170) {
+      title = "Brave Apology Builder!";
+      message = `Great job! Your score was ${localScore}. You understand that apologies are stronger when they include action, not just words.`;
+    } else {
+      title = "Apology Apprentice!";
+      message = `Your score was ${localScore}. Keep practicing the order: admit, take responsibility, explain without excuses, make it right, and promise better action.`;
+    }
+    q("[data-ab-end-title]").textContent = title;
+    q("[data-ab-end-message]").textContent = message;
+    q("[data-ab-end]").classList.remove("hidden");
+    finish();
+  }
+
+  function spark(symbol) {
+    for (let i = 0; i < 14; i += 1) {
+      const sparkle = document.createElement("div");
+      sparkle.className = "ab-spark";
+      sparkle.textContent = symbol;
+      sparkle.style.left = `${Math.random() * 85 + 8}%`;
+      sparkle.style.top = `${Math.random() * 60 + 18}%`;
+      q(".apology-bridge-game").append(sparkle);
+      setTimeout(() => sparkle.remove(), 850);
+    }
+  }
 }
 
-function renderSignalFilter(arena, data) {
-  arena.innerHTML = `<div class="listening-trail">${sprite("asset-lantern", "scene-sprite")}<span></span><span></span><span></span></div><div class="signal-sky">${shuffle(data).map((item, index) => `<button class="lantern token" data-label="${escapeAttr(item.label)}" data-value="${item.value}">${sprite(item.value === "important" ? "asset-lantern" : "asset-wave", "token-sprite")}<span>${item.label.replace(/^Important: |^Noise: /, "")}</span></button>`).join("")}</div>`;
-  arena.querySelectorAll(".token").forEach((button) => button.onclick = () => {
-    if (button.dataset.value !== "important") return miss("That was noise. Let it float away.");
-    completeToken(button);
-    if (![...arena.querySelectorAll('.token[data-value="important"]')].some((item) => !item.disabled)) finish();
+function renderSignalFilter(arena) {
+  clearInterval(state.timer);
+  state.timer = null;
+
+  const stories = [
+    {
+      speaker: "🧑‍🎨",
+      text: "Lina says: I felt nervous when my drawing got smudged because I worked on it for a long time. I do not need someone to fix it for me, I just want encouragement while I try again.",
+      key: ["felt nervous", "drawing got smudged", "wants encouragement"],
+      noise: ["favorite color is purple", "lunch was pasta", "the room has windows", "likes funny stickers"],
+      correct: "You felt nervous because your drawing got smudged, and you want encouragement while you try again.",
+      wrong: ["You want me to fix the drawing for you right away.", "You are upset because lunch was pasta.", "You do not want to try again."]
+    },
+    {
+      speaker: "🎻",
+      text: "Marcus says: I practiced my music part, but I am worried I will mess up during the group performance. I would feel better if someone practiced the tricky section with me.",
+      key: ["worried about performance", "practiced music part", "wants practice help"],
+      noise: ["has a blue backpack", "likes sunny days", "walked down the hallway", "saw a pencil"],
+      correct: "You practiced, but you are worried about the performance and want someone to practice the tricky part with you.",
+      wrong: ["You did not practice at all and want to quit.", "You are mostly talking about your blue backpack.", "You want everyone else to perform without you."]
+    },
+    {
+      speaker: "🧩",
+      text: "Ava says: During the group activity, I had an idea but people kept talking over me. I felt ignored, and I want a chance to explain my idea before we choose.",
+      key: ["had an idea", "felt ignored", "wants chance to explain"],
+      noise: ["table was round", "there were four chairs", "saw a poster", "likes puzzles"],
+      correct: "You had an idea, felt ignored when people talked over you, and want a chance to explain before the group chooses.",
+      wrong: ["You want to make every decision by yourself.", "You are mainly upset about the round table.", "You do not have any idea to share."]
+    }
+  ];
+  let currentRound = 0;
+  let localScore = 0;
+  let focus = 50;
+  let timeLeft = 25;
+  let timer = null;
+  let spawning = false;
+  let caughtKeys = [];
+  let skills = { look: false, pause: false, ask: false, check: false };
+  let checkedThisRound = false;
+
+  arena.innerHTML = `
+    <div class="listening-lanterns-game">
+      <div class="ll-sky"></div>
+      <div class="ll-stars"></div>
+      <div class="ll-hills"></div>
+      <section class="ll-screen" data-ll-start>
+        <div class="ll-screen-card">
+          <div class="ll-big">🏮</div>
+          <h2>Listening Lanterns</h2>
+          <p>In the quiet night sky, important details glow as golden lanterns. Distractions float by too.</p>
+          <p>Catch the key details, ignore the noise, pause before answering, ask a helpful question, and check your understanding.</p>
+          <button class="ll-btn gold" type="button" data-ll-start-button>Light the Lanterns</button>
+        </div>
+      </section>
+      <section class="ll-screen hidden" data-ll-end>
+        <div class="ll-screen-card">
+          <div class="ll-big">🌟</div>
+          <h2 data-ll-end-title>Lantern Path Complete!</h2>
+          <p data-ll-end-message></p>
+          <button class="ll-btn gold" type="button" data-ll-restart>Play Again</button>
+        </div>
+      </section>
+      <div class="ll-content">
+        <div class="ll-top">
+          <div class="ll-title-card">
+            <h2>🏮 Listening Lanterns</h2>
+            <p>Catch key details, ignore distractions, and respond with care.</p>
+          </div>
+          <div class="ll-stats">
+            <div class="ll-pill">Round: <span data-ll-round>1</span>/3</div>
+            <div class="ll-pill">Score: <span data-ll-score>0</span></div>
+            <div class="ll-pill">Time: <span data-ll-time>25</span>s</div>
+          </div>
+        </div>
+        <div class="ll-main">
+          <div class="ll-panel ll-lantern-panel">
+            <div class="ll-story-box">
+              <div class="ll-story-title">Speaker's Story</div>
+              <div data-ll-story></div>
+            </div>
+            <div class="ll-lantern-field" data-ll-field>
+              <div class="ll-speaker" data-ll-speaker>🧒</div>
+              <div class="ll-listener">👂</div>
+            </div>
+          </div>
+          <div class="ll-panel ll-controls">
+            <h2>Active Listening Tools</h2>
+            <div class="ll-skill-row">
+              <button class="ll-skill" type="button" data-ll-skill="look">👀 Look</button>
+              <button class="ll-skill" type="button" data-ll-skill="pause">⏸ Pause</button>
+              <button class="ll-skill" type="button" data-ll-skill="ask">❓ Ask</button>
+              <button class="ll-skill" type="button" data-ll-skill="check">🔁 Check</button>
+            </div>
+            <div>
+              <div class="ll-meter-label"><span>Listening Focus</span><span data-ll-focus-text>50%</span></div>
+              <div class="ll-meter"><div data-ll-focus-fill></div></div>
+            </div>
+            <div class="ll-caught-box" data-ll-caught>Key details caught: none yet.</div>
+            <div class="ll-feedback" data-ll-feedback>Click golden lanterns with important details. Avoid purple distraction lanterns.</div>
+            <div class="ll-answers" data-ll-answers></div>
+            <div class="ll-btn-row">
+              <button class="ll-btn" type="button" data-ll-begin>Start Listening</button>
+              <button class="ll-btn gold" type="button" data-ll-submit>Check Understanding</button>
+              <button class="ll-btn" type="button" data-ll-next>Next Story</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const q = (selector) => arena.querySelector(selector);
+  q("[data-ll-start-button]").onclick = () => {
+    q("[data-ll-start]").classList.add("hidden");
+    loadRound();
+  };
+  q("[data-ll-restart]").onclick = restartLanterns;
+  q("[data-ll-begin]").onclick = beginLanterns;
+  q("[data-ll-submit]").onclick = submitUnderstanding;
+  q("[data-ll-next]").onclick = nextRound;
+  q(".listening-lanterns-game").querySelectorAll("[data-ll-skill]").forEach((button) => {
+    button.onclick = () => markSkill(button.dataset.llSkill, button);
   });
+  loadRound();
+
+  function restartLanterns() {
+    currentRound = 0;
+    localScore = 0;
+    state.score = 0;
+    state.streak = 0;
+    q("[data-ll-end]").classList.add("hidden");
+    loadRound();
+    sync();
+  }
+
+  function loadRound() {
+    clearInterval(timer);
+    removeLanterns();
+    const story = stories[currentRound];
+    q("[data-ll-story]").textContent = story.text;
+    q("[data-ll-speaker]").textContent = story.speaker;
+    focus = 50;
+    timeLeft = 25;
+    spawning = false;
+    caughtKeys = [];
+    checkedThisRound = false;
+    skills = { look: false, pause: false, ask: false, check: false };
+    q(".listening-lanterns-game").querySelectorAll("[data-ll-skill]").forEach((button) => button.classList.remove("done"));
+    q("[data-ll-caught]").textContent = "Key details caught: none yet.";
+    q("[data-ll-feedback]").textContent = "Click Start Listening. Catch golden key details and avoid purple distractions.";
+    q("[data-ll-answers]").innerHTML = "";
+    updateStats();
+    updateFocus();
+  }
+
+  function beginLanterns() {
+    if (spawning) return;
+    spawning = true;
+    q("[data-ll-feedback]").textContent = "Listen carefully. Golden lanterns are key details. Purple lanterns are distractions.";
+    const story = stories[currentRound];
+    const items = shuffle([
+      ...story.key.map((text) => ({ text, type: "key" })),
+      ...story.noise.map((text) => ({ text, type: "noise" }))
+    ]);
+    let index = 0;
+    clearInterval(timer);
+    timer = setInterval(() => {
+      timeLeft -= 1;
+      state.time = timeLeft;
+      updateStats();
+      sync();
+      if (index < items.length) {
+        spawnLantern(items[index]);
+        index += 1;
+      }
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        spawning = false;
+        showAnswers();
+        q("[data-ll-feedback]").textContent = "Now check understanding by choosing the response that proves you listened.";
+      }
+    }, 1000);
+  }
+
+  function spawnLantern(item) {
+    const lantern = document.createElement("button");
+    lantern.className = `ll-lantern ${item.type}`;
+    lantern.type = "button";
+    lantern.textContent = item.text;
+    lantern.style.left = `${Math.random() * 65 + 14}%`;
+    lantern.style.top = "-50px";
+    lantern.style.animationDuration = `${6 + Math.random() * 2}s`;
+    lantern.onclick = () => catchLantern(lantern, item);
+    q("[data-ll-field]").append(lantern);
+    setTimeout(() => {
+      if (lantern.parentElement) {
+        if (item.type === "key" && !caughtKeys.includes(item.text)) {
+          focus -= 6;
+          updateFocus();
+        }
+        lantern.remove();
+      }
+    }, 7600);
+  }
+
+  function catchLantern(lantern, item) {
+    if (item.type === "key") {
+      if (!caughtKeys.includes(item.text)) {
+        caughtKeys.push(item.text);
+        focus += 12;
+        localScore += 12;
+        state.score = localScore;
+        state.streak += 1;
+        q("[data-ll-feedback]").textContent = "Good listening! You caught an important detail.";
+        spark("🏮");
+      }
+    } else {
+      focus -= 12;
+      state.streak = 0;
+      q("[data-ll-feedback]").textContent = "That was a distraction. Active listening means filtering out extra noise.";
+      spark("💨");
+    }
+    lantern.remove();
+    updateCaught();
+    updateFocus();
+    updateStats();
+    sync();
+  }
+
+  function markSkill(skill, button) {
+    if (skills[skill]) return;
+    skills[skill] = true;
+    button.classList.add("done");
+    focus += 7;
+    localScore += 5;
+    state.score = localScore;
+    const messages = {
+      look: "Looking at the speaker shows you are paying attention.",
+      pause: "Pausing helps you avoid interrupting.",
+      ask: "Asking a question helps you understand better.",
+      check: "Checking understanding proves you listened carefully."
+    };
+    q("[data-ll-feedback]").textContent = messages[skill];
+    updateFocus();
+    updateStats();
+    sync();
+  }
+
+  function showAnswers() {
+    const story = stories[currentRound];
+    q("[data-ll-answers]").innerHTML = shuffle([
+      { text: story.correct, correct: true },
+      ...story.wrong.map((text) => ({ text, correct: false }))
+    ]).map((answer) => `<button class="ll-answer" type="button" data-correct="${answer.correct}">${answer.text}</button>`).join("");
+    q("[data-ll-answers]").querySelectorAll(".ll-answer").forEach((button) => {
+      button.onclick = () => chooseAnswer(button.dataset.correct === "true");
+    });
+  }
+
+  function chooseAnswer(correct) {
+    if (checkedThisRound) return;
+    if (correct) {
+      localScore += 40;
+      focus += 18;
+      state.score = localScore;
+      state.streak += 1;
+      q("[data-ll-feedback]").textContent = "Excellent check! You repeated the speaker's feeling, reason, and need.";
+      spark("🌟");
+    } else {
+      focus -= 15;
+      state.streak = 0;
+      q("[data-ll-feedback]").textContent = "That response misses the main message. Try listening for feeling, reason, and need.";
+    }
+    checkedThisRound = true;
+    updateFocus();
+    updateStats();
+    sync();
+  }
+
+  function submitUnderstanding() {
+    if (!q("[data-ll-answers]").children.length) {
+      showAnswers();
+      q("[data-ll-feedback]").textContent = "Choose the response that best checks understanding.";
+    } else if (!checkedThisRound) {
+      q("[data-ll-feedback]").textContent = "Pick one response from the answer choices.";
+    } else {
+      q("[data-ll-feedback]").textContent = "Understanding checked. You may move to the next story.";
+    }
+  }
+
+  function nextRound() {
+    if (!checkedThisRound) {
+      q("[data-ll-feedback]").textContent = "Check understanding before moving to the next story.";
+      return;
+    }
+    currentRound += 1;
+    if (currentRound >= stories.length) endLanterns();
+    else loadRound();
+  }
+
+  function updateCaught() {
+    q("[data-ll-caught]").textContent = caughtKeys.length
+      ? `Key details caught: ${caughtKeys.join(", ")}.`
+      : "Key details caught: none yet.";
+  }
+
+  function updateFocus() {
+    focus = Math.max(0, Math.min(100, focus));
+    q("[data-ll-focus-fill]").style.width = `${focus}%`;
+    q("[data-ll-focus-text]").textContent = `${Math.round(focus)}%`;
+  }
+
+  function updateStats() {
+    q("[data-ll-round]").textContent = Math.min(currentRound + 1, stories.length);
+    q("[data-ll-score]").textContent = localScore;
+    q("[data-ll-time]").textContent = Math.max(0, timeLeft);
+    state.time = Math.max(0, timeLeft);
+  }
+
+  function endLanterns() {
+    clearInterval(timer);
+    removeLanterns();
+    let title = "Lantern Path Complete!";
+    let message = "";
+    if (localScore >= 240) {
+      title = "Master Listener!";
+      message = `Amazing work! Your score was ${localScore}. You caught key details, ignored distractions, and checked understanding with care.`;
+    } else if (localScore >= 160) {
+      title = "Focused Listener!";
+      message = `Great job! Your score was ${localScore}. You showed strong active listening. Keep practicing catching the speaker's feeling, reason, and need.`;
+    } else {
+      title = "Listening Apprentice!";
+      message = `Your score was ${localScore}. Keep practicing. Active listening means looking, pausing, asking, and checking understanding.`;
+    }
+    q("[data-ll-end-title]").textContent = title;
+    q("[data-ll-end-message]").textContent = message;
+    q("[data-ll-end]").classList.remove("hidden");
+    finish();
+  }
+
+  function removeLanterns() {
+    q(".listening-lanterns-game").querySelectorAll(".ll-lantern").forEach((lantern) => lantern.remove());
+  }
+
+  function spark(symbol) {
+    for (let i = 0; i < 12; i += 1) {
+      const sparkle = document.createElement("div");
+      sparkle.className = "ll-spark";
+      sparkle.textContent = symbol;
+      sparkle.style.left = `${Math.random() * 85 + 8}%`;
+      sparkle.style.top = `${Math.random() * 60 + 18}%`;
+      q(".listening-lanterns-game").append(sparkle);
+      setTimeout(() => sparkle.remove(), 850);
+    }
+  }
 }
 
 function renderEmotionGarden(arena, data) {

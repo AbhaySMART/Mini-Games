@@ -33,6 +33,8 @@ FAL_MODEL = os.environ.get("FAL_VIDEO_MODEL", "fal-ai/hunyuan-video")
 MINIMAX_MODEL = os.environ.get("MINIMAX_VIDEO_MODEL", "MiniMax-Hailuo-2.3")
 MINIMAX_RESOLUTION = os.environ.get("MINIMAX_VIDEO_RESOLUTION", "768P")
 MINIMAX_DURATION = int(os.environ.get("MINIMAX_VIDEO_DURATION", "6"))
+VIDEO_START = int(os.environ.get("VIDEO_START", "0"))
+VIDEO_LIMIT = int(os.environ.get("VIDEO_LIMIT", "0"))
 
 
 def slugify(value):
@@ -50,17 +52,19 @@ def load_games():
         lesson = match.group("lesson")
         mission = match.group("mission")
         slug = slugify(title)
-        prompt = (
-            f"A clear 8 second children's lesson video for '{title}'. "
-            f"Opening shot: show the specific kingdom situation. "
-            f"Problem shot: a child faces this mission: {mission}. "
-            f"Teaching shot: show the correct behavior step by step, with obvious cause and effect. "
-            f"Ending shot: friends or the kingdom are helped. "
-            f"The lesson must be visually understandable: {lesson}. "
-            "Cinematic realistic 3D animated children's storybook style, warm lighting, no abstract symbols, no readable text, no watermark."
-        )
+        prompt = video_prompt(title, lesson, mission)
         games.append((slug, prompt))
     return games
+
+
+def video_prompt(title, lesson, mission):
+    return (
+        f"6 second clear children's lesson video: {title}. "
+        f"Animated kids in a magical kingdom face this simple moment: {mission}. "
+        f"Show the kind choice clearly, then show friends feeling helped. "
+        f"Lesson: {lesson}. "
+        "Realistic 3D animated kids, warm storybook lighting, simple camera, no text, no logos."
+    )
 
 
 def pollinations_url(prompt):
@@ -283,10 +287,17 @@ def main():
         "minimax_model": MINIMAX_MODEL,
         "minimax_resolution": MINIMAX_RESOLUTION,
         "minimax_duration": MINIMAX_DURATION,
+        "video_start": VIDEO_START,
+        "video_limit": VIDEO_LIMIT or "all",
         "note": "Default provider is MiniMax text-to-video. Put MINIMAX_API_KEY or VIDEO_API_KEY in .env.local before running. fal.ai is still available with VIDEO_PROVIDER=fal.",
         "output": str(OUT),
     }, indent=2))
-    for index, (slug, prompt) in enumerate(load_games()):
+    games = load_games()
+    if VIDEO_START:
+        games = games[VIDEO_START:]
+    if VIDEO_LIMIT:
+        games = games[:VIDEO_LIMIT]
+    for index, (slug, prompt) in enumerate(games, start=VIDEO_START):
         target = OUT / f"{slug}.mp4"
         if target.exists() and target.stat().st_size > 50_000:
             print(f"exists {target}")

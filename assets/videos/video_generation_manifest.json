@@ -1,0 +1,236 @@
+{
+  "compliment-castle": {
+    "provider": "minimax",
+    "task_id": "394311783862628",
+    "status": "success",
+    "updated_at": 1777820964,
+    "file_id": "394312484487265",
+    "downloaded": true,
+    "path": "assets/videos/compliment-castle.mp4"
+  },
+  "share-the-crown": {
+    "provider": "minimax",
+    "task_id": "394314376331587",
+    "status": "success",
+    "updated_at": 1777821039,
+    "file_id": "394312371683441",
+    "downloaded": true,
+    "path": "assets/videos/share-the-crown.mp4"
+  },
+  "brave-apology-bridge": {
+    "provider": "minimax",
+    "task_id": "394312809979997",
+    "status": "success",
+    "updated_at": 1777821154,
+    "file_id": "394313501745378",
+    "downloaded": true,
+    "path": "assets/videos/brave-apology-bridge.mp4"
+  },
+  "listening-lanterns": {
+    "provider": "minimax",
+    "task_id": "394314804814025",
+    "status": "success",
+    "updated_at": 1777821307,
+    "file_id": "394315407458374",
+    "downloaded": true,
+    "path": "assets/videos/listening-lanterns.mp4"
+  },
+  "feelings-garden": {
+    "provider": "minimax",
+    "task_id": "394315449823301",
+    "status": "success",
+    "updated_at": 1777821415,
+    "file_id": "394315563118669",
+    "downloaded": true,
+    "path": "assets/videos/feelings-garden.mp4"
+  },
+  "patience-potion": {
+    "provider": "minimax",
+    "task_id": "394315605283017",
+    "status": "success",
+    "updated_at": 1777821532,
+    "file_id": "394313854546215",
+    "downloaded": true,
+    "path": "assets/videos/patience-potion.mp4"
+  },
+  "helping-hands-bakery": {
+    "provider": "minimax",
+    "task_id": "394316438732871",
+    "status": "success",
+    "updated_at": 1777821650,
+    "file_id": "394315135066211",
+    "downloaded": true,
+    "path": "assets/videos/helping-hands-bakery.mp4"
+  },
+  "truth-teller-tower": {
+    "provider": "minimax",
+    "task_id": "394316547416396",
+    "status": "success",
+    "updated_at": 1777821746,
+    "file_id": "394315135066222",
+    "downloaded": true,
+    "path": "assets/videos/truth-teller-tower.mp4"
+  },
+  "gratitude-gems": {
+    "provider": "minimax",
+    "task_id": "394318683537604",
+    "status": "success",
+    "updated_at": 1777822172,
+    "file_id": "394316717994224",
+    "downloaded": true,
+    "path": "assets/videos/gratitude-gems.mp4"
+  },
+  "respectful-roundtable": {
+    "provider": "minimax",
+    "task_id": "394318950531397",
+    "status": "success",
+    "updated_at": 1777822260,
+    "file_id": "394319253794887",
+    "downloaded": true,
+    "path": "assets/videos/respectful-roundtable.mp4"
+  },
+  "inclusion-inn": {
+    "provider": "minimax",
+    "task_id": "394316777398636",
+    "status": "success",
+    "updated_at": 1777822335,
+    "file_id": "394319139889234",
+    "downloaded": true,
+    "path": "assets/videos/inclusion-inn.mp4"
+  },
+  "courage-cave": {
+    "provider": "minimax",
+    "task_id": "394316998930543",
+    "status": "success",
+    "updated_at": 1777822421,
+    "file_id": "394318029828401",
+    "downloaded": true,
+    "path": "assets/videos/courage-cave.mp4"
+  },
+  "calm-dragon-den": {
+    "provider": "minimax",
+    "task_id": "394318916354128",
+    "status": "success",
+    "updated_at": 1777822507,
+    "file_id": "394319424278745",
+    "downloaded": true,
+    "path": "assets/videos/calm-dragon-den.mp4"
+  },
+  "teamwork-tournament": {
+    "provider": "minimax",
+    "task_id": "394344381702336",
+    "status": "success",
+    "updated_at": 1777828390,
+    "file_id": "394344677806146",
+    "downloaded": true,
+    "path": "assets/videos/teamwork-tournament.mp4"
+  },
+  "fairness-fountain": {
+    "provider": "minimax",
+    "task_id": "394344614608967",
+    "status": "success",
+    "updated_at": 1777828465,
+    "file_id": "394345111822528",
+    "downloaded": true,
+    "path": "assets/videos/fairness-fountain.mp4"
+  },
+  "promise-path": {
+    "provider": "minimax",
+    "task_id": "394343080575070",
+    "status": "success",
+    "updated_at": 1777828541,
+    "file_id": "394343074639980",
+    "downloaded": true,
+    "path": "assets/videos/promise-path.mp4"
+  },
+  "healthy-habits-harbor": {
+    "provider": "minimax",
+    "task_id": "394342715936867",
+    "status": "success",
+    "updated_at": 1777828657,
+    "file_id": "394344868008015",
+    "downloaded": true,
+    "path": "assets/videos/healthy-habits-harbor.mp4"
+  },
+  "safety-shield": {
+    "provider": "minimax",
+    "task_id": "394345472135493",
+    "status": "success",
+    "updated_at": 1777828772,
+    "file_id": "394343363522873",
+    "downloaded": true,
+    "path": "assets/videos/safety-shield.mp4"
+  },
+  "curiosity-clock": {
+    "provider": "minimax",
+    "task_id": "394348393803970",
+    "status": "success",
+    "updated_at": 1777829420,
+    "file_id": "394348902531264",
+    "downloaded": true,
+    "path": "assets/videos/curiosity-clock.mp4"
+  },
+  "perseverance-peak": {
+    "provider": "minimax",
+    "task_id": "394344695419134",
+    "status": "success",
+    "updated_at": 1777829538,
+    "file_id": "394345351622906",
+    "downloaded": true,
+    "path": "assets/videos/perseverance-peak.mp4"
+  },
+  "empathy-echoes": {
+    "provider": "minimax",
+    "task_id": "394347389186134",
+    "status": "success",
+    "updated_at": 1777829643,
+    "file_id": "394347966681310",
+    "downloaded": true,
+    "path": "assets/videos/empathy-echoes.mp4"
+  },
+  "manners-market": {
+    "provider": "minimax",
+    "task_id": "394349786538308",
+    "status": "success",
+    "updated_at": 1777829758,
+    "file_id": "394346572546295",
+    "downloaded": true,
+    "path": "assets/videos/manners-market.mp4"
+  },
+  "problem-solving-portal": {
+    "provider": "minimax",
+    "task_id": "394348983742670",
+    "status": "success",
+    "updated_at": 1777829828,
+    "file_id": "394348375245039",
+    "downloaded": true,
+    "path": "assets/videos/problem-solving-portal.mp4"
+  },
+  "nature-nook": {
+    "provider": "minimax",
+    "task_id": "394348983742691",
+    "status": "success",
+    "updated_at": 1777830368,
+    "file_id": "394349997281384",
+    "downloaded": true,
+    "path": "assets/videos/nature-nook.mp4"
+  },
+  "digital-kindness-gate": {
+    "provider": "minimax",
+    "task_id": "394352421019973",
+    "status": "success",
+    "updated_at": 1777830432,
+    "file_id": "394353077256385",
+    "downloaded": true,
+    "path": "assets/videos/digital-kindness-gate.mp4"
+  },
+  "restful-moon-meadow": {
+    "provider": "minimax",
+    "task_id": "394349621674330",
+    "status": "success",
+    "updated_at": 1777830518,
+    "file_id": "394351214797093",
+    "downloaded": true,
+    "path": "assets/videos/restful-moon-meadow.mp4"
+  }
+}
