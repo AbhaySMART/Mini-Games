@@ -44,6 +44,7 @@ function renderPage() {
   root.innerHTML = `
     <section class="single-game ${game.mechanic} theme-${game.slug}">
       <a class="small-back" href="index.html">BACK</a>
+      ${flowMapMarkup(game)}
       <h1 class="story-title">${game.title}</h1>
       <div class="storybook">
         ${speech("intro", `Before we set out on our noble quest, let's watch a quick clip about ${game.category.toLowerCase()}.`, "boy", "left")}
@@ -124,6 +125,8 @@ function bindPage() {
   });
   document.querySelector("[data-video-control]").addEventListener("click", () => playLessonVideo(true));
   document.querySelector("[data-music-toggle]").addEventListener("click", toggleMusic);
+  document.querySelector("[data-flow-toggle]").addEventListener("click", toggleFlowMap);
+  document.querySelector("[data-flow-close]").addEventListener("click", closeFlowMap);
   playLessonVideo(false);
 }
 
@@ -163,6 +166,75 @@ function lessonVideoMarkup(game) {
       <small>Animated lesson clip: changing scenes, changing text, motion, and browser-made music.</small>
     </div>
   `;
+}
+
+function flowMapMarkup(game) {
+  const script = KIND_KINGDOM_VIDEO_SCRIPTS[game.slug] || { narration: [], scenes: [] };
+  const steps = [
+    {
+      label: "Hook",
+      title: "Enter the Lesson",
+      text: script.narration[0] || `Meet the challenge in ${game.title}.`
+    },
+    {
+      label: "Problem",
+      title: "Notice What Is Hard",
+      text: script.scenes[1] || `Look for the choice connected to ${game.category.toLowerCase()}.`
+    },
+    {
+      label: "Skill",
+      title: game.mechanicName,
+      text: game.mission
+    },
+    {
+      label: "Practice",
+      title: "Try the Mini Game",
+      text: `Use the ${game.mechanicName.toLowerCase()} mechanic to make kind choices yourself.`
+    },
+    {
+      label: "Lesson",
+      title: game.category,
+      text: game.lesson
+    }
+  ];
+  return `
+    <aside class="flow-drawer" data-flow-drawer aria-label="${game.title} lesson flow">
+      <button class="flow-tab" type="button" data-flow-toggle aria-expanded="false">
+        <span>Flow</span>
+      </button>
+      <div class="flow-panel">
+        <button class="flow-close" type="button" data-flow-close aria-label="Close lesson flow">×</button>
+        <div class="flow-kicker">Storyboard Flow</div>
+        <h2>${game.title}</h2>
+        <p class="flow-summary">${game.lesson}</p>
+        <div class="flow-steps">
+          ${steps.map((step, index) => `
+            <article class="flow-step">
+              <span class="flow-dot">${index + 1}</span>
+              <div>
+                <small>${step.label}</small>
+                <h3>${step.title}</h3>
+                <p>${step.text}</p>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      </div>
+    </aside>
+  `;
+}
+
+function toggleFlowMap(event) {
+  const drawer = document.querySelector("[data-flow-drawer]");
+  const willOpen = !drawer.classList.contains("open");
+  drawer.classList.toggle("open", willOpen);
+  event.currentTarget.setAttribute("aria-expanded", String(willOpen));
+}
+
+function closeFlowMap() {
+  const drawer = document.querySelector("[data-flow-drawer]");
+  drawer.classList.remove("open");
+  document.querySelector("[data-flow-toggle]").setAttribute("aria-expanded", "false");
 }
 
 function playLessonVideo(withMusic) {
