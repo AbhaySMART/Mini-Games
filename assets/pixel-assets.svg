@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .px{shape-rendering:crispEdges}
+      .px rect,.px path,.px circle,.px ellipse{stroke:#1b1730;stroke-width:.8}
+      .o{fill:#1b1730}.hi{fill:#fff2b8}.gold{fill:#f4c84f}.wood{fill:#8a5630}.stone{fill:#8c91a3}.blue{fill:#66c7e8}.green{fill:#6fbd65}.pink{fill:#ef88b8}.purple{fill:#7d5bd6}.red{fill:#d85a47}.dark{fill:#2a2742}.cream{fill:#f7deb0}
+    </style>
+    <symbol id="asset-forge" viewBox="0 0 64 64" class="px">
+      <rect class="o" x="8" y="42" width="48" height="12"/><rect class="wood" x="14" y="34" width="36" height="10"/><rect class="red" x="24" y="22" width="16" height="18"/><rect class="gold" x="28" y="12" width="8" height="18"/><rect class="hi" x="31" y="18" width="4" height="14"/>
+    </symbol>
+    <symbol id="asset-word" viewBox="0 0 64 64" class="px">
+      <rect class="purple" x="10" y="18" width="44" height="28"/><rect class="hi" x="14" y="22" width="36" height="4"/><rect class="hi" x="14" y="31" width="28" height="4"/><rect class="gold" x="22" y="42" width="20" height="6"/>
+    </symbol>
+    <symbol id="asset-crown" viewBox="0 0 64 64" class="px">
+      <rect class="gold" x="12" y="34" width="40" height="14"/><rect class="gold" x="16" y="24" width="8" height="14"/><rect class="gold" x="30" y="14" width="8" height="24"/><rect class="gold" x="44" y="24" width="8" height="14"/><rect class="hi" x="20" y="37" width="24" height="4"/>
+    </symbol>
+    <symbol id="asset-throne" viewBox="0 0 64 64" class="px">
+      <rect class="purple" x="18" y="10" width="28" height="44"/><rect class="gold" x="14" y="44" width="36" height="10"/><rect class="hi" x="24" y="16" width="16" height="8"/><rect class="o" x="22" y="54" width="8" height="6"/><rect class="o" x="38" y="54" width="8" height="6"/>
+    </symbol>
+    <symbol id="asset-bridge" viewBox="0 0 64 64" class="px">
+      <rect class="stone" x="2" y="38" width="16" height="14"/><rect class="stone" x="46" y="38" width="16" height="14"/><rect class="wood" x="18" y="34" width="8" height="6"/><rect class="wood" x="28" y="32" width="8" height="6"/><rect class="wood" x="38" y="34" width="8" height="6"/><rect class="blue" x="20" y="48" width="26" height="4"/>
+    </symbol>
+    <symbol id="asset-stone" viewBox="0 0 64 64" class="px">
+      <rect class="stone" x="14" y="28" width="36" height="22"/><rect class="hi" x="20" y="32" width="16" height="4"/><rect class="dark" x="18" y="46" width="28" height="4"/>
+    </symbol>
+    <symbol id="asset-lantern" viewBox="0 0 64 64" class="px">
+      <rect class="gold" x="22" y="18" width="20" height="32"/><rect class="hi" x="26" y="24" width="12" height="18"/><rect class="wood" x="20" y="14" width="24" height="4"/><rect class="wood" x="20" y="50" width="24" height="4"/>
+    </symbol>
+    <symbol id="asset-flower" viewBox="0 0 64 64" class="px">
+      <rect class="green" x="30" y="32" width="6" height="22"/><rect class="pink" x="20" y="18" width="12" height="12"/><rect class="pink" x="34" y="18" width="12" height="12"/><rect class="pink" x="27" y="11" width="12" height="12"/><rect class="gold" x="29" y="24" width="10" height="10"/>
+    </symbol>
+    <symbol id="asset-potion" viewBox="0 0 64 64" class="px">
+      <rect class="purple" x="24" y="10" width="16" height="16"/><rect class="blue" x="18" y="28" width="28" height="24"/><rect class="hi" x="24" y="34" width="12" height="8"/><rect class="o" x="20" y="52" width="24" height="4"/>
+    </symbol>
+    <symbol id="asset-bread" viewBox="0 0 64 64" class="px">
+      <rect class="wood" x="12" y="30" width="40" height="18"/><rect class="cream" x="16" y="22" width="32" height="18"/><rect class="gold" x="20" y="28" width="6" height="4"/><rect class="gold" x="32" y="26" width="6" height="4"/>
+    </symbol>
+    <symbol id="asset-tower" viewBox="0 0 64 64" class="px">
+      <rect class="stone" x="22" y="20" width="22" height="36"/><rect class="dark" x="20" y="14" width="26" height="8"/><rect class="hi" x="28" y="28" width="8" height="10"/><rect class="o" x="28" y="46" width="10" height="10"/>
+    </symbol>
+    <symbol id="asset-gem" viewBox="0 0 64 64" class="px">
+      <rect class="blue" x="22" y="18" width="20" height="8"/><rect class="blue" x="18" y="26" width="28" height="12"/><rect class="purple" x="24" y="38" width="16" height="10"/><rect class="hi" x="26" y="22" width="8" height="4"/>
+    </symbol>
+    <symbol id="asset-table" viewBox="0 0 64 64" class="px">
+      <rect class="wood" x="10" y="28" width="44" height="16"/><rect class="cream" x="16" y="24" width="32" height="8"/><rect class="wood" x="18" y="44" width="8" height="12"/><rect class="wood" x="38" y="44" width="8" height="12"/>
+    </symbol>
+    <symbol id="asset-inn" viewBox="0 0 64 64" class="px">
+      <rect class="cream" x="14" y="28" width="36" height="24"/><rect class="red" x="10" y="22" width="44" height="8"/><rect class="wood" x="28" y="38" width="10" height="14"/><rect class="gold" x="18" y="34" width="8" height="8"/>
+    </symbol>
+    <symbol id="asset-cave" viewBox="0 0 64 64" class="px">
+      <rect class="dark" x="8" y="22" width="48" height="34"/><rect class="o" x="20" y="32" width="24" height="24"/><rect class="gold" x="30" y="18" width="6" height="10"/>
+    </symbol>
+    <symbol id="asset-dragon" viewBox="0 0 64 64" class="px">
+      <rect class="red" x="14" y="30" width="36" height="18"/><rect class="red" x="36" y="20" width="14" height="14"/><rect class="gold" x="42" y="24" width="4" height="4"/><rect class="purple" x="20" y="24" width="8" height="8"/><rect class="red" x="8" y="38" width="10" height="6"/>
+    </symbol>
+    <symbol id="asset-trophy" viewBox="0 0 64 64" class="px">
+      <rect class="gold" x="22" y="14" width="20" height="22"/><rect class="gold" x="28" y="36" width="8" height="10"/><rect class="gold" x="20" y="46" width="24" height="6"/><rect class="hi" x="26" y="18" width="10" height="4"/>
+    </symbol>
+    <symbol id="asset-fountain" viewBox="0 0 64 64" class="px">
+      <rect class="blue" x="16" y="36" width="32" height="14"/><rect class="stone" x="12" y="48" width="40" height="6"/><rect class="blue" x="30" y="16" width="4" height="20"/><rect class="hi" x="24" y="22" width="16" height="4"/>
+    </symbol>
+    <symbol id="asset-path" viewBox="0 0 64 64" class="px">
+      <rect class="green" x="6" y="10" width="52" height="44"/><rect class="gold" x="24" y="10" width="12" height="10"/><rect class="gold" x="28" y="20" width="12" height="10"/><rect class="gold" x="24" y="30" width="12" height="10"/><rect class="gold" x="28" y="40" width="12" height="10"/>
+    </symbol>
+    <symbol id="asset-harbor" viewBox="0 0 64 64" class="px">
+      <rect class="blue" x="6" y="36" width="52" height="16"/><rect class="wood" x="18" y="30" width="28" height="8"/><rect class="hi" x="30" y="14" width="4" height="18"/><rect class="cream" x="34" y="16" width="14" height="12"/>
+    </symbol>
+    <symbol id="asset-shield" viewBox="0 0 64 64" class="px">
+      <rect class="blue" x="18" y="12" width="28" height="34"/><rect class="hi" x="24" y="18" width="16" height="8"/><rect class="blue" x="24" y="46" width="16" height="8"/>
+    </symbol>
+    <symbol id="asset-clock" viewBox="0 0 64 64" class="px">
+      <rect class="gold" x="14" y="14" width="36" height="36"/><rect class="cream" x="20" y="20" width="24" height="24"/><rect class="o" x="31" y="24" width="4" height="12"/><rect class="o" x="34" y="34" width="10" height="4"/>
+    </symbol>
+    <symbol id="asset-peak" viewBox="0 0 64 64" class="px">
+      <rect class="stone" x="10" y="46" width="44" height="8"/><rect class="stone" x="18" y="34" width="28" height="12"/><rect class="hi" x="26" y="22" width="12" height="12"/>
+    </symbol>
+    <symbol id="asset-wave" viewBox="0 0 64 64" class="px">
+      <rect class="purple" x="8" y="30" width="8" height="8"/><rect class="blue" x="20" y="24" width="8" height="20"/><rect class="purple" x="32" y="18" width="8" height="32"/><rect class="blue" x="44" y="24" width="8" height="20"/>
+    </symbol>
+    <symbol id="asset-market" viewBox="0 0 64 64" class="px">
+      <rect class="wood" x="12" y="30" width="40" height="22"/><rect class="red" x="10" y="20" width="44" height="10"/><rect class="gold" x="18" y="36" width="10" height="8"/><rect class="green" x="34" y="36" width="10" height="8"/>
+    </symbol>
+    <symbol id="asset-portal" viewBox="0 0 64 64" class="px">
+      <rect class="purple" x="14" y="14" width="36" height="36"/><rect class="blue" x="20" y="20" width="24" height="24"/><rect class="hi" x="26" y="26" width="12" height="12"/>
+    </symbol>
+    <symbol id="asset-tree" viewBox="0 0 64 64" class="px">
+      <rect class="wood" x="28" y="34" width="8" height="20"/><rect class="green" x="18" y="18" width="28" height="18"/><rect class="green" x="12" y="28" width="40" height="12"/>
+    </symbol>
+    <symbol id="asset-screen" viewBox="0 0 64 64" class="px">
+      <rect class="dark" x="12" y="14" width="40" height="30"/><rect class="blue" x="16" y="18" width="32" height="22"/><rect class="green" x="22" y="48" width="20" height="4"/>
+    </symbol>
+    <symbol id="asset-moon" viewBox="0 0 64 64" class="px">
+      <rect class="hi" x="22" y="14" width="22" height="30"/><rect class="dark" x="32" y="14" width="16" height="26"/><rect class="blue" x="14" y="48" width="36" height="6"/>
+    </symbol>
+  </defs>
+</svg>
