@@ -3,6 +3,7 @@ const slug = params.get("game") || KIND_KINGDOM_GAMES[0].slug;
 const game = KIND_KINGDOM_GAMES.find((item) => item.slug === slug) || KIND_KINGDOM_GAMES[0];
 const root = document.querySelector("#game-root");
 const state = { score: 0, streak: 0, time: 60, timer: null, level: 60, progress: 0 };
+const completionState = { gameFinished: false, quizPassed: false, quizAnswers: {} };
 let lessonSceneTimer = null;
 let musicContext = null;
 let musicTimer = null;
@@ -50,6 +51,7 @@ function renderPage() {
         ${speech("intro", `Before we set out on our noble quest, let's watch a quick clip about ${game.category.toLowerCase()}.`, "boy", "left")}
         ${lessonVideoMarkup(game)}
         ${speech("lesson", `Now you've seen it, ${game.lesson.toLowerCase()} Let's get ready for the mission.`, "girl", "right")}
+        ${applicationsMarkup(game)}
         <div class="arrow-down" aria-hidden="true">&darr;</div>
         ${speech("mission", `Greetings, royal helper! Your mission is to ${game.mission.toLowerCase()}`, "boy", "left")}
         ${speech("success", `Ready, champion? Step into the royal challenge and practice ${game.category.toLowerCase()} until the kingdom shines.`, "girl", "right")}
@@ -80,6 +82,13 @@ function renderPage() {
           <div id="arena" class="arena"></div>
           <div id="feedback" class="feedback">Choose a level, then begin.</div>
         </div>
+      </section>
+      ${quizMarkup(game)}
+      <section class="completion-card" data-completion-card>
+        <h2>Complete ${game.title}</h2>
+        <p>Pass the knowledge check to earn kindness points and unlock more games.</p>
+        <button class="complete-button" type="button" data-complete-game>Complete Game</button>
+        <div class="completion-status" data-completion-status>Pass the quiz first.</div>
       </section>
       <a class="big-back" href="index.html">BACK</a>
     </section>
@@ -127,7 +136,12 @@ function bindPage() {
   document.querySelector("[data-music-toggle]").addEventListener("click", toggleMusic);
   document.querySelector("[data-flow-toggle]").addEventListener("click", toggleFlowMap);
   document.querySelector("[data-flow-close]").addEventListener("click", closeFlowMap);
+  document.querySelectorAll("[data-quiz-answer]").forEach((button) => {
+    button.addEventListener("click", () => chooseQuizAnswer(button));
+  });
+  document.querySelector("[data-complete-game]").addEventListener("click", completeGame);
   playLessonVideo(false);
+  syncCompletionStatus();
 }
 
 function lessonVideoMarkup(game) {
@@ -170,8 +184,255 @@ function lessonVideoMarkup(game) {
   `;
 }
 
+function applicationsMarkup(game) {
+  const apps = realWorldApplications(game);
+  return `
+    <section class="applications-card" aria-label="${game.title} real world applications">
+      <h2>Real World Applications</h2>
+      <div class="application-grid">
+        ${apps.map((item, index) => `
+          <article class="application-item">
+            <span>${index + 1}</span>
+            <div>
+              <b>${item.title}</b>
+              <p>${item.text}</p>
+            </div>
+          </article>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function quizMarkup(game) {
+  const questions = quizQuestions(game);
+  return `
+    <section class="quiz-card" data-quiz-card>
+      <div class="quiz-head">
+        <span>Knowledge Check</span>
+        <h2>${game.icon} ${game.title}</h2>
+        <p>Answer these to unlock the Complete button and earn kindness points.</p>
+      </div>
+      <div class="quiz-questions">
+        ${questions.map((question, qIndex) => `
+          <article class="quiz-question" data-quiz-question="${qIndex}">
+            <h3>${qIndex + 1}. ${question.prompt}</h3>
+            <div class="quiz-options">
+              ${question.options.map((option, oIndex) => `
+                <button type="button" data-quiz-answer data-question="${qIndex}" data-correct="${option.correct}" data-option="${oIndex}">
+                  ${option.text}
+                </button>
+              `).join("")}
+            </div>
+            <p class="quiz-result" data-quiz-result="${qIndex}">Choose one answer.</p>
+          </article>
+        `).join("")}
+      </div>
+      <div class="quiz-summary" data-quiz-summary>Quiz not passed yet.</div>
+    </section>
+  `;
+}
+
+function realWorldApplications(game) {
+  const bySkill = {
+    "Kind Words": [
+      ["Family moments", "Tell someone exactly what you noticed, like “You stayed patient while fixing dinner, and it helped everyone relax.”"],
+      ["Neighborhood life", "Thank a cashier, coach, or neighbor with a specific compliment about their effort."]
+    ],
+    "Generosity": [
+      ["Playing with friends", "Share the controller, ball, choice of game, or spotlight before one person controls the whole time."],
+      ["Family routines", "Let someone else pick the music, seat, snack, or activity so everyone gets a turn."]
+    ],
+    "Accountability": [
+      ["At home", "If you break, spill, lose, or forget something, say what happened and help repair it."],
+      ["With friends", "After hurting someone’s feelings, apologize with action instead of only saying “sorry.”"]
+    ],
+    "Communication": [
+      ["Conversations at home", "Listen for the feeling, reason, and need before jumping in with advice."],
+      ["Texting or calling", "Ask one clarifying question when a message sounds confusing or emotional."]
+    ],
+    "Emotional Awareness": [
+      ["Family moods", "Notice when stress, excitement, or sadness spreads through the room and respond gently."],
+      ["Friend hangouts", "Name the feeling you notice before deciding whether to joke, help, wait, or listen."]
+    ],
+    "Empathy": [
+      ["Out in public", "If someone looks overwhelmed in a line or waiting room, give space and patience."],
+      ["At home", "Look at body language and tone before deciding how to support someone."]
+    ],
+    "Self-Control": [
+      ["Waiting in lines", "Use calm breathing instead of complaining or rushing the people around you."],
+      ["Screens and games", "Pause before tapping, sending, or reacting when you feel frustrated."]
+    ],
+    "Calm Choices": [
+      ["Big feelings", "Use slow breathing before a feeling turns into yelling, slamming, or unsafe action."],
+      ["Helping someone settle", "Keep your voice and pace steady when another person is upset."]
+    ],
+    "Service": [
+      ["Chores and errands", "Notice what would actually help, like carrying bags, opening a door, or clearing space."],
+      ["Community moments", "Offer useful help to a sibling, grandparent, neighbor, or teammate without waiting to be asked."]
+    ],
+    "Honesty": [
+      ["When something goes wrong", "Tell the truth early about a mistake so trust can be repaired."],
+      ["Online and offline", "Be honest about what you did, saw, or shared instead of covering it up."]
+    ],
+    "Gratitude": [
+      ["Daily thanks", "Thank someone for the specific ride, meal, reminder, favor, or time they gave you."],
+      ["Quiet reflection", "At the end of the day, connect gratitude to one real moment you remember."]
+    ],
+    "Respect": [
+      ["Family decisions", "Let others speak about dinner, plans, or rules without interrupting or mocking."],
+      ["Disagreements", "Use respectful words even when you think someone is wrong."]
+    ],
+    "Belonging": [
+      ["Parks and parties", "Notice who is standing alone and invite them into the game or conversation."],
+      ["Shared spaces", "Use small welcoming actions that help guests, relatives, or new neighbors feel comfortable."]
+    ],
+    "Courage": [
+      ["Trying something new", "Name the fear and take one careful next step, like ordering food or joining a group."],
+      ["Asking for help", "Speak up when you are lost, confused, hurt, or unsure instead of hiding it."]
+    ],
+    "Cooperation": [
+      ["Family tasks", "Use everyone’s strengths when cleaning, cooking, packing, or planning an outing."],
+      ["Games and sports", "Pay attention to what teammates need, not only your own move."]
+    ],
+    "Fairness": [
+      ["Sharing food or supplies", "Notice that fair may mean different portions, tools, or help based on need."],
+      ["Planning activities", "Choose options that let younger, older, tired, or nervous people participate too."]
+    ],
+    "Reliability": [
+      ["Keeping promises", "Set reminders or prepare early so your future self can follow through."],
+      ["Daily responsibilities", "Think about obstacles before they happen, like traffic, chores, batteries, or weather."]
+    ],
+    "Wellness": [
+      ["Daily habits", "Balance sleep, food, water, and movement because they affect each other."],
+      ["Busy days", "Notice whether your body needs rest, water, food, fresh air, or a screen break."]
+    ],
+    "Safety": [
+      ["Before acting", "Predict what could happen before crossing, climbing, sharing info, or trying a dare."],
+      ["Online and offline", "Use a safety check before taking risks or following someone else’s idea."]
+    ],
+    "Learning": [
+      ["Everyday curiosity", "Ask deeper questions about cooking, weather, machines, nature, or how people feel."],
+      ["Trying skills", "Use curiosity when learning recipes, sports, music, crafts, or tech."]
+    ],
+    "Growth Mindset": [
+      ["After mistakes", "Change your strategy after burning food, losing a game, or missing a goal."],
+      ["Hard goals", "Use setbacks as information for the next attempt instead of proof you cannot do it."]
+    ],
+    "Courtesy": [
+      ["Public places", "Use small respectful actions like greetings, patience, and thanks."],
+      ["Everyday moments", "Hold doors, wait your turn, clean your space, and make tiny choices that help others feel valued."]
+    ],
+    "Problem Solving": [
+      ["Daily problems", "Compare solutions before fixing a schedule, mess, broken item, or disagreement."],
+      ["Conflict repair", "Think through outcomes before choosing what to say or do next."]
+    ],
+    "Environmental Care": [
+      ["Outside", "Notice cause and effect before picking plants, feeding animals, or leaving trash."],
+      ["Shared places", "Protect parks, sidewalks, yards, beaches, and living things with small choices."]
+    ],
+    "Digital Citizenship": [
+      ["Online chats", "Pause before posting and choose words that help, not hurt."],
+      ["Texting", "Remember that messages, screenshots, jokes, and comments affect real people."]
+    ],
+    "Rest": [
+      ["Bedtime", "Use a calming order of steps to help your body settle."],
+      ["Stressful evenings", "Choose gentle routines instead of rushing into sleep."]
+    ]
+  };
+  const fallback = [
+    ["Everyday life", `Use ${game.category.toLowerCase()} when you ${game.mission.toLowerCase()}`],
+    ["Home and community", game.lesson]
+  ];
+  return (bySkill[game.category] || fallback).map(([title, text]) => ({ title, text }));
+}
+
+function quizQuestions(game) {
+  const apps = realWorldApplications(game);
+  return [
+    {
+      prompt: "What is the main lesson this game is teaching?",
+      options: shuffle([
+        { text: game.lesson, correct: true },
+        { text: "Rush through the challenge without thinking.", correct: false },
+        { text: "Ignore how other people feel.", correct: false }
+      ])
+    },
+    {
+      prompt: "Which real-world moment is a good place to use this skill?",
+      options: shuffle([
+        { text: `${apps[0].title}: ${apps[0].text}`, correct: true },
+        { text: "Only inside this computer game.", correct: false },
+        { text: "Only when there are no other people around.", correct: false }
+      ])
+    },
+    {
+      prompt: "What should you practice in the mini game?",
+      options: shuffle([
+        { text: game.mission, correct: true },
+        { text: "Click random choices and hope they work.", correct: false },
+        { text: "Skip the lesson and move on.", correct: false }
+      ])
+    }
+  ];
+}
+
+function chooseQuizAnswer(button) {
+  const questionIndex = button.dataset.question;
+  const question = document.querySelector(`[data-quiz-question="${questionIndex}"]`);
+  question.querySelectorAll("[data-quiz-answer]").forEach((item) => {
+    item.classList.remove("selected", "correct", "wrong");
+  });
+  const isCorrect = button.dataset.correct === "true";
+  button.classList.add("selected", isCorrect ? "correct" : "wrong");
+  completionState.quizAnswers[questionIndex] = isCorrect;
+  const result = document.querySelector(`[data-quiz-result="${questionIndex}"]`);
+  result.textContent = isCorrect ? "Correct." : "Try again. Choose the answer that matches the game lesson.";
+  result.classList.toggle("correct", isCorrect);
+  result.classList.toggle("wrong", !isCorrect);
+  updateQuizStatus();
+}
+
+function updateQuizStatus() {
+  const total = quizQuestions(game).length;
+  const correct = Object.values(completionState.quizAnswers).filter(Boolean).length;
+  completionState.quizPassed = correct === total;
+  const summary = document.querySelector("[data-quiz-summary]");
+  summary.textContent = completionState.quizPassed
+    ? "Quiz passed. You can complete the game now."
+    : `Quiz progress: ${correct}/${total} correct.`;
+  summary.classList.toggle("passed", completionState.quizPassed);
+  syncCompletionStatus();
+}
+
+function completeGame() {
+  if (!completionState.quizPassed) {
+    syncCompletionStatus("Pass the knowledge check before completing.");
+    return;
+  }
+  const result = awardKindnessPoints();
+  syncCompletionStatus(result.awarded
+    ? `Completed. You earned 25 kindness points and unlocked more of the kingdom. Total: ${result.points}.`
+    : `Already completed. Kindness points: ${result.points}.`);
+}
+
+function syncCompletionStatus(message) {
+  const status = document.querySelector("[data-completion-status]");
+  if (!status) return;
+  status.textContent = message || (
+    completionState.quizPassed
+      ? "Quiz passed. Ready to complete."
+      : "Pass the quiz first."
+  );
+  const button = document.querySelector("[data-complete-game]");
+  if (button) {
+    button.disabled = !completionState.quizPassed;
+  }
+}
+
 function flowMapMarkup(game) {
   const script = KIND_KINGDOM_VIDEO_SCRIPTS[game.slug] || { narration: [], scenes: [] };
+  const apps = realWorldApplications(game);
   const steps = [
     {
       label: "Hook",
@@ -189,14 +450,29 @@ function flowMapMarkup(game) {
       text: game.mission
     },
     {
+      label: "Real Life",
+      title: apps[0].title,
+      text: apps[0].text
+    },
+    {
+      label: "Real Life",
+      title: apps[1].title,
+      text: apps[1].text
+    },
+    {
       label: "Practice",
       title: "Try the Mini Game",
       text: `Use the ${game.mechanicName.toLowerCase()} mechanic to make kind choices yourself.`
     },
     {
-      label: "Lesson",
-      title: game.category,
-      text: game.lesson
+      label: "Check",
+      title: "Knowledge Check",
+      text: "Answer the quiz to show you understand the lesson."
+    },
+    {
+      label: "Complete",
+      title: "Earn Kindness Points",
+      text: "Press Complete after passing the knowledge check."
     }
   ];
   return `
@@ -343,7 +619,9 @@ function startGame() {
   state.streak = 0;
   state.progress = 0;
   state.time = state.level;
+  completionState.gameFinished = false;
   sync();
+  syncCompletionStatus();
   state.timer = setInterval(() => {
     state.time -= 1;
     sync();
@@ -357,6 +635,8 @@ function startGame() {
 
 function renderMechanic() {
   const arena = document.querySelector("#arena");
+  completionState.gameFinished = false;
+  syncCompletionStatus();
   const data = game.data.map(parseDatum);
   const renderers = {
     wordForge: renderWordForge,
@@ -1677,19 +1957,319 @@ function renderSignalFilter(arena) {
   }
 }
 
-function renderEmotionGarden(arena, data) {
-  arena.innerHTML = `<div class="garden-orbit">${sprite("asset-tree", "scene-sprite")}${sprite("asset-flower", "scene-sprite")}</div><div class="emotion-web">${data.map((item, index) => `<button class="plant mood-${index}" data-need="${item.value}" data-calm="20">${sprite("asset-flower", "token-sprite")}<span>${item.label}</span><meter min="0" max="100" value="20"></meter></button>`).join("")}</div><div class="target-row">${["comfort", "breathing", "space", "share", "invite"].map((need) => `<button class="target-chip" data-need="${need}">${need}</button>`).join("")}</div>`;
-  let selected = null;
-  arena.querySelectorAll(".plant").forEach((plant) => plant.onclick = () => { selected = plant; markSelected(plant); });
-  arena.querySelectorAll(".target-chip").forEach((chip) => chip.onclick = () => {
-    if (!selected) return miss("Choose a feeling bloom first.");
-    if (selected.dataset.need !== chip.dataset.need) return chainMood(arena, "That care does not fit this feeling yet.");
-    selected.querySelector("meter").value = 100;
-    selected.disabled = true;
-    rippleMeters(arena, 10);
-    point("That feeling bloom settled the garden around it.");
-    if ([...arena.querySelectorAll(".plant")].every((item) => item.disabled)) finish();
-  });
+function renderEmotionGarden(arena) {
+  clearInterval(state.timer);
+  state.timer = null;
+
+  const rounds = [
+    {
+      scenario: "Lina worked hard on her drawing, but someone accidentally smudged it. She gets quiet and looks like she might cry.",
+      feeling: "Sad",
+      plant: "🌧️",
+      correctResponse: "Say, “I can tell that hurt. Do you want help fixing it or some time first?”",
+      responses: ["Say, “I can tell that hurt. Do you want help fixing it or some time first?”", "Say, “It is not a big deal, just draw another one.”", "Laugh so she knows you are not trying to be too serious."]
+    },
+    {
+      scenario: "Marcus has to perform his music part in front of others. His hands are shaky, and he keeps saying, “What if I mess up?”",
+      feeling: "Nervous",
+      plant: "🌿",
+      correctResponse: "Say, “It makes sense to feel nervous. Want to practice the tricky part once together?”",
+      responses: ["Say, “It makes sense to feel nervous. Want to practice the tricky part once together?”", "Say, “Do not be nervous. That is easy.”", "Tell everyone he is scared so they can watch him more closely."]
+    },
+    {
+      scenario: "Ava shares an idea during group work, but two people talk over her. She crosses her arms and stops talking.",
+      feeling: "Ignored",
+      plant: "🌻",
+      correctResponse: "Say, “I think Ava was sharing something. Can we pause and hear her idea?”",
+      responses: ["Say, “I think Ava was sharing something. Can we pause and hear her idea?”", "Keep talking because the group needs to move fast.", "Tell Ava she should just talk louder next time."]
+    },
+    {
+      scenario: "Noah studied hard and finally improved his quiz score. He smiles and keeps looking at his paper.",
+      feeling: "Proud",
+      plant: "🌷",
+      correctResponse: "Say, “You should feel proud. Your studying really paid off.”",
+      responses: ["Say, “You should feel proud. Your studying really paid off.”", "Say, “That quiz was easy anyway.”", "Ignore it because talking about success is awkward."]
+    },
+    {
+      scenario: "Maya made a mistake during a game, and her team lost a point. She says, “Everyone is probably mad at me.”",
+      feeling: "Embarrassed",
+      plant: "🌺",
+      correctResponse: "Say, “Mistakes happen. We are still a team, and we can try the next round together.”",
+      responses: ["Say, “Mistakes happen. We are still a team, and we can try the next round together.”", "Say, “Yeah, that was a bad mistake.”", "Avoid her so she can figure it out alone."]
+    }
+  ];
+  const emotions = ["Sad", "Nervous", "Ignored", "Proud", "Embarrassed", "Angry"];
+  let currentRound = 0;
+  let selectedEmotion = null;
+  let selectedResponse = null;
+  let localScore = 0;
+  let blooms = 0;
+  let balance = 50;
+  let completedRound = false;
+
+  arena.innerHTML = `
+    <div class="feelings-garden-game">
+      <div class="fg-sky"></div>
+      <div class="fg-ground"></div>
+      <section class="fg-screen" data-fg-start>
+        <div class="fg-screen-card">
+          <div class="fg-big">🌸</div>
+          <h2>Feelings Garden</h2>
+          <p>Every feeling is like a seed. When you name the feeling correctly and choose a helpful response, the garden grows stronger.</p>
+          <p>Step 1: Read the situation. Step 2: Pick the feeling seed. Step 3: Choose the most helpful response.</p>
+          <button class="fg-btn gold" type="button" data-fg-start-button>Enter the Garden</button>
+        </div>
+      </section>
+      <section class="fg-screen hidden" data-fg-end>
+        <div class="fg-screen-card">
+          <div class="fg-big">🌼</div>
+          <h2 data-fg-end-title>Garden Complete!</h2>
+          <p data-fg-end-message></p>
+          <button class="fg-btn gold" type="button" data-fg-restart>Play Again</button>
+        </div>
+      </section>
+      <div class="fg-content">
+        <div class="fg-top">
+          <div class="fg-title-card">
+            <h2>🌸 Feelings Garden</h2>
+            <p>Name the feeling, choose a helpful response, and restore emotional balance.</p>
+          </div>
+          <div class="fg-stats">
+            <div class="fg-pill">Round: <span data-fg-round>1</span>/5</div>
+            <div class="fg-pill">Score: <span data-fg-score>0</span></div>
+            <div class="fg-pill">Blooms: <span data-fg-blooms>0</span> 🌼</div>
+          </div>
+        </div>
+        <div class="fg-main">
+          <div class="fg-panel fg-garden-panel">
+            <div class="fg-scenario" data-fg-scenario></div>
+            <div class="fg-garden" data-fg-garden>
+              <div class="fg-sun" data-fg-sun></div>
+              <div class="fg-cloud" data-fg-cloud>☁️</div>
+              <div class="fg-plant-zone">
+                <div class="fg-plant neutral" data-fg-plant>🌱</div>
+              </div>
+              <div class="fg-soil"></div>
+            </div>
+          </div>
+          <div class="fg-panel fg-controls">
+            <h2>Garden Instructions</h2>
+            <div class="fg-instructions">First, choose the emotion seed that best matches the character's feeling. Then choose the response that would actually help them. Press “Grow Garden” to see what happens.</div>
+            <div class="fg-emotion-seeds" data-fg-emotions></div>
+            <div class="fg-response-box" data-fg-responses></div>
+            <div>
+              <div class="fg-meter-label"><span>Garden Balance</span><span data-fg-balance-text>50%</span></div>
+              <div class="fg-meter"><div data-fg-balance-fill></div></div>
+            </div>
+            <div class="fg-feedback" data-fg-feedback>Pick the feeling seed that matches the situation.</div>
+            <div class="fg-btn-row">
+              <button class="fg-btn" type="button" data-fg-grow>Grow Garden</button>
+              <button class="fg-btn gold" type="button" data-fg-next>Next Feeling</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const q = (selector) => arena.querySelector(selector);
+  q("[data-fg-start-button]").onclick = () => {
+    q("[data-fg-start]").classList.add("hidden");
+    loadRound();
+  };
+  q("[data-fg-restart]").onclick = restartGarden;
+  q("[data-fg-grow]").onclick = growGarden;
+  q("[data-fg-next]").onclick = nextRound;
+  loadRound();
+
+  function restartGarden() {
+    currentRound = 0;
+    selectedEmotion = null;
+    selectedResponse = null;
+    localScore = 0;
+    state.score = 0;
+    state.streak = 0;
+    blooms = 0;
+    balance = 50;
+    completedRound = false;
+    q("[data-fg-end]").classList.add("hidden");
+    loadRound();
+    sync();
+  }
+
+  function loadRound() {
+    const round = rounds[currentRound];
+    selectedEmotion = null;
+    selectedResponse = null;
+    completedRound = false;
+    q("[data-fg-scenario]").textContent = round.scenario;
+    q("[data-fg-plant]").textContent = "🌱";
+    q("[data-fg-plant]").className = "fg-plant neutral";
+    q("[data-fg-feedback]").textContent = "Pick the feeling seed that matches the situation.";
+    renderEmotionSeeds();
+    renderResponses();
+    updateStats();
+    updateBalance();
+  }
+
+  function renderEmotionSeeds() {
+    const round = rounds[currentRound];
+    const choices = shuffle([round.feeling, ...shuffle(emotions.filter((emotion) => emotion !== round.feeling)).slice(0, 3)]);
+    q("[data-fg-emotions]").innerHTML = choices.map((emotion) => (
+      `<button class="fg-seed" type="button" data-emotion="${escapeAttr(emotion)}">${emotionSeedIcon(emotion)} ${emotion}</button>`
+    )).join("");
+    q("[data-fg-emotions]").querySelectorAll(".fg-seed").forEach((button) => {
+      button.onclick = () => {
+        if (completedRound) return;
+        selectedEmotion = button.dataset.emotion;
+        q("[data-fg-emotions]").querySelectorAll(".fg-seed").forEach((item) => item.classList.remove("selected"));
+        button.classList.add("selected");
+        q("[data-fg-feedback]").textContent = `You planted the ${selectedEmotion} seed. Now choose a helpful response.`;
+      };
+    });
+  }
+
+  function renderResponses() {
+    const choices = shuffle(rounds[currentRound].responses);
+    q("[data-fg-responses]").innerHTML = choices.map((response) => (
+      `<button class="fg-response" type="button">${response}</button>`
+    )).join("");
+    q("[data-fg-responses]").querySelectorAll(".fg-response").forEach((button) => {
+      button.onclick = () => {
+        if (completedRound) return;
+        selectedResponse = button.textContent;
+        q("[data-fg-responses]").querySelectorAll(".fg-response").forEach((item) => item.classList.remove("selected"));
+        button.classList.add("selected");
+        q("[data-fg-feedback]").textContent = "Response chosen. Press Grow Garden to see if the garden blooms.";
+      };
+    });
+  }
+
+  function growGarden() {
+    if (completedRound) {
+      q("[data-fg-feedback]").textContent = "This feeling has already grown. Move to the next feeling.";
+      return;
+    }
+    if (!selectedEmotion || !selectedResponse) {
+      q("[data-fg-feedback]").textContent = "Choose both a feeling seed and a helpful response before growing the garden.";
+      return;
+    }
+
+    const round = rounds[currentRound];
+    const emotionCorrect = selectedEmotion === round.feeling;
+    const responseCorrect = selectedResponse === round.correctResponse;
+    completedRound = true;
+
+    if (emotionCorrect && responseCorrect) {
+      localScore += 100;
+      blooms += 1;
+      balance += 18;
+      q("[data-fg-plant]").textContent = round.plant;
+      q("[data-fg-plant]").className = "fg-plant grow";
+      q("[data-fg-feedback]").textContent = "Beautiful bloom! You named the feeling correctly and chose a caring response.";
+      state.streak += 1;
+      createRipple();
+      spark("🌼");
+    } else if (emotionCorrect && !responseCorrect) {
+      localScore += 55;
+      balance += 5;
+      q("[data-fg-plant]").textContent = "🌿";
+      q("[data-fg-plant]").className = "fg-plant grow";
+      q("[data-fg-feedback]").textContent = "Good feeling match, but the response could be more helpful. Naming the feeling is only step one.";
+      state.streak = 0;
+      createRipple();
+    } else if (!emotionCorrect && responseCorrect) {
+      localScore += 45;
+      balance += 3;
+      q("[data-fg-plant]").textContent = "🍃";
+      q("[data-fg-plant]").className = "fg-plant grow";
+      q("[data-fg-feedback]").textContent = "Helpful response, but the feeling seed was not quite right. Try noticing clues in body language and words.";
+      state.streak = 0;
+      createRipple();
+    } else {
+      localScore += 10;
+      balance -= 14;
+      q("[data-fg-plant]").textContent = "🥀";
+      q("[data-fg-plant]").className = "fg-plant wilt";
+      q("[data-fg-feedback]").textContent = `The garden wilted. The feeling was ${round.feeling}. A helpful response would show understanding and support.`;
+      state.streak = 0;
+    }
+    state.score = localScore;
+    updateStats();
+    updateBalance();
+    sync();
+  }
+
+  function nextRound() {
+    if (!completedRound) {
+      q("[data-fg-feedback]").textContent = "Grow the garden first before moving to the next feeling.";
+      return;
+    }
+    currentRound += 1;
+    if (currentRound >= rounds.length) endGarden();
+    else loadRound();
+  }
+
+  function updateStats() {
+    q("[data-fg-round]").textContent = Math.min(currentRound + 1, rounds.length);
+    q("[data-fg-score]").textContent = localScore;
+    q("[data-fg-blooms]").textContent = blooms;
+  }
+
+  function updateBalance() {
+    balance = Math.max(0, Math.min(100, balance));
+    q("[data-fg-balance-fill]").style.width = `${balance}%`;
+    q("[data-fg-balance-text]").textContent = `${Math.round(balance)}%`;
+    q("[data-fg-sun]").style.opacity = 0.35 + balance / 120;
+    q("[data-fg-cloud]").style.opacity = 0.8 - balance / 140;
+    q("[data-fg-garden]").style.filter = balance > 70
+      ? "saturate(1.15) brightness(1.04)"
+      : balance < 35
+        ? "saturate(0.75) brightness(0.9)"
+        : "none";
+  }
+
+  function endGarden() {
+    let title = "Garden Complete!";
+    let message = "";
+    if (localScore >= 430) {
+      title = "Emotion Garden Master!";
+      message = `Amazing work! Your score was ${localScore}. You named feelings clearly and chose responses that helped the characters feel understood.`;
+    } else if (localScore >= 300) {
+      title = "Feelings Helper!";
+      message = `Great job! Your score was ${localScore}. You are learning how to notice feelings and respond with care.`;
+    } else {
+      title = "Garden Apprentice!";
+      message = `Your score was ${localScore}. Keep practicing. Look for clues, name the feeling, and choose a response that helps.`;
+    }
+    q("[data-fg-end-title]").textContent = title;
+    q("[data-fg-end-message]").textContent = message;
+    q("[data-fg-end]").classList.remove("hidden");
+    finish();
+  }
+
+  function emotionSeedIcon(emotion) {
+    return { Sad: "🌧️", Nervous: "🌿", Ignored: "🌻", Proud: "🌷", Embarrassed: "🌺", Angry: "🔥" }[emotion] || "🌱";
+  }
+
+  function createRipple() {
+    const ripple = document.createElement("div");
+    ripple.className = "fg-emotion-ripple";
+    q("[data-fg-garden]").append(ripple);
+    setTimeout(() => ripple.remove(), 850);
+  }
+
+  function spark(symbol) {
+    for (let i = 0; i < 14; i += 1) {
+      const sparkle = document.createElement("div");
+      sparkle.className = "fg-spark";
+      sparkle.textContent = symbol;
+      sparkle.style.left = `${Math.random() * 85 + 8}%`;
+      sparkle.style.top = `${Math.random() * 60 + 18}%`;
+      q(".feelings-garden-game").append(sparkle);
+      setTimeout(() => sparkle.remove(), 850);
+    }
+  }
 }
 
 function renderTimeDilation(arena) {
@@ -2097,8 +2677,9 @@ function miss(message) {
 
 function finish() {
   clearInterval(state.timer);
-  awardKindnessPoints();
+  completionState.gameFinished = true;
   feedback(`Quest complete. ${game.lesson}`);
+  syncCompletionStatus();
 }
 
 function awardKindnessPoints() {
@@ -2107,13 +2688,18 @@ function awardKindnessPoints() {
     const progress = JSON.parse(localStorage.getItem(key) || '{"points":100,"completed":[]}');
     progress.completed = Array.isArray(progress.completed) ? progress.completed : [];
     progress.points = Number(progress.points) || 100;
+    let awarded = false;
     if (!progress.completed.includes(game.slug)) {
       progress.completed.push(game.slug);
       progress.points += 25;
-      localStorage.setItem(key, JSON.stringify(progress));
+      awarded = true;
     }
+    localStorage.setItem(key, JSON.stringify(progress));
+    return { awarded, points: progress.points };
   } catch {
-    localStorage.setItem(key, JSON.stringify({ points: 125, completed: [game.slug] }));
+    const progress = { points: 125, completed: [game.slug] };
+    localStorage.setItem(key, JSON.stringify(progress));
+    return { awarded: true, points: progress.points };
   }
 }
 
