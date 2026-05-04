@@ -2273,38 +2273,653 @@ function renderEmotionGarden(arena) {
 }
 
 function renderTimeDilation(arena) {
-  arena.innerHTML = `<div class="time-lab"><div class="clock-face"><span class="clock-hand"></span></div><meter id="rush" min="0" max="100" value="55"></meter><button class="tap-button">Calm Wait</button><button class="tap-button rush">Rush Click</button></div>`;
-  let rush = 55;
-  const syncRush = () => {
-    arena.querySelector("#rush").value = rush;
-    arena.querySelector(".clock-hand").style.transform = `translate(-50%, -100%) rotate(${rush * 3.6}deg)`;
+  clearInterval(state.timer);
+  state.timer = null;
+
+  const challenges = [
+    {
+      text: "Your tower fell during a building game. Brew patience before trying again.",
+      sequence: ["Breathe", "Wait", "Stir", "Wait", "Pour"],
+      lesson: "When something falls apart, patience helps you slow down and rebuild."
+    },
+    {
+      text: "You are waiting for your turn, but it feels hard not to interrupt.",
+      sequence: ["Breathe", "Wait", "Wait", "Stir", "Pour"],
+      lesson: "Waiting becomes easier when you breathe and remind yourself your turn is coming."
+    },
+    {
+      text: "A puzzle is harder than expected. You want to quit quickly.",
+      sequence: ["Breathe", "Stir", "Wait", "Breathe", "Pour"],
+      lesson: "Trying again works better when you pause and choose a new strategy."
+    },
+    {
+      text: "Someone else is taking longer than you wanted. Brew patience instead of getting upset.",
+      sequence: ["Breathe", "Wait", "Breathe", "Stir", "Pour"],
+      lesson: "Patience means giving others time without making them feel rushed."
+    }
+  ];
+
+  let currentRound = 0;
+  let localScore = 0;
+  let rushes = 0;
+  let stability = 50;
+  let stepIndex = 0;
+  let countdown = 0;
+  let roundActive = false;
+  let roundComplete = false;
+  let timer = null;
+
+  arena.innerHTML = `
+    <div class="patience-potion-game">
+      <div class="pp-bg"></div>
+      <div class="pp-bubbles-bg"></div>
+      <section class="pp-screen" data-pp-start>
+        <div class="pp-screen-card">
+          <div class="pp-big">🧪</div>
+          <h2>Patience Potion</h2>
+          <p>This potion only works when you stay calm. If you rush, the potion becomes unstable.</p>
+          <p>Follow the rhythm: breathe, wait, stir, wait again, then pour.</p>
+          <button class="pp-btn gold" type="button" data-pp-begin>Begin Brewing</button>
+        </div>
+      </section>
+      <section class="pp-screen hidden" data-pp-end>
+        <div class="pp-screen-card">
+          <div class="pp-big">✨</div>
+          <h2 data-pp-end-title>Potion Complete!</h2>
+          <p data-pp-end-message></p>
+          <button class="pp-btn gold" type="button" data-pp-restart>Play Again</button>
+        </div>
+      </section>
+      <div class="pp-content">
+        <div class="pp-top">
+          <div class="pp-title-card">
+            <h2>🧪 Patience Potion</h2>
+            <p>Breathe, wait, and act at the right moment. Rushing weakens the potion.</p>
+          </div>
+          <div class="pp-stats">
+            <div class="pp-pill">Round: <span data-pp-round>1</span>/4</div>
+            <div class="pp-pill">Score: <span data-pp-score>0</span></div>
+            <div class="pp-pill">Rushes: <span data-pp-rushes>0</span></div>
+          </div>
+        </div>
+        <div class="pp-main">
+          <div class="pp-panel pp-lab-panel">
+            <div class="pp-challenge" data-pp-challenge></div>
+            <div class="pp-lab">
+              <div class="pp-timer-orb" data-pp-timer>0</div>
+              <div class="pp-breath-circle" data-pp-breath>Breathe</div>
+              <div class="pp-cauldron" data-pp-cauldron>
+                <div class="pp-steam one"></div>
+                <div class="pp-steam two"></div>
+                <div class="pp-steam three"></div>
+                <div class="pp-pot">
+                  <div class="pp-liquid" data-pp-liquid></div>
+                </div>
+              </div>
+              <div class="pp-shelf"></div>
+            </div>
+          </div>
+          <div class="pp-panel pp-controls">
+            <h2>Brewing Instructions</h2>
+            <div class="pp-instructions">Watch the timer orb. Each step becomes ready after a short wait. Click the correct action only when it is ready.</div>
+            <div class="pp-sequence" data-pp-sequence></div>
+            <div class="pp-action-grid">
+              <button class="pp-action" type="button" data-pp-action="Breathe">🌬️ Breathe</button>
+              <button class="pp-action" type="button" data-pp-action="Wait">⏳ Wait</button>
+              <button class="pp-action" type="button" data-pp-action="Stir">🥄 Stir</button>
+              <button class="pp-action" type="button" data-pp-action="Pour">💧 Pour</button>
+            </div>
+            <div>
+              <div class="pp-meter-label"><span>Potion Stability</span><span data-pp-stability-text>50%</span></div>
+              <div class="pp-meter"><div class="pp-meter-fill" data-pp-stability-fill></div></div>
+            </div>
+            <div class="pp-feedback" data-pp-feedback>Press Start Round, then follow the potion rhythm.</div>
+            <div class="pp-btn-row">
+              <button class="pp-btn" type="button" data-pp-start-round>Start Round</button>
+              <button class="pp-btn gold" type="button" data-pp-next>Next Potion</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const q = (selector) => arena.querySelector(selector);
+  const buttons = () => [...arena.querySelectorAll("[data-pp-action]")];
+
+  q("[data-pp-begin]").onclick = () => {
+    q("[data-pp-start]").classList.add("hidden");
+    loadRound();
   };
-  arena.querySelector(".tap-button:not(.rush)").onclick = () => {
-    rush = Math.max(0, rush - 15);
-    syncRush();
-    point("Time slows because you stayed calm.");
-    if (rush <= 5) finish();
+  q("[data-pp-restart]").onclick = () => {
+    clearInterval(timer);
+    currentRound = 0;
+    localScore = 0;
+    rushes = 0;
+    stability = 50;
+    q("[data-pp-end]").classList.add("hidden");
+    loadRound();
   };
-  arena.querySelector(".rush").onclick = () => {
-    rush = Math.min(100, rush + 18);
-    syncRush();
-    miss("Fast clicking makes the potion clock speed up.");
-  };
-  syncRush();
+  q("[data-pp-start-round]").onclick = startRound;
+  q("[data-pp-next]").onclick = nextRound;
+  buttons().forEach((button) => button.onclick = () => doAction(button.dataset.ppAction));
+
+  function loadRound() {
+    clearInterval(timer);
+    stepIndex = 0;
+    countdown = 0;
+    roundActive = false;
+    roundComplete = false;
+    stability = Math.max(35, stability);
+    const challenge = challenges[currentRound];
+    q("[data-pp-challenge]").textContent = challenge.text;
+    q("[data-pp-timer]").textContent = "0";
+    q("[data-pp-timer]").style.setProperty("--progress", "0%");
+    q("[data-pp-feedback]").textContent = "Press Start Round, then follow the potion rhythm.";
+    q("[data-pp-liquid]").style.height = "35%";
+    q("[data-pp-liquid]").style.background = "linear-gradient(180deg, #7bdff2, #40c9a2)";
+    q("[data-pp-breath]").textContent = "Breathe";
+    clearReadyButtons();
+    updateSequence();
+    updateMeters();
+    updateStats();
+  }
+
+  function startRound() {
+    if (roundActive || roundComplete) return;
+    roundActive = true;
+    stepIndex = 0;
+    setNextCountdown();
+    q("[data-pp-feedback]").textContent = "The potion is listening. Wait until the correct action glows.";
+    timer = setInterval(() => {
+      countdown -= 1;
+      updateTimerOrb();
+      if (countdown <= 0) markReady();
+    }, 1000);
+  }
+
+  function setNextCountdown() {
+    countdown = 3;
+    clearReadyButtons();
+    updateTimerOrb();
+  }
+
+  function updateTimerOrb() {
+    q("[data-pp-timer]").textContent = countdown > 0 ? countdown : "Ready";
+    const progress = countdown > 0 ? ((3 - countdown) / 3) * 100 : 100;
+    q("[data-pp-timer]").style.setProperty("--progress", `${progress}%`);
+  }
+
+  function markReady() {
+    clearReadyButtons();
+    const expected = challenges[currentRound].sequence[stepIndex];
+    q(`[data-pp-action="${expected}"]`).classList.add("ready");
+    q("[data-pp-feedback]").textContent = `${expected} is ready. Click it now, calmly.`;
+  }
+
+  function clearReadyButtons() {
+    buttons().forEach((button) => button.classList.remove("ready"));
+  }
+
+  function doAction(action) {
+    if (!roundActive || roundComplete) {
+      q("[data-pp-feedback]").textContent = "Start the round before choosing actions.";
+      return;
+    }
+    const expected = challenges[currentRound].sequence[stepIndex];
+    if (countdown > 0) {
+      rushes += 1;
+      stability -= 12;
+      q("[data-pp-feedback]").textContent = "Too early. That was rushing. Wait until the action is ready.";
+      shakePotion();
+      updateMeters();
+      updateStats();
+      return;
+    }
+    if (action !== expected) {
+      rushes += 1;
+      stability -= 15;
+      q("[data-pp-feedback]").textContent = `Wrong action. The potion needed ${expected}, not ${action}.`;
+      shakePotion();
+      updateMeters();
+      updateStats();
+      return;
+    }
+
+    localScore += 25;
+    stability += 10;
+    stepIndex += 1;
+    animateAction(action);
+    spark("✨");
+    if (stepIndex >= challenges[currentRound].sequence.length) {
+      finishRound();
+    } else {
+      q("[data-pp-feedback]").textContent = `Good patience. Step ${stepIndex} completed. Wait for the next glow.`;
+      updateSequence();
+      setNextCountdown();
+    }
+    state.score = localScore;
+    state.streak += 1;
+    updateMeters();
+    updateStats();
+    sync();
+  }
+
+  function finishRound() {
+    roundComplete = true;
+    roundActive = false;
+    clearInterval(timer);
+    clearReadyButtons();
+    const bonus = Math.max(0, Math.round(stability));
+    localScore += bonus;
+    state.score = localScore;
+    q("[data-pp-liquid]").style.height = "75%";
+    q("[data-pp-liquid]").style.background = "linear-gradient(180deg, #ffd166, #40c9a2)";
+    q("[data-pp-feedback]").textContent = `Potion complete! ${challenges[currentRound].lesson}`;
+    spark("🧪");
+    updateSequence();
+    updateMeters();
+    updateStats();
+    sync();
+  }
+
+  function nextRound() {
+    if (!roundComplete) {
+      q("[data-pp-feedback]").textContent = "Complete this potion before moving to the next one.";
+      return;
+    }
+    currentRound += 1;
+    if (currentRound >= challenges.length) endGame();
+    else loadRound();
+  }
+
+  function updateSequence() {
+    const sequence = challenges[currentRound].sequence;
+    q("[data-pp-sequence]").innerHTML = sequence.map((step, index) => {
+      if (index < stepIndex) return `✅ ${step}`;
+      if (index === stepIndex && roundActive) return `➡️ ${step}`;
+      return `⬜ ${step}`;
+    }).join(" &nbsp; ");
+  }
+
+  function updateMeters() {
+    stability = Math.max(0, Math.min(100, stability));
+    q("[data-pp-stability-fill]").style.width = `${stability}%`;
+    q("[data-pp-stability-text]").textContent = `${Math.round(stability)}%`;
+    q("[data-pp-liquid]").style.boxShadow = `0 0 ${18 + stability / 2}px rgba(123,223,242,.75)`;
+  }
+
+  function updateStats() {
+    q("[data-pp-round]").textContent = Math.min(currentRound + 1, challenges.length);
+    q("[data-pp-score]").textContent = localScore;
+    q("[data-pp-rushes]").textContent = rushes;
+  }
+
+  function animateAction(action) {
+    if (action === "Breathe") {
+      q("[data-pp-breath]").textContent = "Calm";
+      stability += 2;
+    }
+    if (action === "Wait") q("[data-pp-breath]").textContent = "Wait";
+    if (action === "Stir") q("[data-pp-liquid]").style.height = `${Math.min(75, 35 + stepIndex * 8)}%`;
+    if (action === "Pour") q("[data-pp-liquid]").style.height = "70%";
+  }
+
+  function shakePotion() {
+    q("[data-pp-cauldron]").animate(
+      [
+        { transform: "translateX(-50%) rotate(0deg)" },
+        { transform: "translateX(-50%) rotate(-5deg)" },
+        { transform: "translateX(-50%) rotate(5deg)" },
+        { transform: "translateX(-50%) rotate(0deg)" }
+      ],
+      { duration: 350, iterations: 1 }
+    );
+    q("[data-pp-liquid]").style.background = "linear-gradient(180deg, #ff7eb3, #7c4dff)";
+    state.streak = 0;
+    sync();
+  }
+
+  function endGame() {
+    clearInterval(timer);
+    let title = "Potion Complete!";
+    let message = "";
+    if (localScore >= 520 && rushes <= 3) {
+      title = "Patience Potion Master!";
+      message = `Amazing work! Your score was ${localScore}. You stayed calm, waited for the right moment, and brewed with patience.`;
+    } else if (localScore >= 380) {
+      title = "Calm Brewer!";
+      message = `Great job! Your score was ${localScore}. You showed that patience means breathing, waiting, and trying carefully.`;
+    } else {
+      title = "Potion Apprentice!";
+      message = `Your score was ${localScore}. Keep practicing. Rushing makes things harder, but breathing and waiting help you try again.`;
+    }
+    q("[data-pp-end-title]").textContent = title;
+    q("[data-pp-end-message]").textContent = message;
+    q("[data-pp-end]").classList.remove("hidden");
+    finish();
+  }
+
+  function spark(symbol) {
+    for (let i = 0; i < 13; i += 1) {
+      const sparkle = document.createElement("div");
+      sparkle.className = "pp-spark";
+      sparkle.textContent = symbol;
+      sparkle.style.left = `${Math.random() * 85 + 8}%`;
+      sparkle.style.top = `${Math.random() * 60 + 18}%`;
+      q(".patience-potion-game").append(sparkle);
+      setTimeout(() => sparkle.remove(), 850);
+    }
+  }
 }
 
-function renderHiddenNeeds(arena, data) {
-  let index = 0;
-  arena.innerHTML = `<div class="bakery-counter">${sprite("asset-market", "scene-sprite")}<span></span><span></span><span></span></div><div class="order-ticket"></div><div class="creative-grid">${data.map((item) => `<button class="token" data-value="${escapeAttr(item.value)}">${sprite("asset-bread", "token-sprite")}<span>${item.value}</span></button>`).join("")}</div>`;
-  const show = () => arena.querySelector(".order-ticket").textContent = `Customer says: "${data[index].label}"`;
-  show();
-  arena.querySelectorAll(".token").forEach((button) => button.onclick = () => {
-    if (button.dataset.value !== data[index].value) return miss("Look for the need behind the words.");
-    point("You noticed the hidden need.");
-    index += 1;
-    if (index >= data.length) return finish();
-    show();
-  });
+function renderHiddenNeeds(arena) {
+  clearInterval(state.timer);
+  state.timer = null;
+
+  const customers = [
+    {
+      emoji: "🧑‍🎨",
+      card: "Lina spilled paint on her project and says, “I ruined everything. I do not even want to look at it.”",
+      speech: "I ruined everything...",
+      need: "Encouragement first",
+      help: "Say, “That feels frustrating. Let’s take one small step and see what can be fixed.”",
+      tray: "🧁",
+      wrongNeeds: ["A lecture", "Being ignored", "Someone taking over"],
+      wrongHelps: ["Say, “You should have been more careful.”", "Grab the project and fix it without asking.", "Say nothing and walk away."]
+    },
+    {
+      emoji: "🎻",
+      card: "Marcus is stuck on a tricky music part and says, “I practiced, but I still cannot get this measure right.”",
+      speech: "I can’t get this part right.",
+      need: "Practice support",
+      help: "Say, “Want to slow it down and practice that one measure together?”",
+      tray: "🥨",
+      wrongNeeds: ["A joke", "Space only", "Blame"],
+      wrongHelps: ["Say, “Just play it faster.”", "Tell him everyone else already knows it.", "Change the subject."]
+    },
+    {
+      emoji: "🧩",
+      card: "Ava is quiet during group work. She says, “It is fine,” but she keeps looking at the materials and not joining in.",
+      speech: "It’s fine...",
+      need: "A chance to join",
+      help: "Say, “Would you like to choose the next piece or share an idea?”",
+      tray: "🥐",
+      wrongNeeds: ["To be rushed", "To be teased", "To be corrected loudly"],
+      wrongHelps: ["Say, “Why are you being so quiet?”", "Give her job to someone else.", "Tell the group she is not helping."]
+    },
+    {
+      emoji: "📚",
+      card: "Noah forgot his notes and says, “I am going to fail now.” He is panicking and flipping through his backpack.",
+      speech: "I’m going to fail now.",
+      need: "Calm problem-solving",
+      help: "Say, “Take a breath. Let’s think of options, borrow notes, ask the teacher, or review together.”",
+      tray: "🍪",
+      wrongNeeds: ["More panic", "Criticism", "A competition"],
+      wrongHelps: ["Say, “Yeah, that is bad.”", "Tell him you got everything right.", "Laugh and say he should remember next time."]
+    },
+    {
+      emoji: "🧹",
+      card: "Maya is cleaning up alone after an activity. She says, “I guess I will do it,” while everyone else leaves.",
+      speech: "I guess I’ll do it...",
+      need: "Real action help",
+      help: "Say, “I can help. I’ll put away the supplies while you stack the bins.”",
+      tray: "🍩",
+      wrongNeeds: ["Only a compliment", "Being watched", "A random story"],
+      wrongHelps: ["Say, “Good luck,” and leave.", "Tell her she is great at cleaning.", "Stand there and talk about your weekend."]
+    }
+  ];
+
+  let current = 0;
+  let localScore = 0;
+  let orders = 0;
+  let helpfulness = 50;
+  let selectedNeed = null;
+  let selectedHelp = null;
+  let served = false;
+
+  arena.innerHTML = `
+    <div class="helping-bakery-game">
+      <div class="hb-bg"></div>
+      <div class="hb-counter"></div>
+      <section class="hb-screen" data-hb-start>
+        <div class="hb-screen-card">
+          <div class="hb-big">🍞</div>
+          <h2>Helping Hands Bakery</h2>
+          <p>Every customer needs a different kind of help. Some need encouragement, some need space, and some need action.</p>
+          <p>Read the clues, choose what they really need, then prepare the right help order.</p>
+          <button class="hb-btn teal" type="button" data-hb-open>Open Bakery</button>
+        </div>
+      </section>
+      <section class="hb-screen hidden" data-hb-end>
+        <div class="hb-screen-card">
+          <div class="hb-big">🥐</div>
+          <h2 data-hb-end-title>Bakery Complete!</h2>
+          <p data-hb-end-message></p>
+          <button class="hb-btn teal" type="button" data-hb-restart>Play Again</button>
+        </div>
+      </section>
+      <div class="hb-content">
+        <div class="hb-top">
+          <div class="hb-title-card">
+            <h2>🍞 Helping Hands Bakery</h2>
+            <p>Notice what kind of help someone actually needs.</p>
+          </div>
+          <div class="hb-stats">
+            <div class="hb-pill">Customer: <span data-hb-round>1</span>/5</div>
+            <div class="hb-pill">Score: <span data-hb-score>0</span></div>
+            <div class="hb-pill">Orders: <span data-hb-orders>0</span> 🥐</div>
+          </div>
+        </div>
+        <div class="hb-main">
+          <div class="hb-panel hb-bakery-panel">
+            <div class="hb-customer-card" data-hb-card></div>
+            <div class="hb-scene">
+              <div class="hb-speech" data-hb-speech></div>
+              <div class="hb-customer" data-hb-customer>🧒</div>
+              <div class="hb-tray" data-hb-tray>🍽️</div>
+              <div class="hb-help-label" data-hb-label>No help order prepared yet</div>
+            </div>
+          </div>
+          <div class="hb-panel hb-controls">
+            <h2>How to Play</h2>
+            <div class="hb-instructions">Read what the customer says, pick what they really need, choose the best helping action, then serve the order.</div>
+            <div>
+              <div class="hb-station-title">1. What does this person really need?</div>
+              <div class="hb-options" data-hb-needs></div>
+            </div>
+            <div>
+              <div class="hb-station-title">2. What help should you give?</div>
+              <div class="hb-options" data-hb-helps></div>
+            </div>
+            <div>
+              <div class="hb-meter-label"><span>Helpfulness Meter</span><span data-hb-help-text>50%</span></div>
+              <div class="hb-meter"><div class="hb-meter-fill" data-hb-help-fill></div></div>
+            </div>
+            <div class="hb-feedback" data-hb-feedback>Choose the need first, then choose the best helping action.</div>
+            <div class="hb-btn-row">
+              <button class="hb-btn" type="button" data-hb-serve>Serve Help Order</button>
+              <button class="hb-btn teal" type="button" data-hb-next>Next Customer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const q = (selector) => arena.querySelector(selector);
+  q("[data-hb-open]").onclick = () => {
+    q("[data-hb-start]").classList.add("hidden");
+    loadCustomer();
+  };
+  q("[data-hb-restart]").onclick = () => {
+    current = 0;
+    localScore = 0;
+    orders = 0;
+    helpfulness = 50;
+    q("[data-hb-end]").classList.add("hidden");
+    loadCustomer();
+  };
+  q("[data-hb-serve]").onclick = serveOrder;
+  q("[data-hb-next]").onclick = nextCustomer;
+
+  function loadCustomer() {
+    const customer = customers[current];
+    selectedNeed = null;
+    selectedHelp = null;
+    served = false;
+    q("[data-hb-card]").textContent = customer.card;
+    q("[data-hb-speech]").textContent = customer.speech;
+    q("[data-hb-customer]").textContent = customer.emoji;
+    q("[data-hb-tray]").textContent = "🍽️";
+    q("[data-hb-label]").textContent = "No help order prepared yet";
+    q("[data-hb-feedback]").textContent = "Choose the need first, then choose the best helping action.";
+    renderNeedOptions();
+    renderHelpOptions();
+    updateStats();
+    updateMeter();
+  }
+
+  function renderNeedOptions() {
+    const customer = customers[current];
+    q("[data-hb-needs]").innerHTML = "";
+    shuffle([customer.need, ...customer.wrongNeeds]).forEach((need) => {
+      const button = document.createElement("button");
+      button.className = "hb-option";
+      button.type = "button";
+      button.textContent = need;
+      button.onclick = () => {
+        if (served) return;
+        selectedNeed = need;
+        q("[data-hb-needs]").querySelectorAll(".hb-option").forEach((item) => item.classList.remove("selected"));
+        button.classList.add("selected");
+        q("[data-hb-feedback]").textContent = "Good. Now choose the action that matches this need.";
+      };
+      q("[data-hb-needs]").append(button);
+    });
+  }
+
+  function renderHelpOptions() {
+    const customer = customers[current];
+    q("[data-hb-helps]").innerHTML = "";
+    shuffle([customer.help, ...customer.wrongHelps]).forEach((help) => {
+      const button = document.createElement("button");
+      button.className = "hb-option";
+      button.type = "button";
+      button.textContent = help;
+      button.onclick = () => {
+        if (served) return;
+        selectedHelp = help;
+        q("[data-hb-helps]").querySelectorAll(".hb-option").forEach((item) => item.classList.remove("selected"));
+        button.classList.add("selected");
+        q("[data-hb-label]").textContent = "Help order prepared";
+        q("[data-hb-feedback]").textContent = "Action chosen. Serve the help order to see if it works.";
+      };
+      q("[data-hb-helps]").append(button);
+    });
+  }
+
+  function serveOrder() {
+    if (served) {
+      q("[data-hb-feedback]").textContent = "This order has already been served. Move to the next customer.";
+      return;
+    }
+    if (!selectedNeed || !selectedHelp) {
+      q("[data-hb-feedback]").textContent = "Choose both the real need and the helping action before serving.";
+      return;
+    }
+    const customer = customers[current];
+    const needCorrect = selectedNeed === customer.need;
+    const helpCorrect = selectedHelp === customer.help;
+    served = true;
+    if (needCorrect && helpCorrect) {
+      localScore += 100;
+      orders += 1;
+      helpfulness += 18;
+      q("[data-hb-tray]").textContent = customer.tray;
+      q("[data-hb-customer]").style.transform = "scale(1.08)";
+      q("[data-hb-feedback]").textContent = "Perfect help order! You noticed the real need and chose help that matched it.";
+      state.streak += 1;
+      spark("🥐");
+    } else if (needCorrect && !helpCorrect) {
+      localScore += 55;
+      helpfulness += 4;
+      q("[data-hb-tray]").textContent = "🥖";
+      q("[data-hb-feedback]").textContent = "You understood the need, but the action did not fully help. Good helpers match their action to the person's need.";
+      state.streak = 0;
+    } else if (!needCorrect && helpCorrect) {
+      localScore += 45;
+      helpfulness += 2;
+      q("[data-hb-tray]").textContent = "🍞";
+      q("[data-hb-feedback]").textContent = "The action was kind, but you misread the need. Look for clues in words, tone, and behavior.";
+      state.streak = 0;
+    } else {
+      localScore += 10;
+      helpfulness -= 14;
+      q("[data-hb-tray]").textContent = "🥀";
+      q("[data-hb-customer]").style.transform = "rotate(-4deg)";
+      q("[data-hb-feedback]").textContent = `That help did not match. This customer needed: ${customer.need}.`;
+      state.streak = 0;
+    }
+    state.score = localScore;
+    updateStats();
+    updateMeter();
+    sync();
+    setTimeout(() => { q("[data-hb-customer]").style.transform = "none"; }, 500);
+  }
+
+  function nextCustomer() {
+    if (!served) {
+      q("[data-hb-feedback]").textContent = "Serve the help order before moving to the next customer.";
+      return;
+    }
+    current += 1;
+    if (current >= customers.length) endGame();
+    else loadCustomer();
+  }
+
+  function updateStats() {
+    q("[data-hb-round]").textContent = Math.min(current + 1, customers.length);
+    q("[data-hb-score]").textContent = localScore;
+    q("[data-hb-orders]").textContent = orders;
+  }
+
+  function updateMeter() {
+    helpfulness = Math.max(0, Math.min(100, helpfulness));
+    q("[data-hb-help-fill]").style.width = `${helpfulness}%`;
+    q("[data-hb-help-text]").textContent = `${Math.round(helpfulness)}%`;
+  }
+
+  function endGame() {
+    let title = "Bakery Complete!";
+    let message = "";
+    if (localScore >= 430) {
+      title = "Master Helper!";
+      message = `Amazing work! Your score was ${localScore}. You noticed what people actually needed and gave help that matched.`;
+    } else if (localScore >= 300) {
+      title = "Kind Helper!";
+      message = `Great job! Your score was ${localScore}. You are learning that helpfulness means listening for the real need.`;
+    } else {
+      title = "Helping Apprentice!";
+      message = `Your score was ${localScore}. Keep practicing. Before helping, ask: what does this person actually need?`;
+    }
+    q("[data-hb-end-title]").textContent = title;
+    q("[data-hb-end-message]").textContent = message;
+    q("[data-hb-end]").classList.remove("hidden");
+    finish();
+  }
+
+  function spark(symbol) {
+    for (let i = 0; i < 14; i += 1) {
+      const sparkle = document.createElement("div");
+      sparkle.className = "hb-spark";
+      sparkle.textContent = symbol;
+      sparkle.style.left = `${Math.random() * 85 + 8}%`;
+      sparkle.style.top = `${Math.random() * 60 + 18}%`;
+      q(".helping-bakery-game").append(sparkle);
+      setTimeout(() => sparkle.remove(), 850);
+    }
+  }
 }
 
 function renderTruthTimeline(arena, data) {
