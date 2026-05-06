@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=35";
-import { RewardSystem, SHOP_ITEMS, CURRENT_EVENT } from "../systems/RewardSystem.js?v=35";
+import { PlayerData } from "../systems/PlayerData.js?v=43";
+import { RewardSystem, SHOP_ITEMS, CURRENT_EVENT } from "../systems/RewardSystem.js?v=43";
 
 const CATEGORIES = ["outfits", "capes", "crowns", "pets", "trails", "room", "effects"];
 
@@ -11,9 +11,10 @@ export class ShopScene extends Phaser.Scene {
   create() {
     this.category = "outfits";
     this.cameras.main.setBackgroundColor("#3d2466");
-    this.add.rectangle(480, 270, 960, 540, 0x3d2466);
+    this.add.rectangle(480, 380, 960, 760, 0x3d2466);
     this.add.circle(840, 95, 76, 0xffd166, 0.88);
-    this.panel = this.add.dom(480, 282).createFromHTML(`<div class="kk-reward-panel"></div>`);
+    this.panel = this.add.dom(480, 380).createFromHTML(`<div class="kk-reward-panel"></div>`);
+    this.enablePanelScroll();
     this.render();
   }
 
@@ -28,7 +29,10 @@ export class ShopScene extends Phaser.Scene {
           <h2>Spend points on rewards</h2>
           <p>${CURRENT_EVENT.name}: ${CURRENT_EVENT.description}</p>
         </div>
-        <strong>${progress.points} pts</strong>
+        <div class="kk-head-actions">
+          <strong>${progress.points} pts</strong>
+          <button data-nav="dashboard" class="kk-home-button">Back to Home</button>
+        </div>
       </div>
       <div class="kk-tabs">
         ${CATEGORIES.map((category) => `<button data-category="${category}" class="${category === this.category ? "active" : ""}">${label(category)}</button>`).join("")}
@@ -39,7 +43,7 @@ export class ShopScene extends Phaser.Scene {
           const equipped = rewards.equipped[item.category] === item.id;
           return `
             <article class="kk-shop-item ${owned ? "owned" : ""}">
-              <div class="kk-item-icon" style="--item-color:#${item.color.toString(16).padStart(6, "0")}">${item.icon}</div>
+              ${itemIcon(item)}
               <h3>${item.name}</h3>
               <p>${item.description}</p>
               <small>${owned ? "Owned" : `${item.price} points`}</small>
@@ -80,6 +84,27 @@ export class ShopScene extends Phaser.Scene {
     });
   }
 
+  enablePanelScroll() {
+    const node = this.panel.node;
+    node.addEventListener("wheel", (event) => {
+      node.scrollTop += event.deltaY;
+      event.preventDefault();
+      event.stopPropagation();
+    }, { passive: false });
+
+    let lastY = 0;
+    node.addEventListener("touchstart", (event) => {
+      lastY = event.touches[0]?.clientY || 0;
+    }, { passive: true });
+    node.addEventListener("touchmove", (event) => {
+      const y = event.touches[0]?.clientY || lastY;
+      node.scrollTop += lastY - y;
+      lastY = y;
+      event.preventDefault();
+      event.stopPropagation();
+    }, { passive: false });
+  }
+
   navigate(target) {
     if (target === "closet") this.scene.start("ClosetScene");
     if (target === "room") this.scene.start("PlayerRoomScene");
@@ -89,4 +114,8 @@ export class ShopScene extends Phaser.Scene {
 
 function label(category) {
   return category.replace(/^\w/, (letter) => letter.toUpperCase());
+}
+
+function itemIcon(item) {
+  return `<div class="kk-item-icon" style="--item-color:#${item.color.toString(16).padStart(6, "0")}">${item.asset ? `<img src="${item.asset}" alt="">` : `<span>${item.icon}</span>`}</div>`;
 }

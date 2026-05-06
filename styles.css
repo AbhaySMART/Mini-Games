@@ -27,7 +27,7 @@ button { cursor: pointer; }
 
 .kingdom-world-page {
   min-height: 100vh;
-  overflow: hidden;
+  overflow: auto;
   background:
     radial-gradient(circle at 16% 14%, rgba(255,255,255,.5), transparent 14%),
     radial-gradient(circle at 84% 12%, rgba(255,255,255,.38), transparent 16%),
@@ -38,6 +38,7 @@ button { cursor: pointer; }
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: center;
   gap: 12px;
   padding: 14px;
 }
@@ -93,7 +94,7 @@ button { cursor: pointer; }
 
 .phaser-game-shell {
   width: min(1120px, 100%);
-  min-height: 0;
+  min-height: 760px;
   margin: 0 auto;
   border: 5px solid #fff;
   border-radius: 28px;
@@ -213,17 +214,36 @@ button { cursor: pointer; }
 
 .kk-reward-panel {
   width: 900px;
-  max-height: 500px;
-  overflow: auto;
+  max-height: 700px;
+  overflow-x: hidden;
+  overflow-y: scroll;
   border: 4px solid rgba(255,255,255,.92);
-  border-radius: 28px;
+  border-radius: 24px;
   background:
     linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,249,235,.94)),
     radial-gradient(circle at 18% 0, rgba(255,209,102,.38), transparent 28%);
   box-shadow: 0 24px 54px rgba(27,15,58,.34);
-  padding: 18px;
+  padding: 14px;
   font-family: "Nunito", Arial, sans-serif;
   color: #2d174d;
+  touch-action: none;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-color: #7b4dff rgba(255,255,255,.45);
+  scrollbar-width: thin;
+}
+
+.kk-reward-panel::-webkit-scrollbar {
+  width: 10px;
+}
+
+.kk-reward-panel::-webkit-scrollbar-track {
+  background: rgba(255,255,255,.45);
+  border-radius: 999px;
+}
+
+.kk-reward-panel::-webkit-scrollbar-thumb {
+  background: #7b4dff;
+  border-radius: 999px;
 }
 
 .kk-reward-panel.room {
@@ -233,12 +253,18 @@ button { cursor: pointer; }
 }
 
 .kk-panel-head {
+  position: sticky;
+  top: -14px;
+  z-index: 5;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
+  margin: -14px -14px 0;
+  padding: 14px 14px 9px;
   border-bottom: 3px solid rgba(90,45,160,.14);
-  padding-bottom: 12px;
+  background: rgba(255,255,255,.96);
+  border-radius: 20px 20px 0 0;
 }
 
 .kk-panel-head span {
@@ -247,23 +273,31 @@ button { cursor: pointer; }
   font-weight: 1000;
   text-transform: uppercase;
   letter-spacing: .08em;
-  font-size: .75rem;
+  font-size: .7rem;
 }
 
 .kk-panel-head h2 {
   margin: 0;
   color: #2d174d;
   font-family: "Berkshire Swash", Georgia, serif;
-  font-size: 2.1rem;
+  font-size: 1.7rem;
   line-height: 1;
 }
 
 .kk-panel-head p {
-  max-width: 660px;
-  margin: 6px 0 0;
-  color: #645487;
-  font-weight: 900;
-  line-height: 1.3;
+  max-width: 650px;
+  margin: 4px 0 0;
+  color: #3f315f;
+  font-size: .84rem;
+  font-weight: 950;
+  line-height: 1.22;
+}
+
+.kk-head-actions {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+  flex: 0 0 auto;
 }
 
 .kk-panel-head strong {
@@ -271,8 +305,19 @@ button { cursor: pointer; }
   border-radius: 999px;
   background: #fff2a8;
   color: #4a3000;
-  padding: 10px 14px;
+  padding: 8px 12px;
   box-shadow: inset 0 0 0 3px rgba(255,255,255,.75);
+}
+
+.kk-home-button {
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2ec4b6, #77e5dc);
+  color: #053f3b;
+  padding: 8px 11px;
+  font-weight: 1000;
+  box-shadow: 0 4px 0 #1b8f85;
+  white-space: nowrap;
 }
 
 .kk-tabs,
@@ -280,8 +325,8 @@ button { cursor: pointer; }
 .kk-title-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 14px;
+  gap: 7px;
+  margin-top: 10px;
 }
 
 .kk-tabs button,
@@ -293,10 +338,11 @@ button { cursor: pointer; }
   border: 0;
   border-radius: 999px;
   background: #e9ddff;
-  color: #4d2c83;
-  padding: 9px 12px;
+  color: #32195f;
+  padding: 7px 10px;
   font-weight: 1000;
   box-shadow: 0 4px 0 #bca9e8;
+  line-height: 1.1;
 }
 
 .kk-tabs button.active,
@@ -313,25 +359,36 @@ button { cursor: pointer; }
   box-shadow: 0 5px 0 #3f1f75;
 }
 
+.kk-panel-actions {
+  position: sticky;
+  bottom: -14px;
+  z-index: 4;
+  margin: 10px -14px -14px;
+  padding: 10px 14px 14px;
+  background: rgba(255,255,255,.96);
+  border-top: 3px solid rgba(90,45,160,.14);
+  border-radius: 0 0 20px 20px;
+}
+
 .kk-shop-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .kk-shop-grid.compact {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .kk-shop-item {
-  min-height: 190px;
+  min-height: 160px;
   border: 3px solid rgba(90,45,160,.16);
-  border-radius: 18px;
-  background: rgba(255,255,255,.78);
-  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.9);
+  padding: 9px;
   display: grid;
-  gap: 7px;
+  gap: 5px;
   align-content: start;
   box-shadow: 0 10px 18px rgba(45,23,77,.1);
 }
@@ -342,31 +399,39 @@ button { cursor: pointer; }
 }
 
 .kk-item-icon {
-  width: 54px;
-  height: 54px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
-  border-radius: 18px;
+  border-radius: 14px;
   background: #f0eaff;
   background: color-mix(in srgb, var(--item-color), white 72%);
   box-shadow: inset 0 0 0 3px rgba(255,255,255,.85), 0 8px 16px rgba(0,0,0,.1);
-  font-size: 28px;
+  font-size: 24px;
+}
+
+.kk-item-icon img {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
 }
 
 .kk-shop-item h3 {
   margin: 0;
   color: #2d174d;
-  font-size: 1rem;
+  font-size: .9rem;
   line-height: 1.08;
 }
 
 .kk-shop-item p {
-  min-height: 50px;
+  min-height: 46px;
+  max-height: none;
+  overflow: visible;
   margin: 0;
-  color: #67567c;
-  font-size: .82rem;
-  font-weight: 850;
-  line-height: 1.25;
+  color: #45335f;
+  font-size: .74rem;
+  font-weight: 950;
+  line-height: 1.18;
 }
 
 .kk-shop-item small,
@@ -374,26 +439,28 @@ button { cursor: pointer; }
 .kk-badges small,
 .kk-pass small {
   display: block;
-  font-size: .72rem;
+  font-size: .68rem;
   font-weight: 1000;
+  color: #38215f;
 }
 
 .kk-panel-message {
-  margin-top: 14px;
+  margin-top: 10px;
   border: 2px solid #ffd166;
-  border-radius: 16px;
+  border-radius: 14px;
   background: #fff9e8;
-  color: #654707;
-  padding: 10px 12px;
+  color: #4b3300;
+  padding: 8px 10px;
   font-weight: 1000;
+  line-height: 1.2;
 }
 
 .kk-closet-preview,
 .kk-room-grid {
   display: grid;
   grid-template-columns: .82fr 1.18fr;
-  gap: 14px;
-  margin-top: 14px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .kk-avatar-preview,
@@ -403,27 +470,34 @@ button { cursor: pointer; }
 .kk-pass,
 .kk-event-card {
   border: 3px solid rgba(255,255,255,.82);
-  border-radius: 20px;
-  background: rgba(255,255,255,.72);
-  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.88);
+  padding: 10px;
   box-shadow: 0 10px 18px rgba(45,23,77,.1);
 }
 
 .kk-avatar-preview {
   display: grid;
   place-items: center;
-  min-height: 155px;
+  min-height: 112px;
   background: radial-gradient(circle, #fff2a8, #dff8ff);
 }
 
-.kk-avatar-preview > span {
-  font-size: 72px;
+.kk-hero-sprite {
+  width: 80px;
+  height: 80px;
+  background-image: url("assets/sprites/third-party/grafxkid-rpg-assets.png");
+  background-size: 640px 640px;
+  background-position: var(--hero-x) var(--hero-y);
+  image-rendering: pixelated;
+  filter: drop-shadow(0 8px 8px rgba(45,23,77,.22));
 }
 
 .kk-equipped-list p {
-  margin: 6px 0;
-  color: #4d2c83;
-  font-weight: 900;
+  margin: 4px 0;
+  color: #32195f;
+  font-size: .86rem;
+  font-weight: 1000;
 }
 
 .kk-empty {
@@ -441,7 +515,7 @@ button { cursor: pointer; }
 }
 
 .kk-room-space {
-  min-height: 255px;
+  min-height: 292px;
   background:
     linear-gradient(180deg, rgba(255,238,204,.82) 0 54%, rgba(130,76,45,.85) 54% 100%);
   overflow: hidden;
@@ -449,29 +523,45 @@ button { cursor: pointer; }
 
 .kk-room-wall h3,
 .kk-side-board h3 {
-  margin: 0 0 8px;
-  color: #5a2da0;
+  margin: 0 0 6px;
+  color: #32195f;
   font-family: "Berkshire Swash", Georgia, serif;
-  font-size: 1.35rem;
+  font-size: 1.12rem;
 }
 
 .kk-badges,
 .kk-room-floor {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .kk-badges span,
 .kk-room-floor span {
-  min-width: 82px;
-  border-radius: 16px;
+  min-width: 68px;
+  max-width: 96px;
+  border-radius: 13px;
   background: rgba(255,255,255,.82);
-  padding: 8px;
+  padding: 6px;
   text-align: center;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 1000;
   box-shadow: inset 0 0 0 2px rgba(90,45,160,.08);
+}
+
+.kk-badges span b,
+.kk-room-floor span b {
+  display: grid;
+  place-items: center;
+  min-height: 28px;
+  color: #32195f;
+  font-size: .8rem;
+}
+
+.kk-room-floor img {
+  width: 34px;
+  height: 34px;
+  image-rendering: pixelated;
 }
 
 .kk-badges span.unlocked {
@@ -480,7 +570,7 @@ button { cursor: pointer; }
 }
 
 .kk-room-floor {
-  margin-top: 22px;
+  margin-top: 14px;
   align-items: flex-end;
 }
 
@@ -491,59 +581,67 @@ button { cursor: pointer; }
 
 .kk-side-board {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .kk-side-board button {
   display: grid;
-  gap: 4px;
-  border-radius: 16px;
+  gap: 2px;
+  border-radius: 13px;
   background: #fff2d5;
-  color: #6a3a0a;
+  color: #4e2b05;
   text-align: left;
   box-shadow: 0 4px 0 #dfad68;
+  font-size: .78rem;
 }
 
 .kk-side-board p {
   margin: 0;
-  color: #514064;
-  font-weight: 900;
-  line-height: 1.25;
+  color: #332247;
+  font-size: .8rem;
+  font-weight: 1000;
+  line-height: 1.2;
 }
 
 .kk-pass {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .kk-pass > div {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 8px;
+  gap: 6px;
+  margin-top: 6px;
 }
 
 .kk-pass button {
-  border-radius: 16px;
-  min-height: 56px;
+  border-radius: 13px;
+  min-height: 48px;
+  font-size: .75rem;
 }
 
 .kk-pass button:disabled {
   cursor: default;
-  opacity: .64;
+  opacity: .78;
+  color: #38215f;
 }
 
 .kk-shop-item button:disabled {
   cursor: default;
-  opacity: .66;
+  opacity: .78;
+  color: #38215f;
 }
 
 .kk-event-card {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  margin-top: 12px;
+  margin-top: 10px;
   background: linear-gradient(135deg, #2d174d, #5a2da0);
   color: #fff;
+  font-size: .84rem;
+  font-weight: 950;
+  line-height: 1.2;
 }
 
 .kk-event-card b {

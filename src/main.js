@@ -1,20 +1,20 @@
-import { LoginScene } from "./scenes/LoginScene.js?v=35";
-import { DashboardScene } from "./scenes/DashboardScene.js?v=35";
-import { BootScene } from "./scenes/BootScene.js?v=35";
-import { CharacterSelectScene } from "./scenes/CharacterSelectScene.js?v=35";
-import { KingdomMapScene } from "./scenes/KingdomMapScene.js?v=35";
-import { MiniGameLauncherScene } from "./scenes/MiniGameLauncherScene.js?v=35";
-import { ShopScene } from "./scenes/ShopScene.js?v=35";
-import { ClosetScene } from "./scenes/ClosetScene.js?v=35";
-import { PlayerRoomScene } from "./scenes/PlayerRoomScene.js?v=35";
+import { LoginScene } from "./scenes/LoginScene.js?v=43";
+import { DashboardScene } from "./scenes/DashboardScene.js?v=43";
+import { BootScene } from "./scenes/BootScene.js?v=43";
+import { CharacterSelectScene } from "./scenes/CharacterSelectScene.js?v=43";
+import { KingdomMapScene } from "./scenes/KingdomMapScene.js?v=43";
+import { MiniGameLauncherScene } from "./scenes/MiniGameLauncherScene.js?v=43";
+import { ShopScene } from "./scenes/ShopScene.js?v=43";
+import { ClosetScene } from "./scenes/ClosetScene.js?v=43";
+import { PlayerRoomScene } from "./scenes/PlayerRoomScene.js?v=43";
 
 const config = {
   type: Phaser.AUTO,
   parent: "game",
   width: 960,
-  height: 540,
+  height: 760,
   backgroundColor: "#8fd3ff",
-  pixelArt: false,
+  pixelArt: true,
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH

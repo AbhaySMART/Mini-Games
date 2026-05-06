@@ -1,7 +1,7 @@
-import { AuthSystem } from "../systems/AuthSystem.js?v=35";
-import { PlayerData } from "../systems/PlayerData.js?v=35";
-import { QuestSystem } from "../systems/QuestSystem.js?v=35";
-import { RewardSystem, CURRENT_EVENT } from "../systems/RewardSystem.js?v=35";
+import { AuthSystem } from "../systems/AuthSystem.js?v=43";
+import { PlayerData } from "../systems/PlayerData.js?v=43";
+import { QuestSystem } from "../systems/QuestSystem.js?v=43";
+import { RewardSystem, CURRENT_EVENT } from "../systems/RewardSystem.js?v=43";
 
 const HERO_NAMES = {
   knight: "Kind Knight",
@@ -11,10 +11,10 @@ const HERO_NAMES = {
 };
 
 const HERO_ICONS = {
-  knight: "🧒",
-  mage: "🧙",
-  ranger: "🧑‍🌾",
-  bard: "🧑‍🎤"
+  knight: "Hero I",
+  mage: "Hero II",
+  ranger: "Hero III",
+  bard: "Hero IV"
 };
 
 export class DashboardScene extends Phaser.Scene {
@@ -31,19 +31,21 @@ export class DashboardScene extends Phaser.Scene {
     const title = RewardSystem.equippedTitle();
 
     this.cameras.main.setBackgroundColor("#6fb7ff");
-    this.add.rectangle(480, 270, 960, 540, 0x6fb7ff);
-    this.add.rectangle(480, 330, 960, 420, 0xb9ef9a);
-    this.add.circle(820, 116, 72, 0xffd166, 0.94);
+    this.add.rectangle(480, 380, 960, 760, 0x6fb7ff);
+    this.add.rectangle(480, 505, 960, 510, 0xb9ef9a);
+    this.add.circle(820, 145, 72, 0xffd166, 0.94);
 
-    this.add.text(60, 42, `Welcome, ${user}`, {
+    this.add.text(480, 82, `Welcome, ${user}`, {
       fontFamily: "Berkshire Swash, Georgia, serif",
       fontSize: "44px",
       color: "#ffffff",
       stroke: "#4d2c83",
-      strokeThickness: 7
-    });
+      strokeThickness: 7,
+      align: "center",
+      wordWrap: { width: 830 }
+    }).setOrigin(0.5, 0);
 
-    this.add.text(62, 100, `Your dashboard • ${title.name}`, {
+    this.add.text(62, 145, `Your dashboard • ${title.name}`, {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "20px",
       color: "#2d174d",
@@ -52,19 +54,19 @@ export class DashboardScene extends Phaser.Scene {
     });
 
     const updatedProgress = PlayerData.loadProgress();
-    this.createStatCard(142, 205, "Kindness Points", String(updatedProgress.points), "✨");
-    this.createStatCard(362, 205, "Completed", String(progress.completed.length), "✅");
-    this.createStatCard(582, 205, "Hero", player.character ? HERO_NAMES[player.character] : "Choose one", HERO_ICONS[player.character] || "👤");
-    this.createStatCard(802, 205, "Pass Level", String(RewardSystem.passLevel()), "🎟️");
+    this.createStatCard(142, 285, "Kindness Points", String(updatedProgress.points), "KP");
+    this.createStatCard(362, 285, "Completed", String(progress.completed.length), "DONE");
+    this.createStatCard(582, 285, "Hero", player.character ? HERO_NAMES[player.character] : "Choose one", HERO_ICONS[player.character] || "HERO");
+    this.createStatCard(802, 285, "Pass Level", String(RewardSystem.passLevel()), "LVL");
 
-    this.add.text(480, 298, `${activeQuest.npc}: ${activeQuest.prompt}`, {
+    this.add.text(480, 405, `${activeQuest.npc}: ${activeQuest.prompt}`, {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "18px",
       color: "#2d174d",
       align: "center",
       wordWrap: { width: 760 }
     }).setOrigin(0.5);
-    this.add.text(480, 336, `${CURRENT_EVENT.name}: ${CURRENT_EVENT.description}${streak.awarded ? ` Daily login reward claimed.` : ""}`, {
+    this.add.text(480, 452, `${CURRENT_EVENT.name}: ${CURRENT_EVENT.description}${streak.awarded ? ` Daily login reward claimed.` : ""}`, {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "16px",
       color: "#4d2c83",
@@ -72,17 +74,17 @@ export class DashboardScene extends Phaser.Scene {
       wordWrap: { width: 800 }
     }).setOrigin(0.5);
 
-    this.makeButton(176, 392, "Begin Gameplay", 0x5a2da0, () => {
+    this.makeButton(176, 555, "Begin Gameplay", 0x5a2da0, () => {
       this.scene.start(player.character ? "KingdomMapScene" : "CharacterSelectScene");
     });
-    this.makeButton(384, 392, "Shop", 0xff9f1c, () => this.scene.start("ShopScene"));
-    this.makeButton(556, 392, "Closet", 0x2ec4b6, () => this.scene.start("ClosetScene"));
-    this.makeButton(744, 392, "My Room", 0x7b4dff, () => this.scene.start("PlayerRoomScene"));
-    this.makeButton(254, 470, "Choose Character", 0x2ec4b6, () => this.scene.start("CharacterSelectScene", { returnToDashboard: true }));
-    this.makeButton(480, 470, "Card View", 0xff9f1c, () => {
+    this.makeButton(384, 555, "Shop", 0xff9f1c, () => this.scene.start("ShopScene"));
+    this.makeButton(556, 555, "Closet", 0x2ec4b6, () => this.scene.start("ClosetScene"));
+    this.makeButton(744, 555, "My Room", 0x7b4dff, () => this.scene.start("PlayerRoomScene"));
+    this.makeButton(254, 645, "Choose Character", 0x2ec4b6, () => this.scene.start("CharacterSelectScene", { returnToDashboard: true }));
+    this.makeButton(480, 645, "Card View", 0xff9f1c, () => {
       window.location.href = "card-view.html";
     });
-    this.makeButton(704, 470, "Log Out", 0x3d315b, () => {
+    this.makeButton(704, 645, "Log Out", 0x3d315b, () => {
       AuthSystem.logout();
       this.scene.start("LoginScene");
     });
@@ -90,7 +92,13 @@ export class DashboardScene extends Phaser.Scene {
 
   createStatCard(x, y, label, value, icon) {
     this.add.rectangle(x, y, 185, 112, 0xffffff, 0.92).setStrokeStyle(4, 0x5a2da0);
-    this.add.text(x, y - 28, icon, { fontSize: "32px" }).setOrigin(0.5);
+    this.add.text(x, y - 30, icon, {
+      fontFamily: "Nunito, Arial, sans-serif",
+      fontSize: icon.length > 3 ? "18px" : "24px",
+      color: "#4d2c83",
+      fontStyle: "bold",
+      align: "center"
+    }).setOrigin(0.5);
     this.add.text(x, y + 4, value, {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "18px",

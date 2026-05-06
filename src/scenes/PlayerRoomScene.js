@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=35";
-import { RewardSystem, SHOP_ITEMS, BADGES, CURRENT_EVENT } from "../systems/RewardSystem.js?v=35";
+import { PlayerData } from "../systems/PlayerData.js?v=43";
+import { RewardSystem, SHOP_ITEMS, BADGES, CURRENT_EVENT } from "../systems/RewardSystem.js?v=43";
 
 export class PlayerRoomScene extends Phaser.Scene {
   constructor() {
@@ -8,8 +8,9 @@ export class PlayerRoomScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor("#6d4b8d");
-    this.add.rectangle(480, 270, 960, 540, 0x6d4b8d);
-    this.panel = this.add.dom(480, 282).createFromHTML(`<div class="kk-reward-panel room"></div>`);
+    this.add.rectangle(480, 380, 960, 760, 0x6d4b8d);
+    this.panel = this.add.dom(480, 380).createFromHTML(`<div class="kk-reward-panel room"></div>`);
+    this.enablePanelScroll();
     this.render();
   }
 
@@ -27,7 +28,10 @@ export class PlayerRoomScene extends Phaser.Scene {
           <h2>Your castle room</h2>
           <p>Decorations, badges, daily quests, streaks, events, and Kingdom Pass progress live here.</p>
         </div>
-        <strong>${progress.points} pts</strong>
+        <div class="kk-head-actions">
+          <strong>${progress.points} pts</strong>
+          <button data-nav="dashboard" class="kk-home-button">Back to Home</button>
+        </div>
       </div>
       <div class="kk-room-grid">
         <section class="kk-room-space">
@@ -36,13 +40,13 @@ export class PlayerRoomScene extends Phaser.Scene {
             <div class="kk-badges">
               ${BADGES.map((badge) => {
                 const unlocked = badges.some((item) => item.id === badge.id);
-                return `<span class="${unlocked ? "unlocked" : ""}" title="${badge.name}">${unlocked ? badge.icon : "🔒"}<small>${badge.name}</small></span>`;
+                return `<span class="${unlocked ? "unlocked" : ""}" title="${badge.name}"><b>${unlocked ? badge.icon : "LOCK"}</b><small>${badge.name}</small></span>`;
               }).join("")}
             </div>
           </div>
           <div class="kk-room-floor">
-            ${roomItems.map((item) => `<span style="--item-color:#${item.color.toString(16).padStart(6, "0")}">${item.icon}<small>${item.name}</small></span>`).join("")}
-            <span>${RewardSystem.equippedItem("pets")?.icon || "🧸"}<small>Pet Bed</small></span>
+            ${roomItems.map((item) => `<span style="--item-color:#${item.color.toString(16).padStart(6, "0")}">${roomIcon(item)}<small>${item.name}</small></span>`).join("")}
+            <span>${petIcon(RewardSystem.equippedItem("pets"))}<small>Pet Bed</small></span>
           </div>
         </section>
         <section class="kk-side-board">
@@ -93,9 +97,38 @@ export class PlayerRoomScene extends Phaser.Scene {
     });
   }
 
+  enablePanelScroll() {
+    const node = this.panel.node;
+    node.addEventListener("wheel", (event) => {
+      node.scrollTop += event.deltaY;
+      event.preventDefault();
+      event.stopPropagation();
+    }, { passive: false });
+
+    let lastY = 0;
+    node.addEventListener("touchstart", (event) => {
+      lastY = event.touches[0]?.clientY || 0;
+    }, { passive: true });
+    node.addEventListener("touchmove", (event) => {
+      const y = event.touches[0]?.clientY || lastY;
+      node.scrollTop += lastY - y;
+      lastY = y;
+      event.preventDefault();
+      event.stopPropagation();
+    }, { passive: false });
+  }
+
   navigate(target) {
     if (target === "shop") this.scene.start("ShopScene");
     if (target === "closet") this.scene.start("ClosetScene");
     if (target === "dashboard") this.scene.start("DashboardScene");
   }
+}
+
+function roomIcon(item) {
+  return item.asset ? `<img src="${item.asset}" alt="">` : `<b>${item.icon}</b>`;
+}
+
+function petIcon(pet) {
+  return pet?.asset ? `<img src="${pet.asset}" alt="">` : "<b>PB</b>";
 }

@@ -1,8 +1,8 @@
-import { AuthSystem } from "../systems/AuthSystem.js?v=35";
-import { PlayerData } from "../systems/PlayerData.js?v=35";
-import { UnlockSystem, DEV_UNLOCK_ALL_GAMES } from "../systems/UnlockSystem.js?v=35";
-import { QuestSystem } from "../systems/QuestSystem.js?v=35";
-import { RewardSystem } from "../systems/RewardSystem.js?v=35";
+import { AuthSystem } from "../systems/AuthSystem.js?v=43";
+import { PlayerData } from "../systems/PlayerData.js?v=43";
+import { UnlockSystem, DEV_UNLOCK_ALL_GAMES } from "../systems/UnlockSystem.js?v=43";
+import { QuestSystem } from "../systems/QuestSystem.js?v=43";
+import { RewardSystem } from "../systems/RewardSystem.js?v=43";
 
 const WORLD_WIDTH = 3200;
 const WORLD_HEIGHT = 2100;
@@ -11,6 +11,21 @@ const HERO_COLORS = {
   mage: { body: 0x7b4dff, cape: 0x2ec4b6, trim: 0xfff2a8 },
   ranger: { body: 0x2d6a4f, cape: 0x95d5b2, trim: 0xfff2a8 },
   bard: { body: 0xd65d8c, cape: 0xffb4a2, trim: 0xffffff }
+};
+
+const HERO_FRAMES = {
+  knight: 0,
+  mage: 3,
+  ranger: 8,
+  bard: 32
+};
+
+const PET_SPRITES = {
+  "baby-dragon": "pet-baby-dragon",
+  "lantern-fox": "pet-lantern-fox",
+  "crystal-turtle": "pet-crystal-turtle",
+  "cloud-owl": "pet-cloud-owl",
+  "firefly-bunny": "pet-firefly-bunny"
 };
 
 const REGIONS = [
@@ -132,13 +147,20 @@ export class KingdomMapScene extends Phaser.Scene {
       image = this.add.image(0, -13, `game-${game.slug}`).setDisplaySize(96, 64).setAlpha(unlocked ? 0.92 : 0.36);
     }
     const windowFrame = this.add.rectangle(0, -13, 104, 72, 0xffffff, 0).setStrokeStyle(4, 0xffffff, unlocked ? 0.85 : 0.25);
-    const icon = this.add.text(0, 35, game.icon, { fontSize: "24px" }).setOrigin(0.5);
-    const done = complete ? this.add.text(48, -52, "✓", {
+    const seal = this.add.circle(0, 35, 17, complete ? 0x14746f : region.stroke, unlocked ? 0.95 : 0.36)
+      .setStrokeStyle(3, 0xffffff, unlocked ? 0.85 : 0.2);
+    const sealText = this.add.text(0, 35, portalCode(game), {
       fontFamily: "Nunito, Arial, sans-serif",
-      fontSize: "26px",
+      fontSize: "11px",
+      color: "#ffffff",
+      fontStyle: "bold"
+    }).setOrigin(0.5);
+    const done = complete ? this.add.text(48, -52, "DONE", {
+      fontFamily: "Nunito, Arial, sans-serif",
+      fontSize: "10px",
       color: "#ffffff",
       backgroundColor: "#14746f",
-      padding: { x: 7, y: 0 }
+      padding: { x: 5, y: 3 }
     }).setOrigin(0.5) : null;
     const label = this.add.text(0, 80, game.title, {
       fontFamily: "Nunito, Arial, sans-serif",
@@ -149,7 +171,7 @@ export class KingdomMapScene extends Phaser.Scene {
       align: "center",
       wordWrap: { width: 150 }
     }).setOrigin(0.5, 0);
-    portal.add([shadow, glow, foundation, tower, roof, roofTrim, ...(image ? [image] : []), windowFrame, icon, ...(done ? [done] : []), label]);
+    portal.add([shadow, glow, foundation, tower, roof, roofTrim, ...(image ? [image] : []), windowFrame, seal, sealText, ...(done ? [done] : []), label]);
     if (complete) {
       this.tweens.add({
         targets: glow,
@@ -166,7 +188,7 @@ export class KingdomMapScene extends Phaser.Scene {
     portal.on("pointerdown", () => this.openLauncher(game, index, unlocked, required));
     portal.on("pointerover", () => {
       portal.setScale(1.08);
-      this.hoverText.setText(`${game.icon} ${game.title}`);
+      this.hoverText.setText(game.title);
     });
     portal.on("pointerout", () => {
       portal.setScale(1);
@@ -181,13 +203,18 @@ export class KingdomMapScene extends Phaser.Scene {
 
   createNPCs() {
     const npcs = [
-      { x: 600, y: 305, icon: "💎", name: "Crystal Guide" },
-      { x: 1515, y: 310, icon: "🛡️", name: "Gate Keeper" },
-      { x: 2395, y: 325, icon: "📜", name: "Roundtable Page" }
+      { x: 600, y: 305, code: "CG", name: "Crystal Guide" },
+      { x: 1515, y: 310, code: "GK", name: "Gate Keeper" },
+      { x: 2395, y: 325, code: "RP", name: "Roundtable Page" }
     ];
     npcs.forEach((npc) => {
       const body = this.add.circle(npc.x, npc.y, 42, 0xffffff, 0.94).setStrokeStyle(5, 0x7b4dff).setDepth(30);
-      const icon = this.add.text(npc.x, npc.y - 4, npc.icon, { fontSize: "38px" }).setOrigin(0.5).setDepth(31);
+      const icon = this.add.text(npc.x, npc.y - 4, npc.code, {
+        fontFamily: "Nunito, Arial, sans-serif",
+        fontSize: "22px",
+        color: "#4d2c83",
+        fontStyle: "bold"
+      }).setOrigin(0.5).setDepth(31);
       const label = this.add.text(npc.x, npc.y + 50, npc.name, {
         fontFamily: "Nunito, Arial, sans-serif",
         fontSize: "15px",
@@ -211,31 +238,34 @@ export class KingdomMapScene extends Phaser.Scene {
 
   createHeroAvatar(character) {
     const colors = HERO_COLORS[character] || HERO_COLORS.knight;
-    const outfit = RewardSystem.equippedItem("outfits");
     const capeItem = RewardSystem.equippedItem("capes");
     const crown = RewardSystem.equippedItem("crowns");
     const avatar = this.add.container(this.player.x, this.player.y - 14).setDepth(900);
-    const shadow = this.add.ellipse(0, 42, 44, 14, 0x000000, 0.24);
-    const cape = this.add.triangle(0, 12, -24, 50, 24, 50, 0, -8, capeItem?.color || colors.cape, 0.92);
-    const body = this.add.rectangle(0, 20, 34, 45, outfit?.color || colors.body, 1).setStrokeStyle(4, colors.trim, 0.9);
-    const head = this.add.circle(0, -14, 19, 0xf2c9a0, 1).setStrokeStyle(3, 0x5a3b2e, 0.55);
-    const hair = this.add.arc(0, -22, 20, 190, 350, false, 0x4a2e1f, 1);
-    const face = this.add.circle(-6, -12, 2.4, 0x2d174d, 1);
-    const face2 = this.add.circle(6, -12, 2.4, 0x2d174d, 1);
-    const crownText = crown ? this.add.text(0, -39, crown.icon, { fontSize: "20px" }).setOrigin(0.5) : null;
-    avatar.add([shadow, cape, body, head, hair, face, face2, ...(crownText ? [crownText] : [])]);
+    this.heroFrame = HERO_FRAMES[character] ?? HERO_FRAMES.knight;
+    this.heroAnimationKey = `hero-${character}-walk`;
+
+    const shadow = this.add.ellipse(0, 30, 50, 16, 0x000000, 0.24);
+    const cape = this.add.triangle(0, 8, -24, 42, 24, 42, 0, -9, capeItem?.color || colors.cape, 0.85);
+    const sprite = this.add.sprite(0, 0, "kk-heroes", this.heroFrame).setScale(4.2);
+    const crownShape = crown ? this.add.triangle(0, -38, -14, -24, 14, -24, 0, -44, crown.color || 0xffd166, 1)
+      .setStrokeStyle(2, 0xffffff, 0.9) : null;
+    avatar.add([shadow, cape, sprite, ...(crownShape ? [crownShape] : [])]);
+    this.heroSprite = sprite;
     return avatar;
   }
 
   createPetCompanion() {
     const pet = RewardSystem.equippedItem("pets");
     if (!pet) return;
-    this.petCompanion = this.add.container(this.player.x - 48, this.player.y + 12).setDepth(880);
+    const texture = PET_SPRITES[pet.id] || "pet-lantern-fox";
+    this.petCompanion = this.add.container(this.player.x - 58, this.player.y + 22).setDepth(880);
     const glow = this.add.circle(0, 4, 22, pet.color, 0.2);
-    const body = this.add.circle(0, 0, 18, 0xffffff, 0.92).setStrokeStyle(4, pet.color, 0.9);
-    const icon = this.add.text(0, -2, pet.icon, { fontSize: "25px" }).setOrigin(0.5);
-    this.petCompanion.add([glow, body, icon]);
+    const sprite = this.add.image(0, 0, texture).setScale(3.15);
+    const sparkle = this.add.circle(18, -18, 4, 0xfff2a8, 0.75);
+    this.petCompanion.add([glow, sprite, sparkle]);
+    this.petSprite = sprite;
     this.tweens.add({ targets: this.petCompanion, y: "+=8", duration: 900, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    this.tweens.add({ targets: sparkle, alpha: 0.2, scale: 1.6, duration: 650, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
   }
 
   applyMapEffect() {
@@ -273,7 +303,7 @@ export class KingdomMapScene extends Phaser.Scene {
       align: "right",
       wordWrap: { width: 260 }
     }).setOrigin(1, 0);
-    this.hoverText = this.add.text(480, 500, "", {
+    this.hoverText = this.add.text(480, 690, "", {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "18px",
       color: "#2d174d",
@@ -281,11 +311,11 @@ export class KingdomMapScene extends Phaser.Scene {
       padding: { x: 12, y: 7 }
     }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
     this.hud.add([panel, this.pointsText, this.infoText, this.questText]);
-    this.createHudButton(82, 506, "Dashboard", () => this.scene.start("DashboardScene"));
-    this.createHudButton(238, 506, "Shop", () => this.scene.start("ShopScene"));
-    this.createHudButton(370, 506, "Closet", () => this.scene.start("ClosetScene"));
-    this.createHudButton(520, 506, "Room", () => this.scene.start("PlayerRoomScene"));
-    this.createHudButton(850, 506, "Card View", () => { window.location.href = "card-view.html"; });
+    this.createHudButton(82, 720, "Dashboard", () => this.scene.start("DashboardScene"));
+    this.createHudButton(238, 720, "Shop", () => this.scene.start("ShopScene"));
+    this.createHudButton(370, 720, "Closet", () => this.scene.start("ClosetScene"));
+    this.createHudButton(520, 720, "Room", () => this.scene.start("PlayerRoomScene"));
+    this.createHudButton(850, 720, "Card View", () => { window.location.href = "card-view.html"; });
     this.refreshHUD();
   }
 
@@ -339,6 +369,7 @@ export class KingdomMapScene extends Phaser.Scene {
     this.playerAura.setPosition(this.player.x, this.player.y + 12);
     this.playerAvatar.setPosition(this.player.x, this.player.y - 14);
     this.playerAvatar.setScale(this.player.body.velocity.x < 0 ? -1 : 1, 1);
+    this.updateHeroAnimation();
     this.updateTrail();
     this.updatePet();
     PlayerData.savePosition(this.player.x, this.player.y);
@@ -386,6 +417,18 @@ export class KingdomMapScene extends Phaser.Scene {
     const targetY = this.player.y + 28;
     this.petCompanion.x += (targetX - this.petCompanion.x) * 0.055;
     this.petCompanion.y += (targetY - this.petCompanion.y) * 0.055;
+    if (this.petSprite) this.petSprite.rotation = Math.sin(this.time.now / 180) * 0.07;
+    if (this.petSprite && this.player.body.velocity.x !== 0) this.petSprite.setFlipX(this.player.body.velocity.x > 0);
+  }
+
+  updateHeroAnimation() {
+    if (!this.heroSprite) return;
+    if (this.player.body.velocity.length() > 20) {
+      if (!this.heroSprite.anims.isPlaying) this.heroSprite.play(this.heroAnimationKey);
+      return;
+    }
+    this.heroSprite.stop();
+    this.heroSprite.setFrame(this.heroFrame);
   }
 
   updateMinimap() {
@@ -425,4 +468,11 @@ export class KingdomMapScene extends Phaser.Scene {
     this.scene.launch("MiniGameLauncherScene", { game, index, unlocked, required });
     this.scene.pause();
   }
+}
+
+function portalCode(game) {
+  const words = String(game.category || game.title || "KK")
+    .split(/[^a-z0-9]+/i)
+    .filter(Boolean);
+  return (words[0]?.slice(0, 2) || "KK").toUpperCase();
 }

@@ -1,5 +1,5 @@
-import { PlayerData } from "./PlayerData.js?v=35";
-import { userScopedKey } from "./AuthSystem.js?v=35";
+import { PlayerData } from "./PlayerData.js?v=43";
+import { userScopedKey } from "./AuthSystem.js?v=43";
 
 const QUEST_KEY = "kindKingdomQuests";
 

@@ -1,4 +1,4 @@
-import { AuthSystem } from "../systems/AuthSystem.js";
+import { AuthSystem } from "../systems/AuthSystem.js?v=43";
 
 export class LoginScene extends Phaser.Scene {
   constructor() {
@@ -7,11 +7,11 @@ export class LoginScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor("#3d2466");
-    this.add.rectangle(480, 270, 960, 540, 0x3d2466);
-    this.add.circle(130, 100, 120, 0xffd166, 0.18);
-    this.add.circle(840, 430, 170, 0x7bdff2, 0.18);
+    this.add.rectangle(480, 380, 960, 760, 0x3d2466);
+    this.add.circle(130, 145, 120, 0xffd166, 0.18);
+    this.add.circle(840, 610, 170, 0x7bdff2, 0.18);
 
-    this.add.text(480, 76, "Kind Kingdom", {
+    this.add.text(480, 130, "Kind Kingdom", {
       fontFamily: "Berkshire Swash, Georgia, serif",
       fontSize: "62px",
       color: "#ffffff",
@@ -19,13 +19,13 @@ export class LoginScene extends Phaser.Scene {
       strokeThickness: 8
     }).setOrigin(0.5);
 
-    this.add.text(480, 132, "Log in to save heroes, points, quests, and Skill XP.", {
+    this.add.text(480, 190, "Log in to save heroes, points, quests, and Skill XP.", {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "21px",
       color: "#fff8d6"
     }).setOrigin(0.5);
 
-    const form = this.add.dom(480, 300).createFromHTML(`
+    const form = this.add.dom(480, 430).createFromHTML(`
       <form class="kk-login-form">
         <label>
           <span>Username</span>

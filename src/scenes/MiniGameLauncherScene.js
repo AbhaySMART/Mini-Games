@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js";
-import { QuestSystem } from "../systems/QuestSystem.js";
+import { PlayerData } from "../systems/PlayerData.js?v=43";
+import { QuestSystem } from "../systems/QuestSystem.js?v=43";
 
 export class MiniGameLauncherScene extends Phaser.Scene {
   constructor() {
@@ -15,30 +15,31 @@ export class MiniGameLauncherScene extends Phaser.Scene {
     const progress = PlayerData.loadProgress();
     const quest = QuestSystem.getQuestForGame(game);
 
-    this.add.rectangle(480, 270, 960, 540, 0x160f29, 0.72);
-    const card = this.add.rectangle(480, 270, 650, 360, 0xffffff, 0.96)
+    this.add.rectangle(480, 380, 960, 760, 0x160f29, 0.72);
+    const card = this.add.rectangle(480, 380, 650, 410, 0xffffff, 0.96)
       .setStrokeStyle(6, unlocked ? 0xffd166 : 0x8d99ae);
-    this.add.text(480, 138, `${game.icon} ${game.title}`, {
+    this.add.text(480, 230, game.title, {
       fontFamily: "Berkshire Swash, Georgia, serif",
-      fontSize: "42px",
+      fontSize: "38px",
       color: "#4d2c83",
-      align: "center"
+      align: "center",
+      wordWrap: { width: 560 }
     }).setOrigin(0.5);
-    this.add.text(480, 190, game.lesson, {
+    this.add.text(480, 292, game.lesson, {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "20px",
       color: "#2d174d",
       align: "center",
       wordWrap: { width: 560 }
     }).setOrigin(0.5);
-    this.add.text(480, 250, quest ? `NPC Quest: ${quest.prompt}` : `Skill XP: ${game.category}`, {
+    this.add.text(480, 370, quest ? `NPC Quest: ${quest.prompt}` : `Skill XP: ${game.category}`, {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "17px",
       color: "#66517e",
       align: "center",
       wordWrap: { width: 540 }
     }).setOrigin(0.5);
-    this.add.text(480, 300, unlocked
+    this.add.text(480, 445, unlocked
       ? `Current points: ${progress.points}. Complete the quiz in the mini-game to earn more.`
       : `Locked. Earn ${Math.max(0, required - progress.points)} more Kindness Points.`,
     {
@@ -48,8 +49,8 @@ export class MiniGameLauncherScene extends Phaser.Scene {
       align: "center"
     }).setOrigin(0.5);
 
-    const enter = this.makeButton(370, 370, unlocked ? "Enter Game" : "Locked", unlocked ? 0x5a2da0 : 0x8d99ae);
-    const cancel = this.makeButton(590, 370, "Back to Map", 0x2ec4b6);
+    const enter = this.makeButton(370, 535, unlocked ? "Enter Game" : "Locked", unlocked ? 0x5a2da0 : 0x8d99ae);
+    const cancel = this.makeButton(590, 535, "Back to Map", 0x2ec4b6);
     enter.on("pointerdown", () => {
       if (!unlocked) return;
       window.location.href = `game.html?game=${game.slug}&return=map`;
