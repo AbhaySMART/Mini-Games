@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3200 2100">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#77cfff"/>
+      <stop offset="0.55" stop-color="#5bb7eb"/>
+      <stop offset="1" stop-color="#3d93c9"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d6f7b8"/>
+      <stop offset="0.55" stop-color="#9edc88"/>
+      <stop offset="1" stop-color="#6fb873"/>
+    </linearGradient>
+    <linearGradient id="woods" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9ae6ad"/>
+      <stop offset="1" stop-color="#2d8c5d"/>
+    </linearGradient>
+    <linearGradient id="crystal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8f2ff"/>
+      <stop offset="0.5" stop-color="#c8b6ff"/>
+      <stop offset="1" stop-color="#7b5fd6"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff1bd"/>
+      <stop offset="1" stop-color="#e4b16f"/>
+    </linearGradient>
+    <linearGradient id="moon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff2ff"/>
+      <stop offset="1" stop-color="#c7b5ff"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#1b163f" flood-opacity="0.28"/>
+    </filter>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="mapGrain" width="90" height="90" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="14" r="2" fill="#ffffff" opacity="0.14"/>
+      <circle cx="58" cy="33" r="1.4" fill="#2f4b37" opacity="0.08"/>
+      <circle cx="72" cy="70" r="2.2" fill="#ffffff" opacity="0.1"/>
+    </pattern>
+  </defs>
+
+  <rect width="3200" height="2100" fill="url(#sea)"/>
+  <path d="M-80 1180 C260 1090 470 1160 760 1050 C1020 955 1250 760 1580 820 C1900 880 2110 705 2390 760 C2730 825 2940 1015 3280 940 L3280 2220 L-80 2220 Z" fill="#2f91c4" opacity="0.5"/>
+  <path d="M120 330 C450 60 880 120 1130 250 C1410 395 1625 300 1910 210 C2230 110 2580 190 2825 430 C3070 670 2980 960 2710 1055 C2430 1155 2290 1030 2000 1150 C1690 1278 1490 1160 1210 1235 C870 1330 520 1240 260 1045 C-5 845 -105 540 120 330 Z" fill="url(#grass)" filter="url(#softShadow)"/>
+  <path d="M180 360 C430 150 810 180 1030 305 C1290 450 1515 420 1810 318 C2100 218 2460 300 2680 500 C2888 690 2802 896 2580 960 C2325 1035 2180 900 1902 1022 C1630 1142 1390 1025 1102 1110 C768 1210 475 1108 288 928 C92 740 5 505 180 360 Z" fill="url(#mapGrain)" opacity="0.55"/>
+
+  <path d="M690 255 C885 220 1080 285 1210 430 C1338 572 1308 750 1160 872 C980 1022 662 1038 438 890 C225 750 190 520 345 370 C430 288 560 270 690 255 Z" fill="#dff5b8" stroke="#77a96b" stroke-width="14" opacity="0.9"/>
+  <path d="M1395 230 C1625 118 1900 155 2050 320 C2220 506 2165 774 1945 910 C1705 1058 1386 1010 1238 810 C1075 590 1150 352 1395 230 Z" fill="url(#woods)" stroke="#24764d" stroke-width="14" opacity="0.96"/>
+  <path d="M2325 285 C2530 170 2795 250 2920 455 C3060 685 2910 935 2675 995 C2438 1056 2230 930 2168 735 C2110 552 2165 382 2325 285 Z" fill="url(#crystal)" stroke="#6f52c7" stroke-width="14" opacity="0.95"/>
+  <path d="M505 1160 C795 1035 1160 1100 1340 1325 C1505 1530 1370 1815 1080 1900 C770 1995 395 1875 230 1605 C110 1410 235 1270 505 1160 Z" fill="url(#sand)" stroke="#c48c55" stroke-width="14" opacity="0.96"/>
+  <path d="M1665 1165 C1960 1038 2375 1105 2585 1328 C2790 1548 2685 1835 2360 1940 C2025 2048 1610 1910 1458 1645 C1348 1452 1410 1275 1665 1165 Z" fill="url(#moon)" stroke="#8b6ad6" stroke-width="14" opacity="0.94"/>
+
+  <path d="M360 615 C700 650 1030 555 1340 610 C1680 670 1940 525 2260 620 C2480 684 2670 640 2855 560" fill="none" stroke="#b98652" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M360 615 C700 650 1030 555 1340 610 C1680 670 1940 525 2260 620 C2480 684 2670 640 2855 560" fill="none" stroke="#f4d49a" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M760 820 C850 1030 880 1245 1065 1430 C1260 1625 1605 1660 1900 1548 C2150 1450 2390 1520 2625 1640" fill="none" stroke="#b98652" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M760 820 C850 1030 880 1245 1065 1430 C1260 1625 1605 1660 1900 1548 C2150 1450 2390 1520 2625 1640" fill="none" stroke="#f4d49a" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <path d="M1365 112 C1335 300 1428 420 1390 575 C1352 728 1245 850 1298 1000 C1368 1194 1605 1152 1655 1350 C1690 1490 1588 1650 1668 1840" fill="none" stroke="#4fb5df" stroke-width="58" stroke-linecap="round" opacity="0.78"/>
+  <path d="M1365 112 C1335 300 1428 420 1390 575 C1352 728 1245 850 1298 1000 C1368 1194 1605 1152 1655 1350 C1690 1490 1588 1650 1668 1840" fill="none" stroke="#aef0ff" stroke-width="26" stroke-linecap="round" opacity="0.76"/>
+
+  <g filter="url(#softShadow)">
+    <path d="M570 470 L650 360 L730 470 Z" fill="#7b4dff"/>
+    <rect x="594" y="470" width="112" height="112" rx="10" fill="#fff8e8" stroke="#4d2c83" stroke-width="8"/>
+    <rect x="634" y="520" width="34" height="62" rx="14" fill="#6a4c93"/>
+    <circle cx="650" cy="420" r="22" fill="#ffd166"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="1540" y="400" width="100" height="150" rx="48" fill="#fff1bd" stroke="#865c2f" stroke-width="8"/>
+    <path d="M1588 350 C1540 390 1540 460 1588 495 C1640 460 1640 390 1588 350 Z" fill="#ffd166" filter="url(#glow)"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <path d="M2515 375 L2590 535 L2435 535 Z" fill="#d8c8ff" stroke="#5a2da0" stroke-width="8"/>
+    <path d="M2515 322 L2556 430 L2470 430 Z" fill="#ffffff" opacity="0.8"/>
+    <circle cx="2515" cy="500" r="34" fill="#8fe6ff" filter="url(#glow)"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <path d="M760 1375 C830 1288 980 1288 1050 1375 L1050 1510 L760 1510 Z" fill="#fff5d6" stroke="#8a5a44" stroke-width="8"/>
+    <path d="M728 1380 C840 1318 966 1320 1085 1380" fill="none" stroke="#d08c4a" stroke-width="34" stroke-linecap="round"/>
+    <rect x="876" y="1436" width="48" height="74" rx="16" fill="#6b4a2d"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <circle cx="2020" cy="1420" r="76" fill="#fff4ff" stroke="#6f52c7" stroke-width="8"/>
+    <path d="M2044 1360 C1990 1396 1986 1470 2048 1510 C2012 1518 1955 1492 1938 1435 C1922 1378 1970 1325 2044 1360 Z" fill="#7b5fd6"/>
+  </g>
+
+  <g opacity="0.96">
+    <text x="350" y="245" font-family="Georgia, serif" font-size="58" font-weight="700" fill="#ffffff" stroke="#2d174d" stroke-width="8">Kind Kingdom</text>
+    <text x="356" y="298" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#2d174d">A living world of social skills, quests, and kindness.</text>
+    <text x="450" y="840" font-family="Georgia, serif" font-size="42" font-weight="700" fill="#ffffff" stroke="#2d174d" stroke-width="6">Castle Commons</text>
+    <text x="1390" y="830" font-family="Georgia, serif" font-size="42" font-weight="700" fill="#ffffff" stroke="#1f5f35" stroke-width="6">Lantern Woods</text>
+    <text x="2310" y="870" font-family="Georgia, serif" font-size="42" font-weight="700" fill="#ffffff" stroke="#5a2da0" stroke-width="6">Crystal Highlands</text>
+    <text x="520" y="1785" font-family="Georgia, serif" font-size="42" font-weight="700" fill="#ffffff" stroke="#8a5a44" stroke-width="6">Harbor Coast</text>
+    <text x="1770" y="1840" font-family="Georgia, serif" font-size="42" font-weight="700" fill="#ffffff" stroke="#6f52c7" stroke-width="6">Moon Meadow</text>
+  </g>
+</svg>

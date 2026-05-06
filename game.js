@@ -428,19 +428,23 @@ function completeGame() {
     return;
   }
   const result = awardKindnessPoints();
+  const returnLink = new URLSearchParams(window.location.search).get("return") === "map"
+    ? ` <a class="return-world-link" href="index.html">Return to the Kingdom Map</a>`
+    : "";
   syncCompletionStatus(result.awarded
-    ? `Completed. You earned 25 kindness points and unlocked more of the kingdom. Total: ${result.points}.`
-    : `Already completed. Kindness points: ${result.points}.`);
+    ? `Completed. You earned 25 kindness points and unlocked more of the kingdom. Total: ${result.points}.${returnLink}`
+    : `Already completed. Kindness points: ${result.points}.${returnLink}`);
 }
 
 function syncCompletionStatus(message) {
   const status = document.querySelector("[data-completion-status]");
   if (!status) return;
-  status.textContent = message || (
+  const statusMessage = message || (
     completionState.quizPassed
       ? "Quiz passed. Ready to complete."
       : "Pass the quiz first."
   );
+  status.innerHTML = statusMessage;
   const button = document.querySelector("[data-complete-game]");
   if (button) {
     button.disabled = !completionState.quizPassed;
@@ -4338,8 +4342,10 @@ function finish() {
 
 function awardKindnessPoints() {
   const key = "kindKingdomProgress";
+  const user = localStorage.getItem("kkCurrentUser");
+  const scopedKey = user ? `${key}:${user}` : key;
   try {
-    const progress = JSON.parse(localStorage.getItem(key) || '{"points":100,"completed":[]}');
+    const progress = JSON.parse(localStorage.getItem(scopedKey) || localStorage.getItem(key) || '{"points":100,"completed":[]}');
     progress.completed = Array.isArray(progress.completed) ? progress.completed : [];
     progress.points = Number(progress.points) || 100;
     let awarded = false;
@@ -4348,13 +4354,70 @@ function awardKindnessPoints() {
       progress.points += 25;
       awarded = true;
     }
+    localStorage.setItem(scopedKey, JSON.stringify(progress));
     localStorage.setItem(key, JSON.stringify(progress));
+    localStorage.setItem("kkPoints", String(progress.points));
+    addSkillXP(game.category, 10);
+    maybeCompleteWorldQuest(progress);
     return { awarded, points: progress.points };
   } catch {
     const progress = { points: 125, completed: [game.slug] };
+    localStorage.setItem(scopedKey, JSON.stringify(progress));
     localStorage.setItem(key, JSON.stringify(progress));
+    localStorage.setItem("kkPoints", String(progress.points));
+    addSkillXP(game.category, 10);
+    maybeCompleteWorldQuest(progress);
     return { awarded: true, points: progress.points };
   }
+}
+
+function addSkillXP(skill, amount) {
+  const playerKey = "kindKingdomPlayer";
+  const user = localStorage.getItem("kkCurrentUser");
+  const scopedPlayerKey = user ? `${playerKey}:${user}` : playerKey;
+  const skillKey = `${skill.toLowerCase().replace(/[^a-z0-9]+/g, "-")}XP`;
+  const currentXP = Number(localStorage.getItem(skillKey) || 0) + amount;
+  localStorage.setItem(skillKey, String(currentXP));
+  try {
+    const player = JSON.parse(localStorage.getItem(scopedPlayerKey) || localStorage.getItem(playerKey) || "{}");
+    const skillXP = { ...(player.skillXP || {}) };
+    skillXP[skill] = Number(skillXP[skill] || 0) + amount;
+    const next = { ...player, skillXP };
+    localStorage.setItem(scopedPlayerKey, JSON.stringify(next));
+    localStorage.setItem(playerKey, JSON.stringify(next));
+  } catch {
+    const next = { skillXP: { [skill]: currentXP } };
+    localStorage.setItem(scopedPlayerKey, JSON.stringify(next));
+    localStorage.setItem(playerKey, JSON.stringify(next));
+  }
+}
+
+function maybeCompleteWorldQuest(progress) {
+  const quests = [
+    { id: "restore-crystal", targetCategories: ["Gratitude", "Giving"], reward: 10 },
+    { id: "calm-the-gates", targetCategories: ["Calm Choices", "Courage", "Conflict Repair"], reward: 10 },
+    { id: "council-harmony", targetCategories: ["Respect", "Cooperation", "Collaboration"], reward: 10 }
+  ];
+  const quest = quests.find((item) => item.targetCategories.includes(game.category));
+  if (!quest) return;
+  const user = localStorage.getItem("kkCurrentUser");
+  const questKey = user ? `kindKingdomQuests:${user}` : "kindKingdomQuests";
+  const progressKey = user ? `kindKingdomProgress:${user}` : "kindKingdomProgress";
+  let completed = [];
+  try {
+    completed = JSON.parse(localStorage.getItem(questKey) || localStorage.getItem("kindKingdomQuests") || "[]");
+    completed = Array.isArray(completed) ? completed : [];
+  } catch {
+    completed = [];
+  }
+  if (completed.includes(quest.id)) return;
+  completed.push(quest.id);
+  progress.points += quest.reward;
+  localStorage.setItem(questKey, JSON.stringify(completed));
+  localStorage.setItem("kindKingdomQuests", JSON.stringify(completed));
+  localStorage.setItem(progressKey, JSON.stringify(progress));
+  localStorage.setItem("kindKingdomProgress", JSON.stringify(progress));
+  localStorage.setItem("kkPoints", String(progress.points));
 }
 
 function feedback(message) {

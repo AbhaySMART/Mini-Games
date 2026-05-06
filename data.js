@@ -271,3 +271,5 @@ function g(title, category, lesson, mission, mechanicName, mechanic, icon, confi
     slug: title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
   };
 }
+
+window.KIND_KINGDOM_GAMES = KIND_KINGDOM_GAMES;

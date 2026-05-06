@@ -22,6 +22,7 @@ const skillAliases = {
 };
 const progress = readProgress();
 const DEV_UNLOCK_ALL_GAMES = true;
+const currentUser = localStorage.getItem("kkCurrentUser");
 let activeValue = "All";
 let searchTerm = "";
 
@@ -132,7 +133,7 @@ function renderFeatured() {
 }
 
 function renderRecommendation() {
-  const pool = KIND_KINGDOM_GAMES.filter((game, index) => progress.points >= gameMeta(game, index).unlockAt && matchesValue(game) && matchesSearch(game));
+  const pool = KIND_KINGDOM_GAMES.filter((game, index) => (DEV_UNLOCK_ALL_GAMES || progress.points >= gameMeta(game, index).unlockAt) && matchesValue(game) && matchesSearch(game));
   const preferred = pool.find((game) => dashboardSkill(game) === "Listening") || pool[0] || KIND_KINGDOM_GAMES[0];
   recommendation.innerHTML = `
     <div>
@@ -208,7 +209,8 @@ function gameMeta(game, index) {
 function readProgress() {
   const fallback = { points: 100, completed: [] };
   try {
-    return { ...fallback, ...JSON.parse(localStorage.getItem(DASHBOARD_PROGRESS_KEY) || "{}") };
+    const scopedKey = currentUser ? `${DASHBOARD_PROGRESS_KEY}:${currentUser}` : DASHBOARD_PROGRESS_KEY;
+    return { ...fallback, ...JSON.parse(localStorage.getItem(scopedKey) || localStorage.getItem(DASHBOARD_PROGRESS_KEY) || "{}") };
   } catch {
     return fallback;
   }

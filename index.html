@@ -3,27 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kind Kingdom Mini Games</title>
+  <title>Kind Kingdom</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=32">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Berkshire+Swash&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=35">
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 </head>
-<body>
-  <main class="dashboard">
-    <section class="dashboard-hero">
-      <h1>Heart of the Kingdom Mini Games</h1>
-    </section>
-    <section id="dashboard-featured" class="dashboard-featured" aria-label="Featured game of the week"></section>
-    <section id="skill-filters" class="skill-filters" aria-label="Search and filter mini games"></section>
-    <section id="recommendation-panel" class="recommendation-panel" aria-label="Recommended game"></section>
-    <section class="map-shell" aria-label="Kind Kingdom story map">
-      <section id="game-grid" class="game-grid map-grid" aria-label="Mini game dashboard"></section>
-    </section>
-    <section id="coming-soon" class="coming-soon" aria-label="Coming soon mini games"></section>
+<body class="kingdom-world-page">
+  <main class="world-shell">
+    <div class="world-topbar">
+      <div>
+        <span>Kind Kingdom World</span>
+        <h1>Choose a hero, explore the kingdom, and enter kindness quests.</h1>
+      </div>
+      <a href="card-view.html">Card View</a>
+    </div>
+    <div id="game" class="phaser-game-shell" aria-label="Kind Kingdom explorable map"></div>
+    <div class="world-help">
+      <span>Move: Arrow keys or WASD</span>
+      <span>Enter portal: E</span>
+      <span>Character and points save automatically.</span>
+    </div>
   </main>
 
-  <script src="data.js?v=32"></script>
-  <script src="dashboard.js?v=32"></script>
+  <noscript>Kind Kingdom needs JavaScript enabled to run the world map.</noscript>
+  <script src="data.js?v=35"></script>
+  <script type="module" src="./src/main.js?v=35"></script>
 </body>
 </html>
