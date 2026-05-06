@@ -1,36 +1,36 @@
-import { userScopedKey } from "./AuthSystem.js?v=43";
-import { PlayerData } from "./PlayerData.js?v=43";
+import { userScopedKey } from "./AuthSystem.js?v=45";
+import { PlayerData } from "./PlayerData.js?v=45";
 
 const REWARDS_KEY = "kindKingdomRewards";
 const CLAIMS_KEY = "kindKingdomRewardClaims";
 const MS_PER_DAY = 86400000;
 
 export const SHOP_ITEMS = [
-  { id: "gratitude-cape", name: "Gratitude Cape", category: "capes", price: 100, icon: "GC", color: 0x8b6dff, description: "A soft purple cape that glows after thank-you quests." },
-  { id: "courage-crown", name: "Courage Crown", category: "crowns", price: 150, icon: "CR", color: 0xffd166, description: "A bright crown for brave next steps." },
+  { id: "gratitude-cape", name: "Gratitude Cape", category: "capes", price: 100, icon: "GC", asset: "assets/sprites/third-party/ars-notoria/assets/icons/robe4.png", color: 0x8b6dff, description: "A soft purple cape that glows after thank-you quests." },
+  { id: "courage-crown", name: "Courage Crown", category: "crowns", price: 150, icon: "CR", asset: "assets/sprites/third-party/ars-notoria/assets/icons/helm4.png", color: 0xffd166, description: "A bright crown for brave next steps." },
   { id: "baby-dragon", name: "Baby Dragon Pet", category: "pets", price: 250, icon: "BD", asset: "assets/sprites/third-party/tiny-creatures/tile_0032.png", color: 0xff7b54, description: "A tiny dragon companion that bounces behind you." },
-  { id: "rainbow-trail", name: "Rainbow Trail", category: "trails", price: 200, icon: "RT", color: 0xff7eb3, description: "Leaves a rainbow sparkle trail while walking." },
-  { id: "calm-waterfall", name: "Calm Waterfall Room Item", category: "room", price: 175, icon: "CW", color: 0x70d6ff, description: "A peaceful waterfall for your castle room." },
+  { id: "rainbow-trail", name: "Rainbow Trail", category: "trails", price: 200, icon: "RT", asset: "assets/sprites/third-party/ars-notoria/assets/icons/ring-08.png", color: 0xff7eb3, description: "Leaves a rainbow sparkle trail while walking." },
+  { id: "calm-waterfall", name: "Calm Waterfall Room Item", category: "room", price: 175, icon: "CW", asset: "assets/sprites/third-party/ars-notoria/assets/icons/potionManaBig.png", color: 0x70d6ff, description: "A peaceful waterfall for your castle room." },
   { id: "lantern-fox", name: "Lantern Fox", category: "pets", price: 180, icon: "LF", asset: "assets/sprites/third-party/tiny-creatures/tile_0180.png", color: 0xff9f1c, description: "A glowing fox that loves listening quests." },
   { id: "crystal-turtle", name: "Crystal Turtle", category: "pets", price: 220, icon: "CT", asset: "assets/sprites/third-party/tiny-creatures/tile_0130.png", color: 0x7bdff2, description: "A calm turtle with a crystal shell." },
   { id: "cloud-owl", name: "Cloud Owl", category: "pets", price: 210, icon: "CO", asset: "assets/sprites/third-party/tiny-creatures/tile_0121.png", color: 0xbfd7ea, description: "A wise owl that floats like a cloud." },
   { id: "firefly-bunny", name: "Firefly Bunny", category: "pets", price: 190, icon: "FB", asset: "assets/sprites/third-party/tiny-creatures/tile_0179.png", color: 0xfff2a8, description: "A bunny that leaves tiny firefly lights." },
-  { id: "empathy-wings", name: "Empathy Wings", category: "outfits", price: 160, icon: "EW", color: 0x95d5b2, description: "Gentle wings for noticing feelings." },
-  { id: "royal-helper-coat", name: "Royal Helper Coat", category: "outfits", price: 125, icon: "RH", color: 0x2ec4b6, description: "A polished coat for helpers in the kingdom." },
-  { id: "kindness-crown", name: "Kindness Crown", category: "crowns", price: 90, icon: "KC", color: 0xfff2a8, description: "A starter crown with a warm shine." },
-  { id: "star-trail", name: "Star Trail", category: "trails", price: 135, icon: "ST", color: 0xffd166, description: "A trail of soft golden stars." },
-  { id: "garden-desk", name: "Gratitude Journal Desk", category: "room", price: 140, icon: "JD", color: 0xcaffbf, description: "A journal desk for reflection and gratitude." },
-  { id: "pet-bed", name: "Pet Bed", category: "room", price: 95, icon: "PB", color: 0xffb4a2, description: "A cozy bed for your companion." },
-  { id: "lantern-night-sky", name: "Lantern Night Map Effect", category: "effects", price: 240, icon: "LN", color: 0x44318f, description: "Adds a lantern-night glow to the kingdom map." }
+  { id: "empathy-wings", name: "Empathy Wings", category: "outfits", price: 160, icon: "EW", asset: "assets/sprites/third-party/ars-notoria/assets/icons/robe2.png", color: 0x95d5b2, description: "Gentle wings for noticing feelings." },
+  { id: "royal-helper-coat", name: "Royal Helper Coat", category: "outfits", price: 125, icon: "RH", asset: "assets/sprites/third-party/ars-notoria/assets/icons/armor2.png", color: 0x2ec4b6, description: "A polished coat for helpers in the kingdom." },
+  { id: "kindness-crown", name: "Kindness Crown", category: "crowns", price: 90, icon: "KC", asset: "assets/sprites/third-party/ars-notoria/assets/icons/helm1.png", color: 0xfff2a8, description: "A starter crown with a warm shine." },
+  { id: "star-trail", name: "Star Trail", category: "trails", price: 135, icon: "ST", asset: "assets/sprites/third-party/ars-notoria/assets/icons/ring-01.png", color: 0xffd166, description: "A trail of soft golden stars." },
+  { id: "garden-desk", name: "Gratitude Journal Desk", category: "room", price: 140, icon: "JD", asset: "assets/sprites/third-party/ars-notoria/assets/icons/book4.png", color: 0xcaffbf, description: "A journal desk for reflection and gratitude." },
+  { id: "pet-bed", name: "Pet Bed", category: "room", price: 95, icon: "PB", asset: "assets/sprites/third-party/ars-notoria/assets/icons/shield2.png", color: 0xffb4a2, description: "A cozy bed for your companion." },
+  { id: "lantern-night-sky", name: "Lantern Night Map Effect", category: "effects", price: 240, icon: "LN", asset: "assets/sprites/third-party/ars-notoria/assets/icons/staff4.png", color: 0x44318f, description: "Adds a lantern-night glow to the kingdom map." }
 ];
 
 export const BADGES = [
-  { id: "empathy-builder", name: "Empathy Builder", icon: "EB", skill: "Empathy", xp: 20 },
-  { id: "courage-climber", name: "Courage Climber", icon: "CC", skill: "Courage", xp: 20 },
-  { id: "gratitude-guardian", name: "Gratitude Guardian", icon: "GG", skill: "Gratitude", xp: 20 },
-  { id: "teamwork-champion", name: "Teamwork Champion", icon: "TC", skill: "Cooperation", xp: 20 },
-  { id: "respect-leader", name: "Respect Leader", icon: "RL", skill: "Respect", xp: 20 },
-  { id: "calm-choices-master", name: "Calm Choices Master", icon: "CM", skill: "Calm Choices", xp: 20 }
+  { id: "empathy-builder", name: "Empathy Builder", icon: "EB", asset: "assets/sprites/third-party/ars-notoria/assets/icons/ring-02.png", skill: "Empathy", xp: 20 },
+  { id: "courage-climber", name: "Courage Climber", icon: "CC", asset: "assets/sprites/third-party/ars-notoria/assets/icons/shield4.png", skill: "Courage", xp: 20 },
+  { id: "gratitude-guardian", name: "Gratitude Guardian", icon: "GG", asset: "assets/sprites/third-party/ars-notoria/assets/icons/book2.png", skill: "Gratitude", xp: 20 },
+  { id: "teamwork-champion", name: "Teamwork Champion", icon: "TC", asset: "assets/sprites/third-party/ars-notoria/assets/icons/helm3.png", skill: "Cooperation", xp: 20 },
+  { id: "respect-leader", name: "Respect Leader", icon: "RL", asset: "assets/sprites/third-party/ars-notoria/assets/icons/shield1.png", skill: "Respect", xp: 20 },
+  { id: "calm-choices-master", name: "Calm Choices Master", icon: "CM", asset: "assets/sprites/third-party/ars-notoria/assets/icons/potionHealthBig.png", skill: "Calm Choices", xp: 20 }
 ];
 
 export const TITLES = [

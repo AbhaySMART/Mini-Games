@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=43";
-import { QuestSystem } from "../systems/QuestSystem.js?v=43";
+import { PlayerData } from "../systems/PlayerData.js?v=45";
+import { QuestSystem } from "../systems/QuestSystem.js?v=45";
 
 export class MiniGameLauncherScene extends Phaser.Scene {
   constructor() {

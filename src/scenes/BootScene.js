@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=43";
-import { AuthSystem } from "../systems/AuthSystem.js?v=43";
+import { PlayerData } from "../systems/PlayerData.js?v=45";
+import { AuthSystem } from "../systems/AuthSystem.js?v=45";
 
 export class BootScene extends Phaser.Scene {
   constructor() {

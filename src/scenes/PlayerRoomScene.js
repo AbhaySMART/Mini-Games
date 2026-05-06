@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=43";
-import { RewardSystem, SHOP_ITEMS, BADGES, CURRENT_EVENT } from "../systems/RewardSystem.js?v=43";
+import { PlayerData } from "../systems/PlayerData.js?v=45";
+import { RewardSystem, SHOP_ITEMS, BADGES, CURRENT_EVENT } from "../systems/RewardSystem.js?v=45";
 
 export class PlayerRoomScene extends Phaser.Scene {
   constructor() {
@@ -40,7 +40,7 @@ export class PlayerRoomScene extends Phaser.Scene {
             <div class="kk-badges">
               ${BADGES.map((badge) => {
                 const unlocked = badges.some((item) => item.id === badge.id);
-                return `<span class="${unlocked ? "unlocked" : ""}" title="${badge.name}"><b>${unlocked ? badge.icon : "LOCK"}</b><small>${badge.name}</small></span>`;
+                return `<span class="${unlocked ? "unlocked" : ""}" title="${badge.name}">${unlocked ? `<img src="${badge.asset}" alt="">` : "<b>LOCK</b>"}<small>${badge.name}</small></span>`;
               }).join("")}
             </div>
           </div>

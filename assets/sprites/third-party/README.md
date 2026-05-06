@@ -13,3 +13,10 @@ Pet sprites:
 - License: CC0
 
 These assets were selected because they are permissive, lightweight, and work cleanly in Phaser as pixel-art sprites.
+
+Equipment, accessory, and inventory icons:
+- Folder: `ars-notoria/assets/icons/`
+- Source: https://opengameart.org/content/hero-spritesheets-ars-notoria
+- Creator: the Ars Notoria asset contributors on OpenGameArt
+- License: CC0 as listed on OpenGameArt
+- Used for shop rewards, closet rewards, room decorations, and badges so these screens show actual item art instead of text initials.

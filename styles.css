@@ -213,7 +213,7 @@ button { cursor: pointer; }
 }
 
 .kk-reward-panel {
-  width: 900px;
+  width: 760px;
   max-height: 700px;
   overflow-x: hidden;
   overflow-y: scroll;
@@ -252,19 +252,46 @@ button { cursor: pointer; }
     radial-gradient(circle at 82% 0, rgba(123,223,242,.34), transparent 28%);
 }
 
+.kk-reward-panel.shop {
+  width: min(850px, 92vw);
+  max-height: 660px;
+  overflow-x: visible;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 12px;
+}
+
 .kk-panel-head {
   position: sticky;
   top: -14px;
   z-index: 5;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: flex-start;
-  justify-content: space-between;
   gap: 12px;
   margin: -14px -14px 0;
   padding: 14px 14px 9px;
   border-bottom: 3px solid rgba(90,45,160,.14);
   background: rgba(255,255,255,.96);
   border-radius: 20px 20px 0 0;
+}
+
+.kk-reward-panel.shop .kk-panel-head {
+  position: static;
+  top: auto;
+  width: 100%;
+  margin: 0;
+  padding: 18px 18px 16px;
+  border: 0;
+  border-radius: 24px;
+  box-shadow: 0 12px 26px rgba(21, 10, 48, .18);
 }
 
 .kk-panel-head span {
@@ -277,20 +304,23 @@ button { cursor: pointer; }
 }
 
 .kk-panel-head h2 {
+  max-width: 100%;
   margin: 0;
   color: #2d174d;
   font-family: "Berkshire Swash", Georgia, serif;
   font-size: 1.7rem;
   line-height: 1;
+  overflow-wrap: anywhere;
 }
 
 .kk-panel-head p {
-  max-width: 650px;
+  max-width: 100%;
   margin: 4px 0 0;
   color: #3f315f;
   font-size: .84rem;
   font-weight: 950;
   line-height: 1.22;
+  overflow-wrap: anywhere;
 }
 
 .kk-head-actions {
@@ -298,6 +328,7 @@ button { cursor: pointer; }
   justify-items: end;
   gap: 7px;
   flex: 0 0 auto;
+  max-width: 170px;
 }
 
 .kk-panel-head strong {
@@ -318,6 +349,9 @@ button { cursor: pointer; }
   font-weight: 1000;
   box-shadow: 0 4px 0 #1b8f85;
   white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .kk-tabs,
@@ -327,6 +361,12 @@ button { cursor: pointer; }
   flex-wrap: wrap;
   gap: 7px;
   margin-top: 10px;
+}
+
+.kk-reward-panel.shop .kk-tabs {
+  width: 100%;
+  justify-content: center;
+  margin-top: 0;
 }
 
 .kk-tabs button,
@@ -370,15 +410,38 @@ button { cursor: pointer; }
   border-radius: 0 0 20px 20px;
 }
 
+.kk-reward-panel.shop .kk-panel-actions {
+  position: static;
+  bottom: auto;
+  width: 100%;
+  justify-content: center;
+  margin: 0;
+  padding: 10px;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(255,255,255,.9);
+}
+
 .kk-shop-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, 190px);
+  justify-content: center;
   gap: 10px;
   margin-top: 10px;
 }
 
+.kk-reward-panel.shop .kk-shop-grid {
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 190px));
+  justify-content: center;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 0;
+}
+
 .kk-shop-grid.compact {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, 170px);
+  justify-content: center;
 }
 
 .kk-shop-item {
@@ -391,6 +454,11 @@ button { cursor: pointer; }
   gap: 5px;
   align-content: start;
   box-shadow: 0 10px 18px rgba(45,23,77,.1);
+  text-align: left;
+}
+
+.kk-reward-panel.shop .kk-shop-item {
+  min-height: 215px;
 }
 
 .kk-shop-item.owned {
@@ -414,6 +482,12 @@ button { cursor: pointer; }
   width: 32px;
   height: 32px;
   image-rendering: pixelated;
+  animation: kk-item-bob 1.7s ease-in-out infinite;
+}
+
+@keyframes kk-item-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 
 .kk-shop-item h3 {
@@ -421,6 +495,7 @@ button { cursor: pointer; }
   color: #2d174d;
   font-size: .9rem;
   line-height: 1.08;
+  overflow-wrap: anywhere;
 }
 
 .kk-shop-item p {
@@ -453,6 +528,12 @@ button { cursor: pointer; }
   padding: 8px 10px;
   font-weight: 1000;
   line-height: 1.2;
+}
+
+.kk-reward-panel.shop .kk-panel-message {
+  width: 100%;
+  margin-top: 0;
+  text-align: center;
 }
 
 .kk-closet-preview,
@@ -558,10 +639,12 @@ button { cursor: pointer; }
   font-size: .8rem;
 }
 
+.kk-badges span img,
 .kk-room-floor img {
   width: 34px;
   height: 34px;
   image-rendering: pixelated;
+  animation: kk-item-bob 1.8s ease-in-out infinite;
 }
 
 .kk-badges span.unlocked {

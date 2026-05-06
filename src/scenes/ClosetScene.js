@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=43";
-import { RewardSystem, SHOP_ITEMS } from "../systems/RewardSystem.js?v=43";
+import { PlayerData } from "../systems/PlayerData.js?v=45";
+import { RewardSystem, SHOP_ITEMS } from "../systems/RewardSystem.js?v=45";
 
 const EQUIP_CATEGORIES = ["outfits", "crowns", "capes", "pets", "trails", "effects"];
 
@@ -12,7 +12,7 @@ export class ClosetScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor("#2f2b68");
     this.add.rectangle(480, 380, 960, 760, 0x2f2b68);
     this.add.circle(132, 620, 120, 0x7bdff2, 0.16);
-    this.panel = this.add.dom(480, 380).createFromHTML(`<div class="kk-reward-panel"></div>`);
+    this.panel = this.add.dom(480, 380).createFromHTML(`<div class="kk-reward-panel closet"></div>`);
     this.enablePanelScroll();
     this.render();
   }
@@ -36,7 +36,7 @@ export class ClosetScene extends Phaser.Scene {
       </div>
       <div class="kk-closet-preview">
         <div class="kk-avatar-preview">
-          ${heroPreview(player.character || "knight")}
+          ${heroPreview(player.character || "knight", rewards)}
           <small>${equippedSummary()}</small>
         </div>
         <div class="kk-equipped-list">
@@ -128,10 +128,24 @@ function equippedSummary() {
     .join(" + ") || "No accessories equipped";
 }
 
-function heroPreview(character) {
-  const frames = { knight: 0, mage: 3, ranger: 8, bard: 32 };
+function heroPreview(character, rewards) {
+  const frames = { knight: 0, mage: 2, ranger: 8, bard: 16 };
   const frame = frames[character] ?? 0;
-  const x = (frame % 8) * 16;
-  const y = Math.floor(frame / 8) * 16;
-  return `<div class="kk-hero-sprite" style="--hero-x:-${x * 5}px; --hero-y:-${y * 5}px"></div>`;
+  const x = (frame % 8) * 46;
+  const y = Math.floor(frame / 8) * 40;
+  const equippedItems = ["capes", "outfits", "crowns", "trails", "effects"]
+    .map((category) => RewardSystem.equippedItem(category))
+    .filter(Boolean);
+  const pet = RewardSystem.equippedItem("pets");
+
+  return `
+    <div class="kk-avatar-stack">
+      <div class="kk-avatar-trail ${RewardSystem.equippedItem("trails") ? "active" : ""}"></div>
+      <div class="kk-player-sprite" style="--player-x:-${x * 3}px; --player-y:-${y * 3}px"></div>
+      ${equippedItems.map((item, index) => `
+        <img class="kk-avatar-accessory slot-${index}" src="${item.asset}" alt="${item.name}">
+      `).join("")}
+      ${pet ? `<img class="kk-avatar-pet" src="${pet.asset}" alt="${pet.name}">` : ""}
+    </div>
+  `;
 }

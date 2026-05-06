@@ -1,4 +1,4 @@
-import { PlayerData } from "../systems/PlayerData.js?v=43";
+import { PlayerData } from "../systems/PlayerData.js?v=45";
 
 const HEROES = [
   { id: "knight", frame: 0, title: "Kind Knight", color: 0x7b4dff },
