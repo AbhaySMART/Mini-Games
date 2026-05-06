@@ -1,11 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=45";
-
-const HEROES = [
-  { id: "knight", frame: 0, title: "Kind Knight", color: 0x7b4dff },
-  { id: "mage", frame: 3, title: "Mindful Mage", color: 0x2ec4b6 },
-  { id: "ranger", frame: 8, title: "Helping Ranger", color: 0x52b788 },
-  { id: "bard", frame: 32, title: "Listening Bard", color: 0xff8fab }
-];
+import { PlayerData } from "../systems/PlayerData.js?v=55";
+import { FRONT_FRAME, HEROES } from "../systems/AssetCatalog.js?v=55";
 
 export class CharacterSelectScene extends Phaser.Scene {
   constructor() {
@@ -41,8 +35,8 @@ export class CharacterSelectScene extends Phaser.Scene {
       const card = this.add.rectangle(x, 410, 142, 178, 0xffffff, 0.92)
         .setStrokeStyle(5, hero.color)
         .setInteractive({ useHandCursor: true });
-      const portrait = this.add.sprite(x, 367, "kk-heroes", hero.frame).setScale(4.2);
-      portrait.play(`hero-${hero.id}-walk`);
+      const portrait = this.createHeroPortrait(x, 367, hero).setScale(1.85);
+      this.tweens.add({ targets: portrait, y: 360, duration: 850, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
       const title = this.add.text(x, 443, hero.title, {
         fontFamily: "Nunito, Arial, sans-serif",
         fontSize: "18px",
@@ -65,5 +59,16 @@ export class CharacterSelectScene extends Phaser.Scene {
     PlayerData.setCharacter(hero.id);
     this.cameras.main.flash(260, 255, 255, 255);
     this.time.delayedCall(260, () => this.scene.start(this.returnToDashboard ? "DashboardScene" : "KingdomMapScene"));
+  }
+
+  createHeroPortrait(x, y, hero) {
+    const container = this.add.container(x, y);
+    hero.layers.forEach((layer) => {
+      const sprite = this.add.sprite(0, 0, `lpc-${layer}`, FRONT_FRAME);
+      sprite.play(`lpc-${layer}-walk`);
+      container.add(sprite);
+    });
+    container.setSize(78, 92);
+    return container;
   }
 }

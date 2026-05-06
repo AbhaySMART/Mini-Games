@@ -94,6 +94,7 @@ button { cursor: pointer; }
 
 .phaser-game-shell {
   width: min(1120px, 100%);
+  max-width: calc(100vw - 28px);
   min-height: 760px;
   margin: 0 auto;
   border: 5px solid #fff;
@@ -106,6 +107,7 @@ button { cursor: pointer; }
 .phaser-game-shell canvas {
   display: block;
   margin: 0 auto;
+  max-width: 100%;
 }
 
 .world-help {
@@ -213,8 +215,8 @@ button { cursor: pointer; }
 }
 
 .kk-reward-panel {
-  width: 760px;
-  max-height: 700px;
+  width: min(800px, calc(100vw - 96px));
+  max-height: min(700px, calc(100vh - 78px));
   overflow-x: hidden;
   overflow-y: scroll;
   border: 4px solid rgba(255,255,255,.92);
@@ -247,15 +249,32 @@ button { cursor: pointer; }
 }
 
 .kk-reward-panel.room {
+  width: min(820px, calc(100vw - 96px));
   background:
     linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,237,255,.95)),
     radial-gradient(circle at 82% 0, rgba(123,223,242,.34), transparent 28%);
 }
 
 .kk-reward-panel.shop {
-  width: min(850px, 92vw);
-  max-height: 660px;
-  overflow-x: visible;
+  width: min(760px, calc(100vw - 96px));
+  max-height: min(620px, calc(100vh - 118px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 9px;
+}
+
+.kk-reward-panel.closet {
+  width: min(760px, calc(100vw - 96px));
+  max-height: min(650px, calc(100vh - 96px));
+  overflow-x: hidden;
   overflow-y: auto;
   border: 0;
   border-radius: 0;
@@ -265,7 +284,7 @@ button { cursor: pointer; }
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .kk-panel-head {
@@ -273,7 +292,7 @@ button { cursor: pointer; }
   top: -14px;
   z-index: 5;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(112px, auto);
   align-items: flex-start;
   gap: 12px;
   margin: -14px -14px 0;
@@ -288,10 +307,40 @@ button { cursor: pointer; }
   top: auto;
   width: 100%;
   margin: 0;
-  padding: 18px 18px 16px;
+  padding: 16px 18px 14px;
   border: 0;
   border-radius: 24px;
   box-shadow: 0 12px 26px rgba(21, 10, 48, .18);
+}
+
+.kk-reward-panel.closet .kk-panel-head {
+  position: static;
+  top: auto;
+  width: 100%;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  border-radius: 24px;
+  box-shadow: 0 12px 26px rgba(21, 10, 48, .18);
+}
+
+.kk-reward-panel.closet .kk-panel-head h2 {
+  font-size: 1.45rem;
+}
+
+.kk-reward-panel.closet .kk-panel-head p {
+  font-size: .78rem;
+  line-height: 1.18;
+}
+
+.kk-reward-panel.closet .kk-head-actions {
+  max-width: 126px;
+}
+
+.kk-reward-panel.closet .kk-panel-head strong,
+.kk-reward-panel.closet .kk-home-button {
+  max-width: 126px;
+  padding-inline: 10px;
 }
 
 .kk-panel-head span {
@@ -308,7 +357,7 @@ button { cursor: pointer; }
   margin: 0;
   color: #2d174d;
   font-family: "Berkshire Swash", Georgia, serif;
-  font-size: 1.7rem;
+  font-size: clamp(1.35rem, 3.6vw, 1.7rem);
   line-height: 1;
   overflow-wrap: anywhere;
 }
@@ -328,7 +377,8 @@ button { cursor: pointer; }
   justify-items: end;
   gap: 7px;
   flex: 0 0 auto;
-  max-width: 170px;
+  max-width: 154px;
+  min-width: 0;
 }
 
 .kk-panel-head strong {
@@ -349,9 +399,9 @@ button { cursor: pointer; }
   font-weight: 1000;
   box-shadow: 0 4px 0 #1b8f85;
   white-space: nowrap;
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 154px;
+  overflow-wrap: normal;
+  text-overflow: clip;
 }
 
 .kk-tabs,
@@ -361,6 +411,7 @@ button { cursor: pointer; }
   flex-wrap: wrap;
   gap: 7px;
   margin-top: 10px;
+  justify-content: center;
 }
 
 .kk-reward-panel.shop .kk-tabs {
@@ -422,6 +473,32 @@ button { cursor: pointer; }
   background: rgba(255,255,255,.9);
 }
 
+.kk-reward-panel.closet .kk-panel-actions {
+  position: static;
+  bottom: auto;
+  width: 100%;
+  justify-content: center;
+  margin: 0;
+  padding: 10px;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(255,255,255,.9);
+}
+
+.kk-reward-panel.closet .kk-title-row {
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0;
+  padding: 0 4px;
+}
+
+.kk-reward-panel.closet .kk-title-row b {
+  flex-basis: 100%;
+  text-align: center;
+  color: #fff;
+}
+
 .kk-shop-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, 190px);
@@ -432,10 +509,18 @@ button { cursor: pointer; }
 
 .kk-reward-panel.shop .kk-shop-grid {
   width: 100%;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 190px));
+  grid-template-columns: repeat(auto-fit, minmax(174px, 186px));
   justify-content: center;
   align-items: stretch;
-  gap: 12px;
+  gap: 10px;
+  margin-top: 0;
+}
+
+.kk-reward-panel.closet .kk-shop-grid {
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 158px));
+  justify-content: center;
+  gap: 10px;
   margin-top: 0;
 }
 
@@ -445,6 +530,7 @@ button { cursor: pointer; }
 }
 
 .kk-shop-item {
+  min-width: 0;
   min-height: 160px;
   border: 3px solid rgba(90,45,160,.16);
   border-radius: 16px;
@@ -458,7 +544,11 @@ button { cursor: pointer; }
 }
 
 .kk-reward-panel.shop .kk-shop-item {
-  min-height: 215px;
+  min-height: 204px;
+}
+
+.kk-reward-panel.closet .kk-shop-item {
+  min-height: 144px;
 }
 
 .kk-shop-item.owned {
@@ -485,6 +575,22 @@ button { cursor: pointer; }
   animation: kk-item-bob 1.7s ease-in-out infinite;
 }
 
+.kk-lpc-item-icon {
+  width: 40px;
+  height: 40px;
+  display: block;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  animation: kk-item-bob 1.7s ease-in-out infinite;
+}
+
+.kk-lpc-item-icon[style*=".png"] {
+  background-size: 360px 160px;
+  background-position: -40px -80px;
+}
+
 @keyframes kk-item-bob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
@@ -496,6 +602,7 @@ button { cursor: pointer; }
   font-size: .9rem;
   line-height: 1.08;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .kk-shop-item p {
@@ -507,6 +614,8 @@ button { cursor: pointer; }
   font-size: .74rem;
   font-weight: 950;
   line-height: 1.18;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .kk-shop-item small,
@@ -536,12 +645,25 @@ button { cursor: pointer; }
   text-align: center;
 }
 
+.kk-reward-panel.closet .kk-panel-message {
+  width: 100%;
+  margin-top: 0;
+  text-align: center;
+}
+
 .kk-closet-preview,
 .kk-room-grid {
   display: grid;
-  grid-template-columns: .82fr 1.18fr;
+  grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
   gap: 10px;
   margin-top: 10px;
+}
+
+.kk-reward-panel.closet .kk-closet-preview {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 0;
 }
 
 .kk-avatar-preview,
@@ -550,6 +672,7 @@ button { cursor: pointer; }
 .kk-side-board,
 .kk-pass,
 .kk-event-card {
+  min-width: 0;
   border: 3px solid rgba(255,255,255,.82);
   border-radius: 16px;
   background: rgba(255,255,255,.88);
@@ -564,14 +687,84 @@ button { cursor: pointer; }
   background: radial-gradient(circle, #fff2a8, #dff8ff);
 }
 
-.kk-hero-sprite {
-  width: 80px;
-  height: 80px;
-  background-image: url("assets/sprites/third-party/grafxkid-rpg-assets.png");
-  background-size: 640px 640px;
-  background-position: var(--hero-x) var(--hero-y);
+.kk-reward-panel.closet .kk-avatar-preview {
+  min-height: 144px;
+  gap: 6px;
+  text-align: center;
+}
+
+.kk-avatar-stack {
+  position: relative;
+  width: 154px;
+  height: 116px;
+  display: grid;
+  place-items: center;
+}
+
+.kk-lpc-layer {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 128px;
+  height: 128px;
+  background-size: 1152px 512px;
+  background-position: -128px -256px;
   image-rendering: pixelated;
-  filter: drop-shadow(0 8px 8px rgba(45,23,77,.22));
+  filter: drop-shadow(0 10px 10px rgba(45,23,77,.22));
+  animation: kk-avatar-idle 1.6s ease-in-out infinite;
+}
+
+.kk-avatar-trail {
+  position: absolute;
+  inset: auto 24px 6px;
+  height: 16px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255,126,179,.8), rgba(255,209,102,.85), rgba(123,223,242,.8), transparent);
+  opacity: 0;
+  filter: blur(1px);
+}
+
+.kk-avatar-trail.active {
+  opacity: 1;
+  animation: kk-trail-glow 1.2s ease-in-out infinite alternate;
+}
+
+.kk-avatar-accessory,
+.kk-avatar-pet {
+  position: absolute;
+  z-index: 3;
+  width: 34px;
+  height: 34px;
+  image-rendering: pixelated;
+  padding: 5px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.86);
+  box-shadow: 0 7px 14px rgba(45,23,77,.14);
+  animation: kk-item-bob 1.7s ease-in-out infinite;
+}
+
+.kk-avatar-accessory.slot-0 { left: 10px; top: 18px; }
+.kk-avatar-accessory.slot-1 { right: 10px; top: 18px; }
+.kk-avatar-accessory.slot-2 { left: 34px; top: 0; }
+.kk-avatar-accessory.slot-3 { right: 34px; bottom: 10px; }
+.kk-avatar-accessory.slot-4 { left: 34px; bottom: 10px; }
+.kk-avatar-pet {
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  height: 40px;
+}
+
+@keyframes kk-avatar-idle {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-3px); }
+}
+
+@keyframes kk-trail-glow {
+  from { transform: scaleX(.9); opacity: .55; }
+  to { transform: scaleX(1.08); opacity: 1; }
 }
 
 .kk-equipped-list p {
@@ -592,7 +785,7 @@ button { cursor: pointer; }
 }
 
 .kk-room-grid {
-  grid-template-columns: 1.2fr .8fr;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr);
 }
 
 .kk-room-space {
@@ -615,12 +808,14 @@ button { cursor: pointer; }
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  justify-content: center;
 }
 
 .kk-badges span,
 .kk-room-floor span {
-  min-width: 68px;
-  max-width: 96px;
+  flex: 0 1 88px;
+  min-width: 76px;
+  max-width: 92px;
   border-radius: 13px;
   background: rgba(255,255,255,.82);
   padding: 6px;
@@ -665,6 +860,7 @@ button { cursor: pointer; }
 .kk-side-board {
   display: grid;
   gap: 6px;
+  align-content: start;
 }
 
 .kk-side-board button {
@@ -675,15 +871,19 @@ button { cursor: pointer; }
   color: #4e2b05;
   text-align: left;
   box-shadow: 0 4px 0 #dfad68;
-  font-size: .78rem;
+  font-size: .74rem;
+  line-height: 1.13;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .kk-side-board p {
   margin: 0;
   color: #332247;
-  font-size: .8rem;
+  font-size: .76rem;
   font-weight: 1000;
-  line-height: 1.2;
+  line-height: 1.22;
+  overflow-wrap: anywhere;
 }
 
 .kk-pass {
@@ -692,7 +892,7 @@ button { cursor: pointer; }
 
 .kk-pass > div {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
   gap: 6px;
   margin-top: 6px;
 }
@@ -701,6 +901,8 @@ button { cursor: pointer; }
   border-radius: 13px;
   min-height: 48px;
   font-size: .75rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .kk-pass button:disabled {
@@ -7223,6 +7425,37 @@ button { cursor: pointer; }
   .skill-filters { grid-template-columns: 1fr; }
   .search-panel { grid-template-columns: 1fr; }
   .points-pill { width: fit-content; }
+}
+
+@media (max-width: 900px) {
+  .kk-reward-panel,
+  .kk-reward-panel.room,
+  .kk-reward-panel.shop,
+  .kk-reward-panel.closet {
+    width: min(720px, calc(100vw - 48px));
+  }
+
+  .kk-room-grid,
+  .kk-closet-preview,
+  .kk-reward-panel.closet .kk-closet-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .kk-panel-head,
+  .kk-reward-panel.shop .kk-panel-head,
+  .kk-reward-panel.closet .kk-panel-head {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .kk-head-actions {
+    max-width: 100%;
+    justify-items: center;
+  }
+
+  .kk-home-button {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 760px) {

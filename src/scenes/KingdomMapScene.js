@@ -1,25 +1,12 @@
-import { AuthSystem } from "../systems/AuthSystem.js?v=45";
-import { PlayerData } from "../systems/PlayerData.js?v=45";
-import { UnlockSystem, DEV_UNLOCK_ALL_GAMES } from "../systems/UnlockSystem.js?v=45";
-import { QuestSystem } from "../systems/QuestSystem.js?v=45";
-import { RewardSystem } from "../systems/RewardSystem.js?v=45";
+import { AuthSystem } from "../systems/AuthSystem.js?v=55";
+import { PlayerData } from "../systems/PlayerData.js?v=55";
+import { UnlockSystem, DEV_UNLOCK_ALL_GAMES } from "../systems/UnlockSystem.js?v=55";
+import { QuestSystem } from "../systems/QuestSystem.js?v=55";
+import { RewardSystem } from "../systems/RewardSystem.js?v=55";
+import { FRONT_FRAME, getHero } from "../systems/AssetCatalog.js?v=55";
 
 const WORLD_WIDTH = 3200;
 const WORLD_HEIGHT = 2100;
-const HERO_COLORS = {
-  knight: { body: 0x4f63d8, cape: 0xffd166, trim: 0xffffff },
-  mage: { body: 0x7b4dff, cape: 0x2ec4b6, trim: 0xfff2a8 },
-  ranger: { body: 0x2d6a4f, cape: 0x95d5b2, trim: 0xfff2a8 },
-  bard: { body: 0xd65d8c, cape: 0xffb4a2, trim: 0xffffff }
-};
-
-const HERO_FRAMES = {
-  knight: 0,
-  mage: 3,
-  ranger: 8,
-  bard: 32
-};
-
 const PET_SPRITES = {
   "baby-dragon": "pet-baby-dragon",
   "lantern-fox": "pet-lantern-fox",
@@ -70,11 +57,13 @@ export class KingdomMapScene extends Phaser.Scene {
   drawWorld() {
     if (this.textures.exists("kingdom-world-map")) {
       this.add.image(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, "kingdom-world-map").setDisplaySize(WORLD_WIDTH, WORLD_HEIGHT);
+      this.add.rectangle(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH, WORLD_HEIGHT, 0x102a43, 0.06);
     } else {
       this.add.rectangle(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH, WORLD_HEIGHT, 0x7cc7ff);
       REGIONS.forEach((region) => this.drawFallbackRegion(region));
     }
     this.createAtmosphere();
+    this.createRegionLabels();
   }
 
   drawFallbackRegion(region) {
@@ -86,7 +75,7 @@ export class KingdomMapScene extends Phaser.Scene {
   }
 
   createAtmosphere() {
-    for (let i = 0; i < 18; i += 1) {
+    for (let i = 0; i < 10; i += 1) {
       const cloud = this.add.ellipse(260 + i * 170, 145 + (i % 4) * 90, 180 + (i % 3) * 40, 54, 0xffffff, 0.12);
       cloud.setDepth(2);
       this.tweens.add({
@@ -100,13 +89,39 @@ export class KingdomMapScene extends Phaser.Scene {
     }
   }
 
+  createRegionLabels() {
+    REGIONS.forEach((region) => {
+      const label = this.add.text(region.x, region.y - region.h / 2 + 42, region.name.toUpperCase(), {
+        fontFamily: "Nunito, Arial, sans-serif",
+        fontSize: "18px",
+        color: "#ffffff",
+        fontStyle: "bold",
+        backgroundColor: "#2d174dcc",
+        padding: { x: 14, y: 7 },
+        letterSpacing: 1,
+        stroke: "#1d1236",
+        strokeThickness: 3
+      }).setOrigin(0.5).setDepth(12);
+      const underline = this.add.rectangle(region.x, label.y + 22, 130, 4, region.stroke, 0.8).setDepth(11);
+      this.tweens.add({
+        targets: underline,
+        scaleX: 1.18,
+        alpha: 0.45,
+        duration: 1500,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.easeInOut"
+      });
+    });
+  }
+
   createLocations() {
     const regionSlots = this.makeRegionSlots();
     this.games.forEach((game, index) => {
       const slot = regionSlots[index % regionSlots.length];
       const loop = Math.floor(index / regionSlots.length);
-      const x = slot.x + (loop % 2 ? 56 : 0);
-      const y = slot.y + loop * 42;
+      const x = slot.x + (loop % 2 ? 38 : -18);
+      const y = slot.y + loop * 46;
       this.createPortal(game, index, x, y, slot.region);
     });
   }
@@ -120,8 +135,8 @@ export class KingdomMapScene extends Phaser.Scene {
         for (let col = 0; col < cols; col += 1) {
           slots.push({
             region,
-            x: region.x - region.w / 2 + 150 + col * ((region.w - 260) / Math.max(1, cols - 1)),
-            y: region.y - region.h / 2 + 160 + row * ((region.h - 270) / Math.max(1, rows - 1))
+            x: region.x - region.w / 2 + 185 + col * ((region.w - 350) / Math.max(1, cols - 1)),
+            y: region.y - region.h / 2 + 190 + row * ((region.h - 350) / Math.max(1, rows - 1))
           });
         }
       }
@@ -134,21 +149,22 @@ export class KingdomMapScene extends Phaser.Scene {
     const unlocked = UnlockSystem.isUnlocked(required);
     const complete = UnlockSystem.isCompleted(game.slug);
     const portal = this.add.container(x, y).setDepth(20);
-    const shadow = this.add.ellipse(0, 58, 144, 40, 0x000000, 0.24);
-    const glow = this.add.circle(0, 8, 78, complete ? 0xffd166 : region.stroke, complete ? 0.26 : 0.1);
-    const foundation = this.add.ellipse(0, 48, 118, 44, 0xe7d2a0, unlocked ? 0.95 : 0.38)
-      .setStrokeStyle(4, 0x7a5a35, unlocked ? 0.42 : 0.22);
-    const tower = this.add.rectangle(0, -10, 122, 116, complete ? 0xfff2a8 : 0xfffbef, unlocked ? 0.98 : 0.42)
-      .setStrokeStyle(5, complete ? 0x2ec4b6 : region.stroke, unlocked ? 0.95 : 0.4);
-    const roof = this.add.triangle(0, -88, -76, -25, 76, -25, 0, -88, complete ? 0xffb703 : region.stroke, unlocked ? 0.98 : 0.45);
-    const roofTrim = this.add.rectangle(0, -26, 136, 14, 0x4d2c83, unlocked ? 0.55 : 0.2);
+    const shadow = this.add.ellipse(0, 50, 130, 34, 0x000000, 0.2);
+    const glow = this.add.circle(0, -2, 68, complete ? 0xffd166 : region.stroke, complete ? 0.24 : 0.08);
+    const foundation = this.add.ellipse(0, 44, 110, 36, 0xe7d2a0, unlocked ? 0.92 : 0.34)
+      .setStrokeStyle(3, 0x7a5a35, unlocked ? 0.36 : 0.18);
+    const tower = this.add.rectangle(0, -8, 108, 104, complete ? 0xfff2a8 : 0xfffbef, unlocked ? 0.96 : 0.38)
+      .setStrokeStyle(4, complete ? 0x2ec4b6 : region.stroke, unlocked ? 0.82 : 0.32);
+    const roof = this.add.rectangle(0, -68, 114, 22, complete ? 0xffb703 : region.stroke, unlocked ? 0.94 : 0.4)
+      .setStrokeStyle(3, 0xffffff, unlocked ? 0.55 : 0.16);
+    const roofTrim = this.add.rectangle(0, -50, 122, 10, 0x4d2c83, unlocked ? 0.48 : 0.16);
     let image = null;
     if (this.textures.exists(`game-${game.slug}`)) {
-      image = this.add.image(0, -13, `game-${game.slug}`).setDisplaySize(96, 64).setAlpha(unlocked ? 0.92 : 0.36);
+      image = this.add.image(0, -12, `game-${game.slug}`).setDisplaySize(88, 58).setAlpha(unlocked ? 0.92 : 0.34);
     }
-    const windowFrame = this.add.rectangle(0, -13, 104, 72, 0xffffff, 0).setStrokeStyle(4, 0xffffff, unlocked ? 0.85 : 0.25);
-    const seal = this.add.circle(0, 35, 17, complete ? 0x14746f : region.stroke, unlocked ? 0.95 : 0.36)
-      .setStrokeStyle(3, 0xffffff, unlocked ? 0.85 : 0.2);
+    const windowFrame = this.add.rectangle(0, -12, 96, 66, 0xffffff, 0).setStrokeStyle(3, 0xffffff, unlocked ? 0.78 : 0.2);
+    const seal = this.add.circle(0, 32, 15, complete ? 0x14746f : region.stroke, unlocked ? 0.92 : 0.32)
+      .setStrokeStyle(2, 0xffffff, unlocked ? 0.75 : 0.18);
     const sealText = this.add.text(0, 35, portalCode(game), {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "11px",
@@ -162,16 +178,25 @@ export class KingdomMapScene extends Phaser.Scene {
       backgroundColor: "#14746f",
       padding: { x: 5, y: 3 }
     }).setOrigin(0.5) : null;
-    const label = this.add.text(0, 80, game.title, {
+    const label = this.add.text(0, 70, game.title, {
       fontFamily: "Nunito, Arial, sans-serif",
-      fontSize: "14px",
+      fontSize: "13px",
       color: "#ffffff",
       backgroundColor: complete ? "#14746f" : "#2d174dcc",
       padding: { x: 8, y: 5 },
       align: "center",
-      wordWrap: { width: 150 }
+      wordWrap: { width: 138 },
+      stroke: "#1d1236",
+      strokeThickness: 3
     }).setOrigin(0.5, 0);
-    portal.add([shadow, glow, foundation, tower, roof, roofTrim, ...(image ? [image] : []), windowFrame, seal, sealText, ...(done ? [done] : []), label]);
+    const lock = unlocked ? null : this.add.text(40, -54, "LOCKED", {
+      fontFamily: "Nunito, Arial, sans-serif",
+      fontSize: "9px",
+      color: "#ffffff",
+      backgroundColor: "#3f315f",
+      padding: { x: 5, y: 3 }
+    }).setOrigin(0.5);
+    portal.add([shadow, glow, foundation, tower, roof, roofTrim, ...(image ? [image] : []), windowFrame, seal, sealText, ...(done ? [done] : []), ...(lock ? [lock] : []), label]);
     if (complete) {
       this.tweens.add({
         targets: glow,
@@ -203,27 +228,35 @@ export class KingdomMapScene extends Phaser.Scene {
 
   createNPCs() {
     const npcs = [
-      { x: 600, y: 305, code: "CG", name: "Crystal Guide" },
-      { x: 1515, y: 310, code: "GK", name: "Gate Keeper" },
-      { x: 2395, y: 325, code: "RP", name: "Roundtable Page" }
+      { x: 365, y: 235, character: "mage", name: "Crystal Guide" },
+      { x: 1340, y: 230, character: "knight", name: "Gate Keeper" },
+      { x: 2790, y: 250, character: "bard", name: "Roundtable Page" }
     ];
     npcs.forEach((npc) => {
-      const body = this.add.circle(npc.x, npc.y, 42, 0xffffff, 0.94).setStrokeStyle(5, 0x7b4dff).setDepth(30);
-      const icon = this.add.text(npc.x, npc.y - 4, npc.code, {
-        fontFamily: "Nunito, Arial, sans-serif",
-        fontSize: "22px",
-        color: "#4d2c83",
-        fontStyle: "bold"
-      }).setOrigin(0.5).setDepth(31);
-      const label = this.add.text(npc.x, npc.y + 50, npc.name, {
+      const glow = this.add.ellipse(npc.x, npc.y + 28, 84, 28, 0xffffff, 0.26).setDepth(29);
+      const avatar = this.createMapHero(npc.character, npc.x, npc.y, 31, 1.02);
+      const label = this.add.text(npc.x, npc.y + 76, npc.name, {
         fontFamily: "Nunito, Arial, sans-serif",
         fontSize: "15px",
         color: "#2d174d",
         backgroundColor: "#ffffffdd",
-        padding: { x: 8, y: 5 }
+        padding: { x: 8, y: 5 },
+        stroke: "#ffffff",
+        strokeThickness: 2
       }).setOrigin(0.5).setDepth(31);
-      this.tweens.add({ targets: [body, icon], y: "-=7", duration: 1300, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      this.tweens.add({ targets: [avatar, glow], y: "-=7", duration: 1300, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
     });
+  }
+
+  createMapHero(character, x, y, depth = 30, scale = 1) {
+    const hero = getHero(character);
+    const avatar = this.add.container(x, y).setDepth(depth);
+    const shadow = this.add.ellipse(0, 42, 52, 14, 0x000000, 0.2);
+    avatar.add(shadow);
+    hero.layers.forEach((layer) => {
+      avatar.add(this.add.sprite(0, 0, `lpc-${layer}`, FRONT_FRAME).setScale(scale));
+    });
+    return avatar;
   }
 
   createPlayer() {
@@ -237,20 +270,33 @@ export class KingdomMapScene extends Phaser.Scene {
   }
 
   createHeroAvatar(character) {
-    const colors = HERO_COLORS[character] || HERO_COLORS.knight;
-    const capeItem = RewardSystem.equippedItem("capes");
+    const hero = getHero(character);
+    const cape = RewardSystem.equippedItem("capes");
+    const outfit = RewardSystem.equippedItem("outfits");
     const crown = RewardSystem.equippedItem("crowns");
     const avatar = this.add.container(this.player.x, this.player.y - 14).setDepth(900);
-    this.heroFrame = HERO_FRAMES[character] ?? HERO_FRAMES.knight;
-    this.heroAnimationKey = `hero-${character}-walk`;
 
     const shadow = this.add.ellipse(0, 30, 50, 16, 0x000000, 0.24);
-    const cape = this.add.triangle(0, 8, -24, 42, 24, 42, 0, -9, capeItem?.color || colors.cape, 0.85);
-    const sprite = this.add.sprite(0, 0, "kk-heroes", this.heroFrame).setScale(4.2);
-    const crownShape = crown ? this.add.triangle(0, -38, -14, -24, 14, -24, 0, -44, crown.color || 0xffd166, 1)
-      .setStrokeStyle(2, 0xffffff, 0.9) : null;
-    avatar.add([shadow, cape, sprite, ...(crownShape ? [crownShape] : [])]);
-    this.heroSprite = sprite;
+    avatar.add(shadow);
+    this.heroLayerSprites = [];
+    const equippedLayers = [
+      cape?.id === "gratitude-cape" ? "cape-purple" : null,
+      outfit?.id === "empathy-wings" ? "wings-teal" : null,
+      ...hero.layers,
+      outfit?.id === "royal-helper-coat" ? "torso-plate" : null
+    ].filter(Boolean);
+
+    equippedLayers.forEach((layer) => {
+      const sprite = this.add.sprite(0, -2, `lpc-${layer}`, FRONT_FRAME).setScale(1.35);
+      avatar.add(sprite);
+      this.heroLayerSprites.push({ layer, sprite });
+    });
+    if (crown) {
+      const crownLayer = crown.id === "courage-crown" ? "crown-purple" : "crown-gold";
+      const crownSprite = this.add.sprite(0, -2, `lpc-${crownLayer}`, FRONT_FRAME).setScale(1.35);
+      avatar.add(crownSprite);
+      this.heroLayerSprites.push({ layer: crownLayer, sprite: crownSprite });
+    }
     return avatar;
   }
 
@@ -282,26 +328,33 @@ export class KingdomMapScene extends Phaser.Scene {
 
   createHUD() {
     this.hud = this.add.container(0, 0).setScrollFactor(0).setDepth(1000);
-    const panel = this.add.rectangle(480, 38, 928, 62, 0x2d174d, 0.86).setStrokeStyle(3, 0xffffff);
+    const panel = this.add.rectangle(480, 42, 928, 74, 0x2d174d, 0.9).setStrokeStyle(3, 0xffffff);
     this.pointsText = this.add.text(36, 17, "", {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "17px",
       color: "#ffffff",
-      fontStyle: "bold"
+      fontStyle: "bold",
+      stroke: "#1d1236",
+      strokeThickness: 3
     });
-    this.infoText = this.add.text(480, 16, "", {
+    this.infoText = this.add.text(480, 12, "", {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "18px",
       color: "#fff3b0",
       fontStyle: "bold",
-      align: "center"
+      align: "center",
+      wordWrap: { width: 420 },
+      stroke: "#1d1236",
+      strokeThickness: 4
     }).setOrigin(0.5, 0);
     this.questText = this.add.text(918, 13, "", {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "13px",
       color: "#ffffff",
       align: "right",
-      wordWrap: { width: 260 }
+      wordWrap: { width: 250 },
+      stroke: "#1d1236",
+      strokeThickness: 3
     }).setOrigin(1, 0);
     this.hoverText = this.add.text(480, 690, "", {
       fontFamily: "Nunito, Arial, sans-serif",
@@ -310,12 +363,20 @@ export class KingdomMapScene extends Phaser.Scene {
       backgroundColor: "#ffffffdd",
       padding: { x: 12, y: 7 }
     }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
-    this.hud.add([panel, this.pointsText, this.infoText, this.questText]);
-    this.createHudButton(82, 720, "Dashboard", () => this.scene.start("DashboardScene"));
-    this.createHudButton(238, 720, "Shop", () => this.scene.start("ShopScene"));
-    this.createHudButton(370, 720, "Closet", () => this.scene.start("ClosetScene"));
-    this.createHudButton(520, 720, "Room", () => this.scene.start("PlayerRoomScene"));
-    this.createHudButton(850, 720, "Card View", () => { window.location.href = "card-view.html"; });
+    const controls = this.add.text(480, 45, "E Enter  •  C Character  •  M Dashboard  •  L Logout", {
+      fontFamily: "Nunito, Arial, sans-serif",
+      fontSize: "14px",
+      color: "#ffffff",
+      fontStyle: "bold",
+      stroke: "#1d1236",
+      strokeThickness: 3
+    }).setOrigin(0.5, 0);
+    this.hud.add([panel, this.pointsText, this.infoText, controls, this.questText]);
+    this.createHudButton(80, 720, "Dashboard (M)", () => this.scene.start("DashboardScene"), 0xffd166, "#3a2900");
+    this.createHudButton(245, 720, "Shop", () => this.scene.start("ShopScene"), 0x2ec4b6, "#053f3b");
+    this.createHudButton(370, 720, "Closet", () => this.scene.start("ClosetScene"), 0x7b4dff, "#ffffff");
+    this.createHudButton(505, 720, "Room", () => this.scene.start("PlayerRoomScene"), 0xd76d77, "#ffffff");
+    this.createHudButton(850, 720, "Card View", () => { window.location.href = "card-view.html"; }, 0xffb703, "#3a2900");
     this.refreshHUD();
   }
 
@@ -338,15 +399,26 @@ export class KingdomMapScene extends Phaser.Scene {
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(1003);
   }
 
-  createHudButton(x, y, text, onClick) {
+  createHudButton(x, y, text, onClick, color = 0x5a2da0, textColor = "#ffffff") {
+    const width = Math.max(110, text.length * 8 + 28);
+    const bg = this.add.rectangle(x, y, width, 38, color, 0.96)
+      .setStrokeStyle(3, 0xffffff, 0.88)
+      .setScrollFactor(0)
+      .setDepth(1001)
+      .setInteractive({ useHandCursor: true });
     const button = this.add.text(x, y, text, {
       fontFamily: "Nunito, Arial, sans-serif",
-      fontSize: "16px",
-      color: "#ffffff",
-      backgroundColor: "#5a2da0",
-      padding: { x: 12, y: 7 }
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(1001).setInteractive({ useHandCursor: true });
-    button.on("pointerdown", onClick);
+      fontSize: "15px",
+      color: textColor,
+      fontStyle: "bold",
+      stroke: textColor === "#ffffff" ? "#1d1236" : "#ffffff",
+      strokeThickness: 2
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(1002).setInteractive({ useHandCursor: true });
+    [bg, button].forEach((target) => {
+      target.on("pointerover", () => bg.setScale(1.04));
+      target.on("pointerout", () => bg.setScale(1));
+      target.on("pointerdown", onClick);
+    });
   }
 
   refreshHUD() {
@@ -383,7 +455,7 @@ export class KingdomMapScene extends Phaser.Scene {
         this.openLauncher(nearby.game, nearby.index, !nearby.locked, nearby.required);
       }
     } else {
-      this.infoText.setText("Explore portals. E enters. C changes hero. M dashboard. L logout.");
+      this.infoText.setText("Walk near a portal to see its game. Use the buttons below anytime.");
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.C)) this.scene.start("CharacterSelectScene", { returnToDashboard: false });
@@ -422,13 +494,17 @@ export class KingdomMapScene extends Phaser.Scene {
   }
 
   updateHeroAnimation() {
-    if (!this.heroSprite) return;
+    if (!this.heroLayerSprites?.length) return;
     if (this.player.body.velocity.length() > 20) {
-      if (!this.heroSprite.anims.isPlaying) this.heroSprite.play(this.heroAnimationKey);
+      this.heroLayerSprites.forEach(({ layer, sprite }) => {
+        if (!sprite.anims.isPlaying) sprite.play(`lpc-${layer}-walk`);
+      });
       return;
     }
-    this.heroSprite.stop();
-    this.heroSprite.setFrame(this.heroFrame);
+    this.heroLayerSprites.forEach(({ sprite }) => {
+      sprite.stop();
+      sprite.setFrame(FRONT_FRAME);
+    });
   }
 
   updateMinimap() {

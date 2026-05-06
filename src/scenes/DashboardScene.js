@@ -1,7 +1,7 @@
-import { AuthSystem } from "../systems/AuthSystem.js?v=45";
-import { PlayerData } from "../systems/PlayerData.js?v=45";
-import { QuestSystem } from "../systems/QuestSystem.js?v=45";
-import { RewardSystem, CURRENT_EVENT } from "../systems/RewardSystem.js?v=45";
+import { AuthSystem } from "../systems/AuthSystem.js?v=55";
+import { PlayerData } from "../systems/PlayerData.js?v=55";
+import { QuestSystem } from "../systems/QuestSystem.js?v=55";
+import { RewardSystem, CURRENT_EVENT } from "../systems/RewardSystem.js?v=55";
 
 const HERO_NAMES = {
   knight: "Kind Knight",

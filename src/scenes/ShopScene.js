@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=45";
-import { RewardSystem, SHOP_ITEMS, CURRENT_EVENT } from "../systems/RewardSystem.js?v=45";
+import { PlayerData } from "../systems/PlayerData.js?v=55";
+import { RewardSystem, SHOP_ITEMS, CURRENT_EVENT } from "../systems/RewardSystem.js?v=55";
 
 const CATEGORIES = ["outfits", "capes", "crowns", "pets", "trails", "room", "effects"];
 
@@ -13,7 +13,7 @@ export class ShopScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor("#3d2466");
     this.add.rectangle(480, 380, 960, 760, 0x3d2466);
     this.add.circle(840, 95, 76, 0xffd166, 0.88);
-    this.panel = this.add.dom(480, 380).createFromHTML(`<div class="kk-reward-panel shop"></div>`);
+    this.panel = this.add.dom(480, 322).createFromHTML(`<div class="kk-reward-panel shop"></div>`);
     this.enablePanelScroll();
     this.render();
   }
@@ -117,5 +117,8 @@ function label(category) {
 }
 
 function itemIcon(item) {
+  if (item.sprite) {
+    return `<div class="kk-item-icon" style="--item-color:#${item.color.toString(16).padStart(6, "0")}"><span class="kk-lpc-item-icon" style="background-image:url('${item.sprite}')"></span></div>`;
+  }
   return `<div class="kk-item-icon" style="--item-color:#${item.color.toString(16).padStart(6, "0")}">${item.asset ? `<img src="${item.asset}" alt="">` : `<span>${item.icon}</span>`}</div>`;
 }

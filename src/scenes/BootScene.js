@@ -1,5 +1,6 @@
-import { PlayerData } from "../systems/PlayerData.js?v=45";
-import { AuthSystem } from "../systems/AuthSystem.js?v=45";
+import { PlayerData } from "../systems/PlayerData.js?v=55";
+import { AuthSystem } from "../systems/AuthSystem.js?v=55";
+import { HERO_LAYER_ASSETS, WALK_FRAMES } from "../systems/AssetCatalog.js?v=55";
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -41,16 +42,18 @@ export class BootScene extends Phaser.Scene {
 
   preload() {
     const games = window.KIND_KINGDOM_GAMES || [];
-    this.load.spritesheet("kk-heroes", "assets/sprites/third-party/grafxkid-rpg-assets.png", {
-      frameWidth: 16,
-      frameHeight: 16
+    Object.entries(HERO_LAYER_ASSETS).forEach(([key, path]) => {
+      this.load.spritesheet(`lpc-${key}`, path, { frameWidth: 64, frameHeight: 64 });
     });
-    this.load.image("pet-baby-dragon", "assets/sprites/third-party/tiny-creatures/tile_0032.png");
-    this.load.image("pet-lantern-fox", "assets/sprites/third-party/tiny-creatures/tile_0180.png");
-    this.load.image("pet-crystal-turtle", "assets/sprites/third-party/tiny-creatures/tile_0130.png");
-    this.load.image("pet-cloud-owl", "assets/sprites/third-party/tiny-creatures/tile_0121.png");
-    this.load.image("pet-cloud-owl-flap", "assets/sprites/third-party/tiny-creatures/tile_0122.png");
-    this.load.image("pet-firefly-bunny", "assets/sprites/third-party/tiny-creatures/tile_0179.png");
+    ["baby-dragon", "lantern-fox", "crystal-turtle", "cloud-owl", "firefly-bunny"].forEach((pet) => {
+      this.load.svg(`pet-${pet}`, `assets/lpc-generated/pets/${pet}.svg`, { width: 96, height: 96 });
+    });
+    [
+      "gratitude-cape", "courage-crown", "rainbow-trail", "calm-waterfall", "empathy-wings",
+      "royal-helper-coat", "kindness-crown", "star-trail", "garden-desk", "pet-bed", "lantern-night-sky"
+    ].forEach((item) => {
+      this.load.svg(`item-${item}`, `assets/lpc-generated/items/${item}.svg`, { width: 96, height: 96 });
+    });
     this.load.svg("kingdom-world-map", "src/assets/maps/kingdom-world-map.svg", { width: 3200, height: 2100 });
     games.forEach((game) => {
       this.load.image(`game-${game.slug}`, `assets/images/games/${game.slug}.jpg`);
@@ -58,20 +61,13 @@ export class BootScene extends Phaser.Scene {
   }
 
   createCharacterAnimations() {
-    const frameSets = {
-      knight: [0, 1, 2, 1],
-      mage: [3, 4, 5, 4],
-      ranger: [8, 9, 10, 9],
-      bard: [32, 33, 34, 33]
-    };
-
-    Object.entries(frameSets).forEach(([hero, frames]) => {
-      const key = `hero-${hero}-walk`;
-      if (this.anims.exists(key)) return;
+    Object.keys(HERO_LAYER_ASSETS).forEach((key) => {
+      const animationKey = `lpc-${key}-walk`;
+      if (this.anims.exists(animationKey)) return;
       this.anims.create({
-        key,
-        frames: frames.map((frame) => ({ key: "kk-heroes", frame })),
-        frameRate: 7,
+        key: animationKey,
+        frames: WALK_FRAMES.map((frame) => ({ key: `lpc-${key}`, frame })),
+        frameRate: 8,
         repeat: -1
       });
     });

@@ -1,5 +1,6 @@
-import { PlayerData } from "../systems/PlayerData.js?v=45";
-import { RewardSystem, SHOP_ITEMS } from "../systems/RewardSystem.js?v=45";
+import { PlayerData } from "../systems/PlayerData.js?v=55";
+import { RewardSystem, SHOP_ITEMS } from "../systems/RewardSystem.js?v=55";
+import { HERO_LAYER_ASSETS, getHero } from "../systems/AssetCatalog.js?v=55";
 
 const EQUIP_CATEGORIES = ["outfits", "crowns", "capes", "pets", "trails", "effects"];
 
@@ -118,6 +119,9 @@ function label(category) {
 }
 
 function itemIcon(item) {
+  if (item.sprite) {
+    return `<div class="kk-item-icon" style="--item-color:#${item.color.toString(16).padStart(6, "0")}"><span class="kk-lpc-item-icon" style="background-image:url('${item.sprite}')"></span></div>`;
+  }
   return `<div class="kk-item-icon" style="--item-color:#${item.color.toString(16).padStart(6, "0")}">${item.asset ? `<img src="${item.asset}" alt="">` : `<span>${item.icon}</span>`}</div>`;
 }
 
@@ -129,23 +133,35 @@ function equippedSummary() {
 }
 
 function heroPreview(character, rewards) {
-  const frames = { knight: 0, mage: 2, ranger: 8, bard: 16 };
-  const frame = frames[character] ?? 0;
-  const x = (frame % 8) * 46;
-  const y = Math.floor(frame / 8) * 40;
-  const equippedItems = ["capes", "outfits", "crowns", "trails", "effects"]
+  const hero = getHero(character);
+  const cape = RewardSystem.equippedItem("capes");
+  const outfit = RewardSystem.equippedItem("outfits");
+  const crown = RewardSystem.equippedItem("crowns");
+  const crownLayer = crown ? crown.id === "courage-crown" ? "crown-purple" : "crown-gold" : null;
+  const floatingItems = ["effects"]
     .map((category) => RewardSystem.equippedItem(category))
     .filter(Boolean);
   const pet = RewardSystem.equippedItem("pets");
+  const equippedLayers = [
+    cape?.id === "gratitude-cape" ? "cape-purple" : null,
+    outfit?.id === "empathy-wings" ? "wings-teal" : null,
+    ...hero.layers,
+    outfit?.id === "royal-helper-coat" ? "torso-plate" : null,
+    crownLayer
+  ].filter(Boolean);
 
   return `
     <div class="kk-avatar-stack">
       <div class="kk-avatar-trail ${RewardSystem.equippedItem("trails") ? "active" : ""}"></div>
-      <div class="kk-player-sprite" style="--player-x:-${x * 3}px; --player-y:-${y * 3}px"></div>
-      ${equippedItems.map((item, index) => `
+      ${equippedLayers.map((layer) => lpcLayer(layer)).join("")}
+      ${floatingItems.map((item, index) => `
         <img class="kk-avatar-accessory slot-${index}" src="${item.asset}" alt="${item.name}">
       `).join("")}
       ${pet ? `<img class="kk-avatar-pet" src="${pet.asset}" alt="${pet.name}">` : ""}
     </div>
   `;
+}
+
+function lpcLayer(layer) {
+  return `<div class="kk-lpc-layer" style="background-image:url('${HERO_LAYER_ASSETS[layer]}')"></div>`;
 }
