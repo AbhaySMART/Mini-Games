@@ -1,7 +1,9 @@
-import { AuthSystem } from "../systems/AuthSystem.js?v=55";
-import { PlayerData } from "../systems/PlayerData.js?v=55";
-import { QuestSystem } from "../systems/QuestSystem.js?v=55";
-import { RewardSystem, CURRENT_EVENT } from "../systems/RewardSystem.js?v=55";
+import { AuthSystem } from "../systems/AuthSystem.js?v=61";
+import { PlayerData } from "../systems/PlayerData.js?v=61";
+import { QuestSystem } from "../systems/QuestSystem.js?v=61";
+import { RewardSystem, CURRENT_EVENT } from "../systems/RewardSystem.js?v=61";
+import { EmotionSystem } from "../systems/EmotionSystem.js?v=61";
+import { KingdomNewsSystem } from "../systems/KingdomNewsSystem.js?v=61";
 
 const HERO_NAMES = {
   knight: "Kind Knight",
@@ -29,6 +31,8 @@ export class DashboardScene extends Phaser.Scene {
     const activeQuest = QuestSystem.getActiveQuest(progress);
     const streak = RewardSystem.awardDailyVisit();
     const title = RewardSystem.equippedTitle();
+    const mood = EmotionSystem.getKingdomMood(progress);
+    const unreadNews = KingdomNewsSystem.unreadCount(window.KIND_KINGDOM_GAMES || []);
 
     this.cameras.main.setBackgroundColor("#6fb7ff");
     this.add.rectangle(480, 380, 960, 760, 0x6fb7ff);
@@ -52,6 +56,17 @@ export class DashboardScene extends Phaser.Scene {
       backgroundColor: "#ffffffcc",
       padding: { x: 12, y: 6 }
     });
+    if (unreadNews > 0) {
+      this.add.rectangle(788, 132, 250, 48, 0xfff2a8, 0.96).setStrokeStyle(4, 0xffb703);
+      this.add.text(788, 132, `${unreadNews} new Kingdom News post${unreadNews === 1 ? "" : "s"}`, {
+        fontFamily: "Nunito, Arial, sans-serif",
+        fontSize: "15px",
+        color: "#3a2900",
+        fontStyle: "bold",
+        align: "center",
+        wordWrap: { width: 218 }
+      }).setOrigin(0.5);
+    }
 
     const updatedProgress = PlayerData.loadProgress();
     this.createStatCard(142, 285, "Kindness Points", String(updatedProgress.points), "KP");
@@ -73,18 +88,28 @@ export class DashboardScene extends Phaser.Scene {
       align: "center",
       wordWrap: { width: 800 }
     }).setOrigin(0.5);
+    this.add.text(480, 494, `Kingdom mood: ${mood.sky}. Helpful and calm choices brighten the world; rushed or unkind choices make it feel heavier.`, {
+      fontFamily: "Nunito, Arial, sans-serif",
+      fontSize: "15px",
+      color: "#2d174d",
+      align: "center",
+      wordWrap: { width: 780 }
+    }).setOrigin(0.5);
 
-    this.makeButton(176, 555, "Begin Gameplay", 0x5a2da0, () => {
+    this.makeButton(170, 548, "Begin Gameplay", 0x5a2da0, () => {
       this.scene.start(player.character ? "KingdomMapScene" : "CharacterSelectScene");
     });
-    this.makeButton(384, 555, "Shop", 0xff9f1c, () => this.scene.start("ShopScene"));
-    this.makeButton(556, 555, "Closet", 0x2ec4b6, () => this.scene.start("ClosetScene"));
-    this.makeButton(744, 555, "My Room", 0x7b4dff, () => this.scene.start("PlayerRoomScene"));
-    this.makeButton(254, 645, "Choose Character", 0x2ec4b6, () => this.scene.start("CharacterSelectScene", { returnToDashboard: true }));
-    this.makeButton(480, 645, "Card View", 0xff9f1c, () => {
+    this.makeButton(372, 548, "Story Forge", 0xd76d77, () => this.scene.start("StoryForgeScene"));
+    this.makeButton(548, 548, "Shop", 0xff9f1c, () => this.scene.start("ShopScene"));
+    this.makeButton(724, 548, "Closet", 0x2ec4b6, () => this.scene.start("ClosetScene"));
+    this.makeButton(132, 636, "Kingdom News", 0xffb703, () => this.scene.start("KingdomNewsScene"), "#3a2900");
+    this.makeButton(324, 636, "Journal", 0xfff2a8, () => this.scene.start("ReflectionJournalScene"), "#3a2900");
+    this.makeButton(492, 636, "My Room", 0x7b4dff, () => this.scene.start("PlayerRoomScene"));
+    this.makeButton(682, 636, "Choose Hero", 0x2ec4b6, () => this.scene.start("CharacterSelectScene", { returnToDashboard: true }));
+    this.makeButton(842, 636, "Card View", 0xff9f1c, () => {
       window.location.href = "card-view.html";
     });
-    this.makeButton(704, 645, "Log Out", 0x3d315b, () => {
+    this.makeButton(848, 710, "Log Out", 0x3d315b, () => {
       AuthSystem.logout();
       this.scene.start("LoginScene");
     });
@@ -115,11 +140,11 @@ export class DashboardScene extends Phaser.Scene {
     }).setOrigin(0.5);
   }
 
-  makeButton(x, y, text, color, onClick) {
+  makeButton(x, y, text, color, onClick, textColor = "#ffffff") {
     const button = this.add.text(x, y, text, {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "22px",
-      color: "#ffffff",
+      color: textColor,
       backgroundColor: `#${color.toString(16).padStart(6, "0")}`,
       padding: { x: 20, y: 12 }
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });

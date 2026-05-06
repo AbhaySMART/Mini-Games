@@ -1,9 +1,11 @@
-import { AuthSystem } from "../systems/AuthSystem.js?v=55";
-import { PlayerData } from "../systems/PlayerData.js?v=55";
-import { UnlockSystem, DEV_UNLOCK_ALL_GAMES } from "../systems/UnlockSystem.js?v=55";
-import { QuestSystem } from "../systems/QuestSystem.js?v=55";
-import { RewardSystem } from "../systems/RewardSystem.js?v=55";
-import { FRONT_FRAME, getHero } from "../systems/AssetCatalog.js?v=55";
+import { AuthSystem } from "../systems/AuthSystem.js?v=61";
+import { PlayerData } from "../systems/PlayerData.js?v=61";
+import { UnlockSystem, DEV_UNLOCK_ALL_GAMES } from "../systems/UnlockSystem.js?v=61";
+import { QuestSystem } from "../systems/QuestSystem.js?v=61";
+import { RewardSystem } from "../systems/RewardSystem.js?v=61";
+import { EmotionSystem } from "../systems/EmotionSystem.js?v=61";
+import { NPCMemorySystem } from "../systems/NPCMemorySystem.js?v=61";
+import { FRONT_FRAME, getHero } from "../systems/AssetCatalog.js?v=61";
 
 const WORLD_WIDTH = 3200;
 const WORLD_HEIGHT = 2100;
@@ -34,12 +36,14 @@ export class KingdomMapScene extends Phaser.Scene {
     this.progress = PlayerData.loadProgress();
     this.playerData = PlayerData.loadPlayer();
     this.rewards = RewardSystem.load();
+    this.mood = EmotionSystem.getKingdomMood(this.progress);
 
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.cameras.main.setZoom(0.88);
 
     this.drawWorld();
+    this.applyEmotionAdaptiveWorld();
     this.applyMapEffect();
     this.createLocations();
     this.createNPCs();
@@ -49,7 +53,7 @@ export class KingdomMapScene extends Phaser.Scene {
     this.createMinimap();
 
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.keys = this.input.keyboard.addKeys("W,A,S,D,E,SPACE,C,M,L");
+    this.keys = this.input.keyboard.addKeys("W,A,S,D,E,SPACE,C,M,L,I");
     this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
   }
@@ -81,7 +85,7 @@ export class KingdomMapScene extends Phaser.Scene {
       this.tweens.add({
         targets: cloud,
         x: cloud.x + 50,
-        duration: 8000 + i * 400,
+        duration: (8000 + i * 400) * (this.mood?.cloudDuration || 1),
         yoyo: true,
         repeat: -1,
         ease: "Sine.easeInOut"
@@ -228,9 +232,12 @@ export class KingdomMapScene extends Phaser.Scene {
 
   createNPCs() {
     const npcs = [
-      { x: 365, y: 235, character: "mage", name: "Crystal Guide" },
-      { x: 1340, y: 230, character: "knight", name: "Gate Keeper" },
-      { x: 2790, y: 250, character: "bard", name: "Roundtable Page" }
+      { x: 365, y: 235, character: "mage", name: "Crystal Guide", questId: "restore-crystal" },
+      { x: 1340, y: 230, character: "knight", name: "Gate Keeper", questId: "calm-the-gates" },
+      { x: 2790, y: 250, character: "bard", name: "Roundtable Page", questId: "council-harmony" },
+      { x: 1820, y: 1000, character: "ranger", name: "Lantern Keeper", questId: "council-harmony" },
+      { x: 2390, y: 1350, character: "mage", name: "Garden Sage", questId: "restore-crystal" },
+      { x: 760, y: 1245, character: "ranger", name: "Harbor Helper", questId: "calm-the-gates" }
     ];
     npcs.forEach((npc) => {
       const glow = this.add.ellipse(npc.x, npc.y + 28, 84, 28, 0xffffff, 0.26).setDepth(29);
@@ -244,8 +251,65 @@ export class KingdomMapScene extends Phaser.Scene {
         stroke: "#ffffff",
         strokeThickness: 2
       }).setOrigin(0.5).setDepth(31);
+      const memoryBadge = this.add.text(npc.x, npc.y + 103, NPCMemorySystem.statusFor(npc.name), {
+        fontFamily: "Nunito, Arial, sans-serif",
+        fontSize: "12px",
+        color: "#ffffff",
+        backgroundColor: "#2d174dcc",
+        padding: { x: 7, y: 4 },
+        align: "center",
+        wordWrap: { width: 135 }
+      }).setOrigin(0.5).setDepth(31);
+      const zone = this.add.zone(npc.x, npc.y + 22, 150, 170)
+        .setDepth(35)
+        .setInteractive({ useHandCursor: true });
+      zone.on("pointerover", () => {
+        const quest = QuestSystem.all().find((item) => item.id === npc.questId);
+        const memoryLine = NPCMemorySystem.memoryFor(npc.name, this.progress, this.mood);
+        avatar.setScale(1.08);
+        glow.setAlpha(0.5);
+        label.setBackgroundColor("#fff2a8");
+        memoryBadge.setText(NPCMemorySystem.statusFor(npc.name));
+        this.hoverText.setText(`${npc.name}: ${memoryLine}`);
+        this.activeNpcQuestText = quest ? `${memoryLine} ${quest.prompt}` : memoryLine;
+        this.infoText.setText(this.activeNpcQuestText);
+      });
+      zone.on("pointerout", () => {
+        avatar.setScale(1);
+        glow.setAlpha(0.26);
+        label.setBackgroundColor("#ffffffdd");
+        this.hoverText.setText("");
+        this.activeNpcQuestText = "";
+      });
+      zone.on("pointerdown", () => {
+        NPCMemorySystem.recordVisit(npc.name);
+        memoryBadge.setText(NPCMemorySystem.statusFor(npc.name));
+        this.openNpcQuest(npc.questId, npc.name);
+      });
       this.tweens.add({ targets: [avatar, glow], y: "-=7", duration: 1300, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
     });
+  }
+
+  openNpcQuest(questId, npcName) {
+    const quest = QuestSystem.all().find((item) => item.id === questId);
+    const memoryLine = NPCMemorySystem.memoryFor(npcName, this.progress, this.mood);
+    if (!quest) {
+      this.infoText.setText(`${npcName}: ${memoryLine}`);
+      return;
+    }
+    const gameIndex = this.games.findIndex((game) => quest.targetCategories.includes(game.category));
+    if (gameIndex < 0) {
+      this.infoText.setText(`${npcName}: ${memoryLine} ${quest.prompt}`);
+      return;
+    }
+    const game = this.games[gameIndex];
+    const required = UnlockSystem.requiredPoints(gameIndex);
+    const unlocked = UnlockSystem.isUnlocked(required);
+    if (!unlocked) {
+      this.infoText.setText(`${npcName}: ${memoryLine} ${game.title} needs ${required} points.`);
+      return;
+    }
+    this.openLauncher(game, gameIndex, true, required);
   }
 
   createMapHero(character, x, y, depth = 30, scale = 1) {
@@ -314,6 +378,77 @@ export class KingdomMapScene extends Phaser.Scene {
     this.tweens.add({ targets: sparkle, alpha: 0.2, scale: 1.6, duration: 650, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
   }
 
+  applyEmotionAdaptiveWorld() {
+    const mood = this.mood || EmotionSystem.getKingdomMood(this.progress);
+    this.speedMultiplier = mood.speedMultiplier;
+    if (mood.warmth > 0.55) {
+      const sunlight = this.add.rectangle(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH, WORLD_HEIGHT, 0xfff2a8, (mood.warmth - 0.45) * 0.16)
+        .setDepth(3);
+      const rays = this.add.graphics().setDepth(4);
+      rays.fillStyle(0xffd166, (mood.warmth - 0.45) * 0.08);
+      for (let i = 0; i < 7; i += 1) {
+        rays.fillTriangle(200 + i * 420, 0, 360 + i * 420, 0, 240 + i * 420, WORLD_HEIGHT);
+      }
+      this.tweens.add({ targets: sunlight, alpha: sunlight.alpha * 1.35, duration: 1800, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    }
+    if (mood.peace > 0.55) {
+      for (let i = 0; i < 18; i += 1) {
+        const mote = this.add.circle(160 + (i * 313) % 2900, 220 + (i * 197) % 1600, 5, 0x7bdff2, 0.22 + mood.peace * 0.18).setDepth(5);
+        this.tweens.add({
+          targets: mote,
+          y: mote.y - 26,
+          alpha: 0.08,
+          duration: 2600 + i * 80,
+          yoyo: true,
+          repeat: -1,
+          ease: "Sine.easeInOut"
+        });
+      }
+      this.prepareCalmAudio(mood);
+    }
+    if (mood.shadow > 0.08) {
+      const storm = this.add.rectangle(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH, WORLD_HEIGHT, 0x17122f, mood.shadow)
+        .setDepth(6);
+      this.tweens.add({ targets: storm, alpha: mood.shadow * 0.78, duration: 2100, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      for (let i = 0; i < Math.ceil(mood.shadow * 22); i += 1) {
+        const fog = this.add.ellipse(260 + i * 260, 420 + (i % 5) * 280, 260, 58, 0x2d174d, 0.08 + mood.shadow * 0.08).setDepth(7);
+        this.tweens.add({ targets: fog, x: fog.x + 42, duration: 5200 + i * 160, yoyo: true, repeat: -1 });
+      }
+    }
+  }
+
+  prepareCalmAudio(mood) {
+    this.input.once("pointerdown", () => {
+      if (this.calmAudioStarted || (!window.AudioContext && !window.webkitAudioContext)) return;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioContextClass();
+      const gain = ctx.createGain();
+      gain.gain.value = 0.018 + mood.peace * 0.018;
+      gain.connect(ctx.destination);
+      [196, 246.94, 329.63].forEach((frequency, index) => {
+        const osc = ctx.createOscillator();
+        const noteGain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = frequency;
+        noteGain.gain.value = 0.12 / (index + 1);
+        osc.connect(noteGain);
+        noteGain.connect(gain);
+        osc.start();
+        this.tweens.addCounter({
+          from: 0,
+          to: Math.PI * 2,
+          duration: 3200 + index * 900,
+          repeat: -1,
+          onUpdate: (tween) => {
+            noteGain.gain.value = (0.05 + Math.sin(tween.getValue()) * 0.02) / (index + 1);
+          }
+        });
+      });
+      this.calmAudioStarted = true;
+      this.events.once("shutdown", () => ctx.close());
+    });
+  }
+
   applyMapEffect() {
     const effect = RewardSystem.equippedItem("effects");
     if (!effect) return;
@@ -363,7 +498,7 @@ export class KingdomMapScene extends Phaser.Scene {
       backgroundColor: "#ffffffdd",
       padding: { x: 12, y: 7 }
     }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
-    const controls = this.add.text(480, 45, "E Enter  •  C Character  •  M Dashboard  •  L Logout", {
+    const controls = this.add.text(480, 45, "E Enter  •  I Story Forge  •  C Character  •  M Dashboard  •  L Logout", {
       fontFamily: "Nunito, Arial, sans-serif",
       fontSize: "14px",
       color: "#ffffff",
@@ -376,6 +511,7 @@ export class KingdomMapScene extends Phaser.Scene {
     this.createHudButton(245, 720, "Shop", () => this.scene.start("ShopScene"), 0x2ec4b6, "#053f3b");
     this.createHudButton(370, 720, "Closet", () => this.scene.start("ClosetScene"), 0x7b4dff, "#ffffff");
     this.createHudButton(505, 720, "Room", () => this.scene.start("PlayerRoomScene"), 0xd76d77, "#ffffff");
+    this.createHudButton(650, 720, "Story Forge", () => this.scene.start("StoryForgeScene"), 0xff8fab, "#ffffff");
     this.createHudButton(850, 720, "Card View", () => { window.location.href = "card-view.html"; }, 0xffb703, "#3a2900");
     this.refreshHUD();
   }
@@ -423,13 +559,14 @@ export class KingdomMapScene extends Phaser.Scene {
 
   refreshHUD() {
     this.progress = PlayerData.loadProgress();
+    this.mood = EmotionSystem.getKingdomMood(this.progress);
     const activeQuest = QuestSystem.getActiveQuest(this.progress);
     this.pointsText.setText(`Points: ${this.progress.points}${DEV_UNLOCK_ALL_GAMES ? " • Dev unlocked" : ""}`);
-    this.questText.setText(`${activeQuest.npc}: ${activeQuest.prompt}`);
+    this.questText.setText(`Mood: ${this.mood.sky}\n${activeQuest.npc}: ${activeQuest.prompt}`);
   }
 
   update() {
-    const speed = 230;
+    const speed = 230 * (this.speedMultiplier || 1);
     this.player.setVelocity(0);
 
     if (this.cursors.left.isDown || this.keys.A.isDown) this.player.setVelocityX(-speed);
@@ -455,11 +592,12 @@ export class KingdomMapScene extends Phaser.Scene {
         this.openLauncher(nearby.game, nearby.index, !nearby.locked, nearby.required);
       }
     } else {
-      this.infoText.setText("Walk near a portal to see its game. Use the buttons below anytime.");
+      this.infoText.setText(this.activeNpcQuestText || "Walk near a portal to see its game. Use the buttons below anytime.");
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.C)) this.scene.start("CharacterSelectScene", { returnToDashboard: false });
     if (Phaser.Input.Keyboard.JustDown(this.keys.M)) this.scene.start("DashboardScene");
+    if (Phaser.Input.Keyboard.JustDown(this.keys.I)) this.scene.start("StoryForgeScene");
     if (Phaser.Input.Keyboard.JustDown(this.keys.L)) {
       AuthSystem.logout();
       this.scene.start("LoginScene");

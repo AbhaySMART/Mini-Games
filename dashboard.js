@@ -25,8 +25,22 @@ const DEV_UNLOCK_ALL_GAMES = true;
 const currentUser = localStorage.getItem("kkCurrentUser");
 let activeValue = "All";
 let searchTerm = "";
+let favorites = readFavorites();
 
 renderDashboard();
+
+grid.addEventListener("click", (event) => {
+  const favoriteButton = event.target.closest("[data-favorite]");
+  if (!favoriteButton) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const slug = favoriteButton.dataset.favorite;
+  writeFavorites(favorites.includes(slug)
+    ? favorites.filter((item) => item !== slug)
+    : [...favorites, slug]);
+  renderRecommendation();
+  renderGames();
+});
 
 function renderDashboard() {
   renderFeatured();
@@ -49,12 +63,14 @@ function renderGames() {
 function gameCard(game, index) {
   const meta = gameMeta(game, index);
   const unlocked = DEV_UNLOCK_ALL_GAMES || progress.points >= meta.unlockAt;
+  const favorite = favorites.includes(game.slug);
   const tag = DEV_UNLOCK_ALL_GAMES
     ? "Dev unlocked"
     : unlocked
       ? "Unlocked"
       : `${meta.unlockAt - progress.points} pts to unlock`;
   const cardBody = `
+    <button class="favorite-card-button ${favorite ? "active" : ""}" type="button" data-favorite="${game.slug}" aria-label="${favorite ? "Remove favorite" : "Add favorite"}">${favorite ? "★" : "☆"}</button>
     <span class="map-pin">${game.icon}</span>
     <span class="game-photo">
       <img
@@ -80,7 +96,7 @@ function gameCard(game, index) {
   if (!unlocked) {
     return `<article class="dashboard-card locked theme-${game.slug}" data-skill="${dashboardSkill(game)}" style="--map-step:${index % 6}">${cardBody}</article>`;
   }
-  return `<a class="dashboard-card theme-${game.slug}" data-skill="${dashboardSkill(game)}" style="--map-step:${index % 6}" href="game.html?game=${game.slug}">${cardBody}</a>`;
+  return `<article class="dashboard-card theme-${game.slug}" data-skill="${dashboardSkill(game)}" style="--map-step:${index % 6}">${cardBody}<a class="card-play-link" href="game.html?game=${game.slug}" aria-label="Play ${game.title}"></a></article>`;
 }
 
 function renderFilters() {
@@ -134,11 +150,11 @@ function renderFeatured() {
 
 function renderRecommendation() {
   const pool = KIND_KINGDOM_GAMES.filter((game, index) => (DEV_UNLOCK_ALL_GAMES || progress.points >= gameMeta(game, index).unlockAt) && matchesValue(game) && matchesSearch(game));
-  const preferred = pool.find((game) => dashboardSkill(game) === "Listening") || pool[0] || KIND_KINGDOM_GAMES[0];
+  const preferred = pool.find((game) => favorites.includes(game.slug)) || pool.find((game) => dashboardSkill(game) === "Listening") || pool[0] || KIND_KINGDOM_GAMES[0];
   recommendation.innerHTML = `
     <div>
       <b>You should try ${preferred.title} next</b>
-      <span>because it builds ${dashboardSkill(preferred).toLowerCase()} through ${preferred.mechanicName.toLowerCase()}.</span>
+      <span>${favorites.includes(preferred.slug) ? "This is one of your favorites, and it" : "It"} builds ${dashboardSkill(preferred).toLowerCase()} through ${preferred.mechanicName.toLowerCase()}.</span>
     </div>
     <a class="mini-play" href="game.html?game=${preferred.slug}">Try It</a>
   `;
@@ -214,6 +230,25 @@ function readProgress() {
   } catch {
     return fallback;
   }
+}
+
+function favoriteKey() {
+  return currentUser ? `kindKingdomFavorites:${currentUser}` : "kindKingdomFavorites";
+}
+
+function readFavorites() {
+  try {
+    const data = JSON.parse(localStorage.getItem(favoriteKey()) || localStorage.getItem("kindKingdomFavorites") || "[]");
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeFavorites(next) {
+  favorites = [...new Set(next)];
+  localStorage.setItem(favoriteKey(), JSON.stringify(favorites));
+  localStorage.setItem("kindKingdomFavorites", JSON.stringify(favorites));
 }
 
 function createLocalImageUrl(game) {

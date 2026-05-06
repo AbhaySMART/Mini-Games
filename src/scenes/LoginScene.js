@@ -1,4 +1,4 @@
-import { AuthSystem } from "../systems/AuthSystem.js?v=55";
+import { AuthSystem } from "../systems/AuthSystem.js?v=61";
 
 export class LoginScene extends Phaser.Scene {
   constructor() {

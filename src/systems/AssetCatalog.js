@@ -3,25 +3,25 @@ export const HEROES = [
     id: "knight",
     title: "Kind Knight",
     color: 0x7b4dff,
-    layers: ["body-male", "legs-navy", "torso-plate", "hair-page"]
+    layers: ["body-male", "legs-navy", "torso-plate", "head-male", "nose-straight", "hair-page"]
   },
   {
     id: "mage",
     title: "Mindful Mage",
     color: 0x2ec4b6,
-    layers: ["hair-princess-bg", "body-female", "legs-purple", "torso-purple-frock", "hair-princess-fg"]
+    layers: ["body-female", "legs-purple", "torso-purple-frock", "head-female", "nose-button", "hair-princess-bg", "hair-princess-fg"]
   },
   {
     id: "ranger",
     title: "Helping Ranger",
     color: 0x52b788,
-    layers: ["hair-long-bg", "body-teen", "legs-forest", "torso-forest-tunic", "hair-long-fg"]
+    layers: ["body-teen", "legs-forest", "torso-forest-tunic", "head-child", "nose-button", "hair-long-bg", "hair-long-fg"]
   },
   {
     id: "bard",
     title: "Listening Bard",
     color: 0xff8fab,
-    layers: ["body-male", "legs-purple", "torso-rose-frock", "hair-pixie"]
+    layers: ["body-male", "legs-purple", "torso-rose-frock", "head-male", "nose-straight", "hair-pixie"]
   }
 ];
 
@@ -42,6 +42,11 @@ export const HERO_LAYER_ASSETS = {
   "hair-long-fg": "assets/lpc-generated/heroes/hair-long-fg.png",
   "hair-princess-bg": "assets/lpc-generated/heroes/hair-princess-bg.png",
   "hair-princess-fg": "assets/lpc-generated/heroes/hair-princess-fg.png",
+  "head-male": "assets/lpc-generated/faces/head-male.png",
+  "head-female": "assets/lpc-generated/faces/head-female.png",
+  "head-child": "assets/lpc-generated/faces/head-child.png",
+  "nose-straight": "assets/lpc-generated/faces/nose-straight.png",
+  "nose-button": "assets/lpc-generated/faces/nose-button.png",
   "cape-purple": "assets/lpc-generated/accessories/cape-purple-behind.png",
   "cape-blue": "assets/lpc-generated/accessories/cape-blue-behind.png",
   "cape-teal": "assets/lpc-generated/accessories/cape-teal-behind.png",

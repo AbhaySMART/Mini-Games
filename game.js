@@ -3,7 +3,7 @@ const slug = params.get("game") || KIND_KINGDOM_GAMES[0].slug;
 const game = KIND_KINGDOM_GAMES.find((item) => item.slug === slug) || KIND_KINGDOM_GAMES[0];
 const root = document.querySelector("#game-root");
 const state = { score: 0, streak: 0, time: 60, timer: null, level: 60, progress: 0 };
-const completionState = { gameFinished: false, quizPassed: false, quizAnswers: {} };
+const completionState = { gameFinished: false, quizPassed: false, completed: false, quizAnswers: {} };
 let lessonSceneTimer = null;
 let musicContext = null;
 let musicTimer = null;
@@ -90,6 +90,7 @@ function renderPage() {
         <button class="complete-button" type="button" data-complete-game>Complete Game</button>
         <div class="completion-status" data-completion-status>Pass the quiz first.</div>
       </section>
+      ${reflectionMarkup(game)}
       <a class="big-back" href="index.html">BACK</a>
     </section>
   `;
@@ -140,8 +141,11 @@ function bindPage() {
     button.addEventListener("click", () => chooseQuizAnswer(button));
   });
   document.querySelector("[data-complete-game]").addEventListener("click", completeGame);
+  document.querySelector("[data-save-reflection]").addEventListener("click", saveReflection);
+  document.querySelector("[data-favorite-game]").addEventListener("click", toggleFavoriteGame);
   playLessonVideo(false);
   syncCompletionStatus();
+  syncFavoriteButton();
 }
 
 function lessonVideoMarkup(game) {
@@ -246,6 +250,37 @@ function quizMarkup(game) {
         `).join("")}
       </div>
       <div class="quiz-summary" data-quiz-summary>Quiz not passed yet.</div>
+    </section>
+  `;
+}
+
+function reflectionMarkup(game) {
+  return `
+    <section class="reflection-card" data-reflection-card>
+      <div class="quiz-head">
+        <span>Emotion Reflection Journal</span>
+        <h2>Think about ${game.title}</h2>
+        <p>After you complete the game, save a private reflection in your notebook.</p>
+      </div>
+      <div class="reflection-grid">
+        <label>
+          <span>How would you feel in this situation?</span>
+          <textarea data-reflection-feeling rows="3" placeholder="I might feel..."></textarea>
+        </label>
+        <label>
+          <span>Have you experienced something like this?</span>
+          <textarea data-reflection-experience rows="3" placeholder="One time I..."></textarea>
+        </label>
+        <label>
+          <span>What would you do differently next time?</span>
+          <textarea data-reflection-next rows="3" placeholder="Next time I could..."></textarea>
+        </label>
+      </div>
+      <div class="reflection-actions">
+        <button class="complete-button" type="button" data-save-reflection>Save Reflection</button>
+        <button class="favorite-button" type="button" data-favorite-game>Favorite Game</button>
+      </div>
+      <div class="completion-status" data-reflection-status>Complete the game first, then save your journal entry.</div>
     </section>
   `;
 }
@@ -402,6 +437,7 @@ function chooseQuizAnswer(button) {
   });
   const isCorrect = button.dataset.correct === "true";
   button.classList.add("selected", isCorrect ? "correct" : "wrong");
+  recordEmotionChoice(isCorrect, game.category, "Knowledge check");
   completionState.quizAnswers[questionIndex] = isCorrect;
   const result = document.querySelector(`[data-quiz-result="${questionIndex}"]`);
   result.textContent = isCorrect ? "Correct." : "Try again. Choose the answer that matches the game lesson.";
@@ -428,12 +464,14 @@ function completeGame() {
     return;
   }
   const result = awardKindnessPoints();
+  completionState.completed = true;
   const returnLink = new URLSearchParams(window.location.search).get("return") === "map"
     ? ` <a class="return-world-link" href="index.html">Return to the Kingdom Map</a>`
     : "";
   syncCompletionStatus(result.awarded
     ? `Completed. You earned 25 kindness points and unlocked more of the kingdom. Total: ${result.points}.${returnLink}`
     : `Already completed. Kindness points: ${result.points}.${returnLink}`);
+  syncReflectionStatus("Game complete. Answer the reflection prompts and save your journal entry.");
 }
 
 function syncCompletionStatus(message) {
@@ -449,6 +487,91 @@ function syncCompletionStatus(message) {
   if (button) {
     button.disabled = !completionState.quizPassed;
   }
+}
+
+function saveReflection() {
+  if (!completionState.completed) {
+    syncReflectionStatus("Complete the game first, then save your reflection.");
+    return;
+  }
+  const feeling = document.querySelector("[data-reflection-feeling]").value.trim();
+  const experience = document.querySelector("[data-reflection-experience]").value.trim();
+  const nextStep = document.querySelector("[data-reflection-next]").value.trim();
+  if (!feeling && !experience && !nextStep) {
+    syncReflectionStatus("Write at least one reflection before saving.");
+    return;
+  }
+  saveJournalEntry({
+    gameSlug: game.slug,
+    gameTitle: game.title,
+    category: game.category,
+    feeling,
+    experience,
+    nextStep
+  });
+  syncReflectionStatus("Saved to your private reflection journal.");
+}
+
+function saveJournalEntry(entry) {
+  const key = "kindKingdomReflectionJournal";
+  const user = localStorage.getItem("kkCurrentUser");
+  const scopedKey = user ? `${key}:${user}` : key;
+  let journal = { entries: [] };
+  try {
+    journal = { ...journal, ...JSON.parse(localStorage.getItem(scopedKey) || localStorage.getItem(key) || "{}") };
+  } catch {
+    journal = { entries: [] };
+  }
+  journal.entries = Array.isArray(journal.entries) ? journal.entries : [];
+  journal.entries = [{
+    id: `reflection-${Date.now()}`,
+    ...entry,
+    createdAt: new Date().toISOString()
+  }, ...journal.entries].slice(0, 80);
+  localStorage.setItem(scopedKey, JSON.stringify(journal));
+  localStorage.setItem(key, JSON.stringify(journal));
+}
+
+function syncReflectionStatus(message) {
+  const status = document.querySelector("[data-reflection-status]");
+  if (status) status.textContent = message || "Complete the game first, then save your journal entry.";
+}
+
+function favoriteKey() {
+  const user = localStorage.getItem("kkCurrentUser");
+  return user ? `kindKingdomFavorites:${user}` : "kindKingdomFavorites";
+}
+
+function readFavorites() {
+  try {
+    const favorites = JSON.parse(localStorage.getItem(favoriteKey()) || localStorage.getItem("kindKingdomFavorites") || "[]");
+    return Array.isArray(favorites) ? favorites : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeFavorites(favorites) {
+  const unique = [...new Set(favorites)];
+  localStorage.setItem(favoriteKey(), JSON.stringify(unique));
+  localStorage.setItem("kindKingdomFavorites", JSON.stringify(unique));
+}
+
+function toggleFavoriteGame() {
+  const favorites = readFavorites();
+  const next = favorites.includes(game.slug)
+    ? favorites.filter((slug) => slug !== game.slug)
+    : [...favorites, game.slug];
+  writeFavorites(next);
+  syncFavoriteButton();
+}
+
+function syncFavoriteButton() {
+  const button = document.querySelector("[data-favorite-game]");
+  if (!button) return;
+  const active = readFavorites().includes(game.slug);
+  button.classList.toggle("active", active);
+  button.textContent = active ? "Favorited" : "Favorite Game";
 }
 
 function flowMapMarkup(game) {
@@ -4358,6 +4481,7 @@ function awardKindnessPoints() {
     localStorage.setItem(key, JSON.stringify(progress));
     localStorage.setItem("kkPoints", String(progress.points));
     addSkillXP(game.category, 10);
+    recordEmotionGameCompletion(game, awarded);
     maybeCompleteWorldQuest(progress);
     return { awarded, points: progress.points };
   } catch {
@@ -4366,9 +4490,114 @@ function awardKindnessPoints() {
     localStorage.setItem(key, JSON.stringify(progress));
     localStorage.setItem("kkPoints", String(progress.points));
     addSkillXP(game.category, 10);
+    recordEmotionGameCompletion(game, true);
     maybeCompleteWorldQuest(progress);
     return { awarded: true, points: progress.points };
   }
+}
+
+function recordEmotionGameCompletion(game, awarded) {
+  const skill = game.category;
+  recordEmotionEvent("helpful", { amount: awarded ? 2 : 1, skill, label: game.title });
+  recordNPCGameMemory(game);
+  if (["Calm Choices", "Patience", "Rest", "Wellness", "Self-Control"].includes(skill)) {
+    recordEmotionEvent("calm", { amount: 2, skill, label: game.title });
+  }
+  if (["Conflict Repair", "Accountability", "Honesty", "Forgiveness"].includes(skill)) {
+    recordEmotionEvent("repair", { amount: 1, skill, label: game.title });
+  }
+}
+
+function recordEmotionChoice(correct, skill, label) {
+  recordEmotionEvent(correct ? "helpful" : "strain", {
+    amount: correct ? 1 : 2,
+    skill,
+    label
+  });
+}
+
+function recordEmotionEvent(type, detail = {}) {
+  const key = "kindKingdomEmotion";
+  const user = localStorage.getItem("kkCurrentUser");
+  const scopedKey = user ? `${key}:${user}` : key;
+  const fallback = { helpful: 4, calm: 3, strain: 0, events: [] };
+  let state = fallback;
+  try {
+    state = { ...fallback, ...JSON.parse(localStorage.getItem(scopedKey) || localStorage.getItem(key) || JSON.stringify(fallback)) };
+  } catch {
+    state = fallback;
+  }
+  state.helpful = Number(state.helpful) || 0;
+  state.calm = Number(state.calm) || 0;
+  state.strain = Number(state.strain) || 0;
+  if (type === "helpful") state.helpful += detail.amount || 1;
+  if (type === "calm") state.calm += detail.amount || 1;
+  if (type === "strain") state.strain += detail.amount || 1;
+  if (type === "repair") {
+    state.helpful += detail.amount || 1;
+    state.strain = Math.max(0, state.strain - 1);
+  }
+  state.events = [
+    { type, skill: detail.skill || "", label: detail.label || "", at: Date.now() },
+    ...(Array.isArray(state.events) ? state.events : [])
+  ].slice(0, 18);
+  state.helpful = Math.min(24, Math.max(0, state.helpful - 0.08));
+  state.calm = Math.min(18, Math.max(0, state.calm - 0.05));
+  state.strain = Math.min(16, Math.max(0, state.strain - 0.04));
+  localStorage.setItem(scopedKey, JSON.stringify(state));
+  localStorage.setItem(key, JSON.stringify(state));
+}
+
+function recordNPCGameMemory(game) {
+  const npcName = npcForSkill(game.category);
+  const key = "kindKingdomNPCMemory";
+  const user = localStorage.getItem("kkCurrentUser");
+  const scopedKey = user ? `${key}:${user}` : key;
+  let memory = {};
+  try {
+    memory = JSON.parse(localStorage.getItem(scopedKey) || localStorage.getItem(key) || "{}");
+  } catch {
+    memory = {};
+  }
+  const entry = normalizeNPCMemory(memory[npcName]);
+  const skill = game.category || "Kindness";
+  entry.helped += 1;
+  entry.skills[skill] = Number(entry.skills[skill] || 0) + 1;
+  entry.lastGame = game.title;
+  entry.lastSkill = skill;
+  entry.lastPositive = Date.now();
+  entry.lines = [`You completed ${game.title}.`, ...entry.lines].slice(0, 6);
+  memory[npcName] = entry;
+  localStorage.setItem(scopedKey, JSON.stringify(memory));
+  localStorage.setItem(key, JSON.stringify(memory));
+}
+
+function normalizeNPCMemory(entry = {}) {
+  return {
+    visits: Number(entry.visits || 0),
+    helped: Number(entry.helped || 0),
+    storyChoices: Number(entry.storyChoices || 0),
+    skills: entry.skills && typeof entry.skills === "object" ? entry.skills : {},
+    lastGame: entry.lastGame || "",
+    lastStory: entry.lastStory || "",
+    lastSkill: entry.lastSkill || "",
+    lastSeen: Number(entry.lastSeen || 0),
+    lastPositive: Number(entry.lastPositive || 0),
+    lastStrain: Number(entry.lastStrain || 0),
+    lines: Array.isArray(entry.lines) ? entry.lines.slice(0, 6) : []
+  };
+}
+
+function npcForSkill(skill = "") {
+  const map = [
+    { npc: "Crystal Guide", skills: ["Gratitude", "Giving", "Empathy", "Compassion"] },
+    { npc: "Gate Keeper", skills: ["Calm Choices", "Courage", "Conflict Repair", "Patience"] },
+    { npc: "Roundtable Page", skills: ["Respect", "Cooperation", "Collaboration", "Communication"] },
+    { npc: "Lantern Keeper", skills: ["Listening", "Digital Citizenship", "Kind Words"] },
+    { npc: "Garden Sage", skills: ["Forgiveness", "Wellness"] },
+    { npc: "Harbor Helper", skills: ["Service", "Responsibility", "Problem Solving", "Perseverance", "Learning"] }
+  ];
+  return map.find((entry) => entry.skills.includes(skill))?.npc || "Crystal Guide";
 }
 
 function addSkillXP(skill, amount) {
