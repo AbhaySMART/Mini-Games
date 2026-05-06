@@ -128,6 +128,131 @@ const KIND_KINGDOM_GAMES = [
     theme: "Calm dream-like nighttime field",
     scene: "Moonlit flowers dim as each bedtime step happens in order.",
     data: ["Screens away", "Wash up", "Read quietly", "Breathe slowly", "Sleep steady"]
+  }),
+  g("Peacekeeper Palace", "Conflict Repair", "Peace grows when we lower the heat, name the problem, and choose a repair.", "guide a tense argument through calm repair gates before the palace bells ring.", "Conflict Temperature Gates", "conflictGates", "🕊️", {
+    theme: "Pearl palace with warm and cool rooms",
+    scene: "A palace hallway cools as arguments become repair plans.",
+    data: ["Lower your voice|Say: let us pause and talk calmly|Blame them louder|The room cools", "Name the problem|Say what happened without insults|Call names|The map clears", "Offer a repair|Suggest taking turns or replacing what broke|Walk away forever|The gate opens", "Check feelings|Ask if the plan feels fair|Declare you won|Peace bells ring"]
+  }),
+  g("Generous Grove", "Giving", "Generosity means noticing what you can offer without making someone feel small.", "grow a giving tree by choosing helpful gifts of time, attention, and care.", "Gift Growth Branches", "giftBranches", "🌳", {
+    theme: "Sunlit grove with glowing kindness fruit",
+    scene: "A tree grows different fruit for different kinds of generosity.",
+    data: ["Busy parent|Offer to carry one bag|Ask for a reward first|A time fruit grows", "Lonely neighbor|Wave and ask how their day is|Pretend not to see them|A welcome fruit grows", "Friend forgot snack|Share a piece if you have enough|Tease them|A sharing fruit grows", "Sibling needs quiet|Lower the volume|Turn it louder|A respect fruit grows"]
+  }),
+  g("Focus Fireflies", "Attention", "Focus improves when distractions are noticed, parked, and returned to later.", "catch glowing focus fireflies while placing distractions in the later jar.", "Attention Sorting Swarm", "focusSwarm", "✨", {
+    theme: "Twilight field full of focus fireflies and distraction sparks",
+    scene: "Fireflies brighten when attention returns to the task.",
+    data: ["Homework step|Focus now|Check random videos|Firefly saved", "Water break|Helpful pause|Scroll for ten minutes|Energy steadies", "Loud thought|Write it for later|Follow every thought|Distraction parked", "Finish one piece|Do the next small step|Quit the whole task|Focus circle closes"]
+  }),
+  g("Boundary Bay", "Boundaries", "Healthy boundaries are kind words that protect space, time, and comfort.", "steer boats through boundary buoys by choosing clear respectful limits.", "Boundary Buoy Navigation", "boundaryBuoys", "🛟", {
+    theme: "Bright bay with boats, buoys, and calm water lanes",
+    scene: "Boats move safely when boundaries are clear.",
+    data: ["Too much hugging|Say: I prefer a wave today|Push and yell|The boat gets space", "Not ready to share|Say: I can share after I finish|Grab everything back|The buoy lights", "Need quiet|Say: I need ten quiet minutes|Slam the door|The bay settles", "Online message late|Reply tomorrow instead of rushing|Stay up upset|The lighthouse glows"]
+  }),
+  g("Mindful Meteor", "Mindfulness", "Mindfulness helps us notice thoughts and feelings before reacting.", "pilot a meteor through thought clouds by naming what is happening now.", "Present-Moment Piloting", "mindfulMeteor", "☄️", {
+    theme: "Deep space with soft thought clouds and glowing stars",
+    scene: "A meteor flies smoothly when thoughts are noticed instead of chased.",
+    data: ["Body clue|Notice tight shoulders|Ignore every signal|The meteor steadies", "Thought cloud|Say: this is a worry thought|Believe it instantly|Stars clear", "Feeling wave|Name the feeling quietly|Explode at someone|Orbit softens", "Next breath|Take one slow breath|Rush the reaction|Landing lights appear"]
+  }),
+  g("Friendship Forge", "Friendship", "Friendship is built through listening, reliability, repair, and shared joy.", "forge friendship links by heating, shaping, cooling, and shining each bond.", "Friendship Link Forging", "friendshipForge", "🔗", {
+    theme: "Cozy forge where metal links become friendship bracelets",
+    scene: "Friendship links glow when care is shaped into action.",
+    data: ["Heat|Listen before talking|Interrupt with your story|The link warms", "Shape|Keep the plan you made|Forget and shrug|The link bends true", "Cool|Apologize after a mistake|Act like nothing happened|The link strengthens", "Shine|Celebrate their good news|Change the topic to yourself|The bracelet sparkles"]
+  }),
+  g("Responsibility Railway", "Responsibility", "Responsibility means owning the job, the mistake, and the next step.", "route trains by matching tasks to ownership, reminders, and repair actions.", "Responsibility Track Switches", "responsibilityRail", "🚂", {
+    theme: "Mountain railway with glowing switch tracks",
+    scene: "Trains arrive on time when responsibility switches are set.",
+    data: ["Chore assigned|Set a reminder and do it|Hope someone else does it|Train leaves on time", "Forgot task|Admit it and finish now|Make excuses|Track repairs", "Shared mess|Clean your part first|Point at others|Cargo balances", "Future job|Prepare supplies early|Wait until rushed|Station lights up"]
+  }),
+  g("Forgiveness Falls", "Forgiveness", "Forgiveness can release hurt while still keeping wise boundaries.", "clear river stones by choosing release, repair, and safe next steps.", "Forgiveness River Flow", "forgivenessFlow", "💧", {
+    theme: "Waterfall canyon with glowing river stones",
+    scene: "The river flows when hurt is named and handled wisely.",
+    data: ["Small accident|Accept apology and move forward|Keep reminding them forever|Water clears", "Repeated hurt|Forgive but set a boundary|Pretend it is fine|Riverbank strengthens", "Your own guilt|Learn and make repair|Call yourself terrible|Stone lifts", "Friend wants trust back|Watch for changed actions|Trust instantly with no plan|Falls shine"]
+  }),
+  g("Leadership Lighthouse", "Leadership", "Good leaders guide, listen, include, and take responsibility.", "send lighthouse signals that help a group move together safely.", "Leadership Signal Tower", "leadershipSignals", "🗺️", {
+    theme: "Stormy coast with a lighthouse and team boats",
+    scene: "Signals guide the fleet when leadership serves the group.",
+    data: ["Group is confused|Explain the goal simply|Boss everyone around|Boats align", "Quiet person ignored|Invite their idea|Only ask loud voices|Signal widens", "Plan failed|Own your part and adjust|Blame the group|Storm fades", "Team succeeds|Share credit with everyone|Take all the praise|Beacon shines"]
+  }),
+  g("Confidence Carnival", "Confidence", "Confidence grows when we remember strengths and try brave next steps.", "power carnival rides by choosing realistic self-talk and small actions.", "Confidence Ride Power", "confidenceCarnival", "🎡", {
+    theme: "Night carnival with glowing rides and courage tickets",
+    scene: "Rides light up when confidence is honest and brave.",
+    data: ["New activity|I can try one part first|I must be perfect|Ferris wheel turns", "Made a mistake|Mistakes help me learn|I am bad at everything|Lights return", "Need help|Asking can make me stronger|I should hide it|Ticket glows", "Success moment|I worked for that|It was only luck|Carnival cheers"]
+  }),
+  g("Adaptability Airship", "Adaptability", "Adaptability means adjusting when plans, weather, or people change.", "pilot an airship by changing sails when the wind shifts.", "Changing-Wind Planning", "adaptabilityAirship", "🛩️", {
+    theme: "Sky harbor with colorful sails and moving weather",
+    scene: "The airship stays on course by changing strategy.",
+    data: ["Rain starts|Move the picnic indoors|Complain all day|Sails turn", "Friend cancels|Make a new plan kindly|Say they ruined everything|Clouds part", "Tool breaks|Try another tool|Quit instantly|Engine hums", "Schedule changes|Ask what still works|Refuse to adjust|Sky opens"]
+  }),
+  g("Conversation Campfire", "Conversation", "Good conversation takes turns: ask, listen, share, and connect.", "keep the campfire glowing by balancing questions, listening, and sharing.", "Conversation Flame Balance", "conversationCampfire", "🔥", {
+    theme: "Forest campfire circle with story sparks",
+    scene: "The fire glows when everyone has room to speak.",
+    data: ["Start talking|Ask an open question|Talk for ten minutes|Flame grows", "They answer|Listen and nod|Look away|Sparks rise", "Your turn|Share a related short thought|Take over the topic|Circle warms", "Awkward pause|Ask a follow-up|Mock the silence|Fire steadies"]
+  }),
+  g("Choice Compass Circus", "Decision Making", "Wise choices compare safety, kindness, and consequences before acting.", "spin the circus compass toward the choice with the best outcome.", "Consequence Compass", "choiceCompassCircus", "🎪", {
+    theme: "Colorful circus ring with a spinning choice compass",
+    scene: "The compass points true when choices are thoughtful.",
+    data: ["Dare feels unsafe|Say no and step back|Do it to impress people|Compass steadies", "Tempted to copy|Do your own work|Copy quickly|Spotlight clears", "Angry reply|Wait before responding|Send it fast|Crowd calms", "Hard option|Choose safe and kind|Choose easy but harmful|Tent shines"]
+  }),
+  g("Memory Meadow", "Reflection", "Reflection helps us notice what worked, what hurt, and what to try next.", "place memory stones into learn, thank, repair, and repeat circles.", "Reflection Stone Sorting", "memoryMeadow", "🪨", {
+    theme: "Quiet meadow with memory stones and soft morning light",
+    scene: "Stones reveal lessons when reflected on with care.",
+    data: ["Something went well|Notice what helped|Forget it instantly|Learn circle glows", "Someone helped|Say specific thanks|Assume they know|Thank circle glows", "You hurt someone|Plan a repair|Avoid thinking about it|Repair circle glows", "Good habit worked|Repeat it tomorrow|Start from zero|Path appears"]
+  }),
+  g("Self-Advocacy Summit", "Self-Advocacy", "Self-advocacy means explaining what you need clearly and respectfully.", "climb summit stations by naming the need, reason, and request.", "Need-Request Climb", "selfAdvocacySummit", "📣", {
+    theme: "Snowy summit with flags for clear requests",
+    scene: "Flags rise when needs become respectful requests.",
+    data: ["Cannot see board|Say: I need to move closer|Stay silent and struggle|Flag rises", "Too much noise|Say: headphones help me focus|Yell at everyone|Wind slows", "Confused instructions|Ask for the first step again|Pretend to know|Trail clears", "Feeling overwhelmed|Ask for a short break|Run away|Summit shines"]
+  }),
+  g("Turn-Taking Wharf", "Turn Taking", "Turn-taking helps games, talks, and shared spaces feel fair.", "dock boats in order by noticing who has waited and who needs a turn.", "Turn Dock Queue", "turnTakingWharf", "⛵", {
+    theme: "Harbor wharf with boats waiting for fair turns",
+    scene: "Boats dock smoothly when turns are shared.",
+    data: ["You went twice|Offer someone else a turn|Take a third turn|Boat docks", "Someone waiting|Invite them next|Pretend not to notice|Harbor brightens", "You feel impatient|Use wait words|Grab the item|Rope steadies", "Group choice|Rotate the picker|Let one person choose all|Bell rings"]
+  }),
+  g("Cooperation Kitchen", "Collaboration", "Collaboration works when people divide jobs and combine strengths.", "cook a team recipe by assigning prep, mix, cook, and serve roles.", "Recipe Role Coordination", "cooperationKitchen", "🍲", {
+    theme: "Warm kitchen with bubbling pots and role cards",
+    scene: "A recipe succeeds when helpers coordinate instead of crowding.",
+    data: ["Many helpers|Give each person a role|Everyone grab at once|Prep begins", "One person stuck|Offer a specific assist|Take over without asking|Mixing smooths", "Timing matters|Wait for the next step|Rush the oven|Soup settles", "Meal finished|Thank each helper|Praise only yourself|Kitchen cheers"]
+  }),
+  g("Kindness Kite Festival", "Encouragement", "Encouragement lifts people by naming effort and giving hope.", "launch kites by choosing words that lift without pressure.", "Encouragement Wind Tuning", "kindnessKiteFestival", "🪁", {
+    theme: "Windy festival field filled with colorful kites",
+    scene: "Kites rise when encouragement feels honest and gentle.",
+    data: ["Friend nervous|You practiced and can take one step|Do not mess up|Kite lifts", "Sibling learning|I see you trying again|This is easy|Tail steadies", "Teammate missed|Next play, we stay together|You ruined it|Wind warms", "Someone starts over|Trying again is brave|Finally|Sky fills"]
+  }),
+  g("Perspective Planet", "Perspective Taking", "Perspective taking asks what the world might look like from another person's side.", "rotate a planet to view the same moment from different sides.", "Perspective Orbit Shift", "perspectivePlanet", "🪐", {
+    theme: "Small planet with orbiting viewpoints and star windows",
+    scene: "New windows open when another viewpoint is considered.",
+    data: ["Friend is quiet|They might feel left out|They are just boring|Orbit turns", "Adult says no|They may be thinking about safety|They never want fun|Moon appears", "Teammate rushes|They might feel worried about time|They are selfish|Stars align", "Someone snaps|They may be overwhelmed|They are always mean|Planet glows"]
+  }),
+  g("Conflict Compass Cove", "Conflict Resolution", "Conflict resolution uses calm words, shared facts, and a next-step plan.", "turn a compass through calm, facts, needs, and agreement points.", "Conflict Compass Points", "conflictCompassCove", "🧭", {
+    theme: "Rocky seaside cove with a giant glowing compass",
+    scene: "The compass points toward repair when conflict steps are chosen.",
+    data: ["Calm|Take a breath before speaking|Start shouting|North lights", "Facts|Say what happened clearly|Add insults|East lights", "Needs|Say what each person needs|Ignore one side|South lights", "Agreement|Choose a next step together|Demand victory|West lights"]
+  }),
+  g("Care Carousel", "Compassion", "Compassion notices suffering and chooses a helpful gentle action.", "match care animals to people who need comfort, space, help, or hope.", "Compassion Carousel Match", "careCarousel", "🎠", {
+    theme: "Soft carousel with glowing care animals",
+    scene: "Carousel animals move toward the care each person needs.",
+    data: ["Crying person|Offer comfort and ask what helps|Say stop crying|Carousel turns", "Overwhelmed person|Give space and quiet|Crowd them|Music softens", "Carrying too much|Offer real help|Just watch|Lantern glows", "Discouraged friend|Give hope and stay near|Say give up|Ride shines"]
+  }),
+  g("Community Caravan", "Community", "Community grows when people look beyond themselves and care for shared places.", "pack a caravan with choices that help neighbors and shared spaces.", "Community Supply Packing", "communityCaravan", "🐪", {
+    theme: "Desert caravan with supply crates and neighbor tents",
+    scene: "The caravan moves when supplies help the whole group.",
+    data: ["Shared sidewalk|Pick up trash safely|Step over it forever|Crate packed", "New neighbor|Introduce yourself kindly|Ignore them|Tent opens", "Community event|Help set up chairs|Arrive only for prizes|Wagon rolls", "Shared problem|Ask how to help|Assume someone else will|Caravan shines"]
+  }),
+  g("Trust Telescope", "Trust", "Trust grows through honest actions repeated over time.", "align telescope lenses by choosing actions that make trust clearer.", "Trust Lens Alignment", "trustTelescope", "🔭", {
+    theme: "Moonlit observatory with brass lenses and star charts",
+    scene: "Stars sharpen when trustworthy choices line up.",
+    data: ["Say you will call|Call when you said you would|Forget and pretend|Lens clears", "Borrowed item|Return it in good shape|Keep it hidden|Stars sharpen", "Private story|Keep the secret safe|Tell it for attention|Chart glows", "Made mistake|Admit it and repair|Cover it up|Telescope aligns"]
+  }),
+  g("Resilience Reef", "Resilience", "Resilience means recovering after rough waves and choosing the next helpful move.", "restore coral after setbacks by choosing recovery actions.", "Setback Recovery Reef", "resilienceReef", "🪸", {
+    theme: "Underwater reef with coral, currents, and glowing bubbles",
+    scene: "Coral returns to color when setbacks become recovery steps.",
+    data: ["Plan failed|Try a smaller next step|Quit the whole goal|Coral brightens", "Felt embarrassed|Talk kindly to yourself|Replay it forever|Current slows", "Lost a game|Practice one skill|Throw the pieces|Fish return", "Hard day|Rest and try tomorrow|Decide nothing can change|Reef glows"]
+  }),
+  g("Creative Solutions Studio", "Creativity", "Creative problem solving uses imagination, testing, and flexible thinking.", "build idea prototypes by combining wild ideas with practical checks.", "Prototype Idea Studio", "creativeSolutionsStudio", "🎨", {
+    theme: "Colorful studio with invention tables and idea sparks",
+    scene: "Prototype machines glow when ideas are creative and useful.",
+    data: ["Messy room|Make a labeled basket game|Pretend it is invisible|Prototype hums", "Boring wait|Create a quiet word challenge|Complain the whole time|Idea sparks", "Broken plan|Combine two smaller plans|Refuse all changes|Machine whirs", "Group stuck|Ask for three possible ideas|Say there is no solution|Studio shines"]
   })
 ];
 

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Empathy Echoes | Kind Kingdom</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;700;800;900&display=swap');
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;overflow:hidden;font-family:"Nunito",sans-serif;background:linear-gradient(135deg,#ff6b6b,#ffd166,#2ec4b6);display:flex;align-items:center;justify-content:center;color:#2d2142}
+.game{width:min(980px,96vw);height:min(690px,94vh);border-radius:34px;border:5px solid #fff;overflow:hidden;position:relative;background:linear-gradient(180deg,#fff,#f7efff);box-shadow:0 25px 70px rgba(22,14,50,.35)}
+.bg{position:absolute;inset:0;background:linear-gradient(180deg,#ffb3b3,#ffd166,#2ec4b6);z-index:0}
+.pattern{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.75) 2px,transparent 2px);background-size:46px 46px;opacity:.25;z-index:1}
+.content{position:relative;z-index:2;height:100%;padding:20px;display:flex;flex-direction:column;gap:13px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.title-card,.pill,.panel{background:rgba(255,255,255,.9);border:2px solid rgba(255,255,255,.95);box-shadow:0 12px 24px rgba(25,15,60,.16)}
+.title-card{border-radius:24px;padding:12px 18px}
+h1{margin:0;font-family:"Baloo 2",cursive;font-size:34px;line-height:1;color:#c44949}
+.subtitle{margin-top:4px;color:#6a5b75;font-weight:900;font-size:14px}
+.stats{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.pill{border-radius:999px;padding:10px 13px;font-weight:1000;color:#c44949}
+.main{flex:1;min-height:0;display:grid;grid-template-columns:1.08fr .92fr;gap:14px}
+.panel{border-radius:28px;padding:15px;min-height:0}
+.scene-panel{display:flex;flex-direction:column;gap:12px}
+.story{background:linear-gradient(135deg,#c44949,#ff9f1c);color:white;border-radius:22px;padding:14px;font-weight:900;line-height:1.35;min-height:92px;box-shadow:inset 0 0 18px rgba(255,255,255,.15)}
+.stage{flex:1;min-height:330px;border-radius:24px;border:3px solid white;overflow:hidden;position:relative;background:linear-gradient(180deg,#ffe3e3,#fff2bd)}
+.big-icon{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);font-size:116px;filter:drop-shadow(0 14px 18px rgba(0,0,0,.22));transition:.35s ease;z-index:4}
+.platform{position:absolute;left:50%;bottom:48px;transform:translateX(-50%);width:390px;height:92px;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(0,0,0,.2));box-shadow:0 18px 30px rgba(0,0,0,.25);z-index:2}
+.result-note{position:absolute;left:50%;bottom:125px;transform:translateX(-50%);width:84%;min-height:58px;background:rgba(255,255,255,.9);border:2px solid white;border-radius:20px;padding:12px;text-align:center;font-weight:1000;line-height:1.3;color:#2f2642;z-index:5}
+.controls{display:flex;flex-direction:column;gap:11px}
+.controls h2{margin:0;font-family:"Baloo 2",cursive;font-size:26px;color:#c44949}
+.instructions{background:#fff9e8;border:2px solid #ffd166;border-radius:18px;padding:11px;font-weight:900;color:#654707;line-height:1.35;font-size:14px}
+.section-title{font-size:14px;font-weight:1000;color:#c44949;margin-bottom:6px}
+.choices{display:grid;gap:8px}
+.choice{border:0;border-radius:16px;padding:10px 12px;font-weight:1000;background:#fff0dc;color:#c44949;box-shadow:0 4px 0 #e0ad62;cursor:pointer;transition:.15s ease;font-family:"Nunito",sans-serif;text-align:left}
+.choice:hover{transform:translateY(-2px)}
+.choice.selected{background:#ffd166;color:#4a3000;box-shadow:0 4px 0 #c99517}
+.meter-label{display:flex;justify-content:space-between;font-size:13px;font-weight:1000;color:#c44949;margin-bottom:4px}
+.meter{height:18px;background:#eadcff;border:2px solid white;border-radius:999px;overflow:hidden}
+.meter-fill{height:100%;width:50%;background:linear-gradient(90deg,#ff7eb3,#ffd166,#7bdff2,#9cffc7);transition:.3s ease}
+.feedback{background:#ffffffcc;border:2px solid #dfd0ff;border-radius:18px;padding:11px;min-height:78px;font-weight:900;color:#514064;line-height:1.35}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap}
+.btn{border:0;border-radius:16px;padding:11px 14px;font-weight:1000;color:white;background:linear-gradient(135deg,#c44949,#ff9f1c);box-shadow:0 6px 0 #8e2d2d;cursor:pointer;transition:.15s ease;font-family:"Nunito",sans-serif}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(3px);box-shadow:0 3px 0 #8e2d2d}
+.btn.gold{background:linear-gradient(135deg,#ffb703,#ffd166);color:#4a2e00;box-shadow:0 6px 0 #c98200}
+.screen{position:absolute;inset:0;z-index:20;background:linear-gradient(135deg,#ff6b6b,#ffd166,#2ec4b6);display:flex;align-items:center;justify-content:center;padding:24px}
+.screen-card{width:min(710px,92vw);background:rgba(255,255,255,.94);border:4px solid white;border-radius:34px;padding:28px;text-align:center;box-shadow:0 24px 55px rgba(25,15,60,.34)}
+.screen-card .huge{font-size:86px}
+.screen-card h2{margin:0;font-family:"Baloo 2",cursive;font-size:46px;color:#c44949}
+.screen-card p{font-size:18px;font-weight:850;line-height:1.45;color:#5d506c}
+.hidden{display:none}
+.spark{position:absolute;z-index:30;pointer-events:none;font-size:24px;animation:rise .8s ease forwards}
+@keyframes rise{0%{opacity:0;transform:scale(.4) translateY(0)}30%{opacity:1}100%{opacity:0;transform:scale(1.4) translateY(-55px)}}
+@media(max-width:830px){body{overflow:auto}.game{height:96vh;overflow-y:auto}.main{grid-template-columns:1fr}h1{font-size:28px}.stage{min-height:330px}.screen-card h2{font-size:36px}}
+</style>
+</head>
+<body>
+<div class="game">
+  <div class="bg"></div><div class="pattern"></div>
+  <div id="startScreen" class="screen">
+    <div class="screen-card">
+      <div class="huge">🔊</div>
+      <h2>Empathy Echoes</h2>
+      <p><b>Recognizing how others may feel and responding with care.</b></p>
+      <p>Tune feeling, reason, and caring response until the echo matches the person.</p>
+      <button class="btn gold" onclick="startGame()">Start Game</button>
+    </div>
+  </div>
+  <div id="endScreen" class="screen hidden">
+    <div class="screen-card">
+      <div class="huge">✨</div>
+      <h2 id="endTitle">Complete!</h2>
+      <p id="endMessage"></p>
+      <button class="btn gold" onclick="restartGame()">Play Again</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="top">
+      <div class="title-card">
+        <h1>🔊 Empathy Echoes</h1>
+        <div class="subtitle">Recognizing how others may feel and responding with care.</div>
+      </div>
+      <div class="stats">
+        <div class="pill">Challenge: <span id="round">1</span>/4</div>
+        <div class="pill">Score: <span id="score">0</span></div>
+        <div class="pill">Stars: <span id="stars">0</span> ⭐</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="panel scene-panel">
+        <div class="story" id="story"></div>
+        <div class="stage" id="stage">
+          <div class="big-icon" id="mainIcon">🔊</div>
+          <div class="result-note" id="resultNote">Make your choices to complete the challenge.</div>
+          <div class="platform"></div>
+        </div>
+      </div>
+      <div class="panel controls">
+        <h2>How to Play</h2>
+        <div class="instructions">This game uses a unique style called Emotion Echo Tuner. Choose one option from each step, then press Check to see the result.</div>
+        <div>
+          <div class="section-title" id="phaseOneTitle">Step 1</div>
+          <div class="choices" id="choicesA"></div>
+        </div>
+        <div>
+          <div class="section-title" id="phaseTwoTitle">Step 2</div>
+          <div class="choices" id="choicesB"></div>
+        </div>
+        <div>
+          <div class="meter-label"><span>Empathy Meter</span><span id="meterText">50%</span></div>
+          <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+        </div>
+        <div class="feedback" id="feedback">Choose one option from each step, then press Check.</div>
+        <div class="btn-row">
+          <button class="btn" onclick="checkAnswer()">Check</button>
+          <button class="btn gold" onclick="nextRound()">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const data = [{'icon': '🔊', 'story': 'A Kind Kingdom character faces a empathy challenge. Choose the best first move and follow-up action.', 'aTitle': '1. Choose the Feeling move', 'bTitle': '2. Choose the Reason action', 'aCorrect': 'Use feeling before reacting', 'aWrong': ['Rush without thinking', 'Ignore the person'], 'bCorrect': 'Follow with reason in a kind way', 'bWrong': ['Make it about yourself', 'Blame someone else'], 'success': 'The Empathy Echoes challenge shines because your choices matched the skill.', 'fix': 'The Empathy Echoes challenge needs a kinder strategy.', 'lesson': 'Empathy works best when your action matches what the situation needs.'}, {'icon': '🔊', 'story': 'The group is unsure what to do next. Your choices can make the moment better or worse.', 'aTitle': '1. Pick the Feeling clue', 'bTitle': '2. Pick the Care result', 'aCorrect': 'Notice the real feeling clue', 'aWrong': ['Guess without listening', 'Copy another person'], 'bCorrect': 'Create a care result for everyone', 'bWrong': ['Leave someone out', 'Choose the easiest shortcut'], 'success': 'The scene improves because you noticed the need and responded carefully.', 'fix': 'The scene becomes confusing because the choice did not match the need.', 'lesson': 'Strong empathy means noticing details before acting.'}, {'icon': '🔊', 'story': 'A harder moment appears. The quick answer is tempting, but the thoughtful answer builds kindness.', 'aTitle': '1. Choose the Reason strategy', 'bTitle': '2. Choose the Care check', 'aCorrect': 'Use reason instead of rushing', 'aWrong': ['Take over completely', 'Give up quickly'], 'bCorrect': 'Check if the care helped', 'bWrong': ['Assume it worked', 'Walk away immediately'], 'success': 'You handled the hard moment with care and patience.', 'fix': 'The choice skipped an important step.', 'lesson': 'Empathy grows when you slow down and check what happened.'}, {'icon': '🔊', 'story': 'Final challenge: help the kingdom make the best choice using the skill of empathy.', 'aTitle': '1. Choose the strongest Feeling choice', 'bTitle': '2. Choose the strongest Care choice', 'aCorrect': 'Start with feeling and respect', 'aWrong': ['Start with criticism', 'Start with silence'], 'bCorrect': 'Finish with care and reflection', 'bWrong': ['Finish with teasing', 'Finish by quitting'], 'success': 'The kingdom glows because your choices were thoughtful and kind.', 'fix': 'The kingdom needs a more thoughtful choice.', 'lesson': 'Empathy is not just a word, it is something you practice through action.'}];
+let i=0, score=0, stars=0, meter=50, selectedA=null, selectedB=null, checked=false;
+const story=document.getElementById("story"), choicesA=document.getElementById("choicesA"), choicesB=document.getElementById("choicesB");
+const feedback=document.getElementById("feedback"), resultNote=document.getElementById("resultNote"), mainIcon=document.getElementById("mainIcon");
+const meterFill=document.getElementById("meterFill"), meterText=document.getElementById("meterText");
+const roundEl=document.getElementById("round"), scoreEl=document.getElementById("score"), starsEl=document.getElementById("stars");
+function startGame(){document.getElementById("startScreen").classList.add("hidden"); loadRound();}
+function restartGame(){i=0;score=0;stars=0;meter=50;document.getElementById("endScreen").classList.add("hidden");loadRound();}
+function loadRound(){
+  const r=data[i]; selectedA=null; selectedB=null; checked=false;
+  story.textContent=r.story; resultNote.textContent="Make your choices to complete the challenge."; mainIcon.textContent=r.icon;
+  document.getElementById("phaseOneTitle").textContent=r.aTitle;
+  document.getElementById("phaseTwoTitle").textContent=r.bTitle;
+  render(choicesA, shuffle([r.aCorrect,...r.aWrong]), "a");
+  render(choicesB, shuffle([r.bCorrect,...r.bWrong]), "b");
+  feedback.textContent="Choose one option from each step, then press Check.";
+  update();
+}
+function render(box, arr, type){
+  box.innerHTML="";
+  arr.forEach(t=>{
+    const b=document.createElement("button"); b.className="choice"; b.textContent=t;
+    b.onclick=()=>{ if(checked)return; if(type==="a") selectedA=t; else selectedB=t; [...box.children].forEach(x=>x.classList.remove("selected")); b.classList.add("selected"); resultNote.textContent=preview(); };
+    box.appendChild(b);
+  });
+}
+function preview(){return "Choice 1: "+(selectedA||"...")+" | Choice 2: "+(selectedB||"...");}
+function checkAnswer(){
+  if(checked){feedback.textContent="Already checked. Move to the next challenge.";return;}
+  if(!selectedA||!selectedB){feedback.textContent="Choose one option from each step first.";return;}
+  const r=data[i]; checked=true; let pts=0;
+  if(selectedA===r.aCorrect) pts+=50; if(selectedB===r.bCorrect) pts+=50;
+  score+=pts; meter += pts===100 ? 16 : pts===50 ? 3 : -14;
+  if(pts===100){stars++; resultNote.textContent=r.success; mainIcon.style.transform="translate(-50%,-50%) scale(1.18)"; spark("⭐"); feedback.textContent="Excellent! "+r.lesson;}
+  else if(pts===50){resultNote.textContent="Almost there. One choice was strong, one needs work."; mainIcon.style.transform="translate(-50%,-50%) scale(.98) rotate(3deg)"; feedback.textContent="Good start. "+r.lesson;}
+  else{resultNote.textContent=r.fix; mainIcon.style.transform="translate(-50%,-50%) scale(.85) rotate(-6deg)"; feedback.textContent="Try again next time. "+r.lesson;}
+  update();
+}
+function nextRound(){
+  if(!checked){feedback.textContent="Press Check before moving on."; return;}
+  i++; if(i>=data.length) endGame(); else loadRound();
+}
+function update(){
+  meter=Math.max(0,Math.min(100,meter)); meterFill.style.width=meter+"%"; meterText.textContent=Math.round(meter)+"%";
+  roundEl.textContent=Math.min(i+1,data.length); scoreEl.textContent=score; starsEl.textContent=stars;
+}
+function endGame(){
+  let title=stars>=3?"Kind Kingdom Champion!":stars>=2?"Strong Skill Builder!":"Skill Apprentice!";
+  let msg=`Your score was ${score}. You earned ${stars} stars. Keep practicing Empathy: Recognizing how others may feel and responding with care.`;
+  document.getElementById("endTitle").textContent=title; document.getElementById("endMessage").textContent=msg; document.getElementById("endScreen").classList.remove("hidden");
+}
+function spark(sym){for(let n=0;n<14;n++){const s=document.createElement("div");s.className="spark";s.textContent=sym;s.style.left=Math.random()*85+8+"%";s.style.top=Math.random()*60+18+"%";document.body.appendChild(s);setTimeout(()=>s.remove(),850);}}
+function shuffle(a){return a.slice().sort(()=>Math.random()-.5)}
+</script>
+</body>
+</html>

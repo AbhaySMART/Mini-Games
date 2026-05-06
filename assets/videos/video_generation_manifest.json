@@ -232,5 +232,230 @@
     "file_id": "394351214797093",
     "downloaded": true,
     "path": "assets/videos/restful-moon-meadow.mp4"
+  },
+  "peacekeeper-palace": {
+    "provider": "minimax",
+    "task_id": "395161644064986",
+    "status": "success",
+    "updated_at": 1778028532,
+    "file_id": "395162106732641",
+    "downloaded": true,
+    "path": "assets/videos/peacekeeper-palace.mp4"
+  },
+  "generous-grove": {
+    "provider": "minimax",
+    "task_id": "395163353399502",
+    "status": "success",
+    "updated_at": 1778028623,
+    "file_id": "395164889419841",
+    "downloaded": true,
+    "path": "assets/videos/generous-grove.mp4"
+  },
+  "focus-fireflies": {
+    "provider": "minimax",
+    "task_id": "395161576055011",
+    "status": "success",
+    "updated_at": 1778028703,
+    "file_id": "395164891488390",
+    "downloaded": true,
+    "path": "assets/videos/focus-fireflies.mp4"
+  },
+  "boundary-bay": {
+    "provider": "minimax",
+    "task_id": "395164760006855",
+    "status": "success",
+    "updated_at": 1778028782,
+    "file_id": "395161021370488",
+    "downloaded": true,
+    "path": "assets/videos/boundary-bay.mp4"
+  },
+  "mindful-meteor": {
+    "provider": "minimax",
+    "task_id": "395165409841347",
+    "status": "success",
+    "updated_at": 1778028893,
+    "file_id": "395164889419854",
+    "downloaded": true,
+    "path": "assets/videos/mindful-meteor.mp4"
+  },
+  "friendship-forge": {
+    "provider": "minimax",
+    "task_id": "395166554079460",
+    "status": "success",
+    "updated_at": 1778029423,
+    "file_id": "395168150659202",
+    "downloaded": true,
+    "path": "assets/videos/friendship-forge.mp4"
+  },
+  "responsibility-railway": {
+    "provider": "minimax",
+    "task_id": "395164385542265",
+    "status": "success",
+    "updated_at": 1778029510,
+    "file_id": "395163657081018",
+    "downloaded": true,
+    "path": "assets/videos/responsibility-railway.mp4"
+  },
+  "forgiveness-falls": {
+    "provider": "minimax",
+    "task_id": "395165123883253",
+    "status": "success",
+    "updated_at": 1778029657,
+    "file_id": "395165936214180",
+    "downloaded": true,
+    "path": "assets/videos/forgiveness-falls.mp4"
+  },
+  "leadership-lighthouse": {
+    "provider": "minimax",
+    "task_id": "395167745646937",
+    "status": "success",
+    "updated_at": 1778029779,
+    "file_id": "395169508053059",
+    "downloaded": true,
+    "path": "assets/videos/leadership-lighthouse.mp4"
+  },
+  "confidence-carnival": {
+    "provider": "minimax",
+    "task_id": "395166949892191",
+    "status": "success",
+    "updated_at": 1778029898,
+    "file_id": "395166900125798",
+    "downloaded": true,
+    "path": "assets/videos/confidence-carnival.mp4"
+  },
+  "adaptability-airship": {
+    "provider": "minimax",
+    "task_id": "395168497668208",
+    "status": "success",
+    "updated_at": 1778030127,
+    "file_id": "395170019311691",
+    "downloaded": true,
+    "path": "assets/videos/adaptability-airship.mp4"
+  },
+  "conversation-campfire": {
+    "provider": "minimax",
+    "task_id": "395166987653229",
+    "status": "success",
+    "updated_at": 1778030227,
+    "file_id": "395166630478010",
+    "downloaded": true,
+    "path": "assets/videos/conversation-campfire.mp4"
+  },
+  "choice-compass-circus": {
+    "provider": "minimax",
+    "task_id": "395169214414951",
+    "status": "success",
+    "updated_at": 1778030305,
+    "file_id": "395171271549000",
+    "downloaded": true,
+    "path": "assets/videos/choice-compass-circus.mp4"
+  },
+  "memory-meadow": {
+    "provider": "minimax",
+    "task_id": "395169568862426",
+    "status": "success",
+    "updated_at": 1778030386,
+    "file_id": "395171250528342",
+    "downloaded": true,
+    "path": "assets/videos/memory-meadow.mp4"
+  },
+  "self-advocacy-summit": {
+    "provider": "minimax",
+    "task_id": "395167150121214",
+    "status": "success",
+    "updated_at": 1778030499,
+    "file_id": "395169577205863",
+    "downloaded": true,
+    "path": "assets/videos/self-advocacy-summit.mp4"
+  },
+  "turn-taking-wharf": {
+    "provider": "minimax",
+    "task_id": "395173441511495",
+    "status": "success",
+    "updated_at": 1778030858,
+    "file_id": "395170752307298",
+    "downloaded": true,
+    "path": "assets/videos/turn-taking-wharf.mp4"
+  },
+  "cooperation-kitchen": {
+    "provider": "minimax",
+    "task_id": "395169651433843",
+    "status": "success",
+    "updated_at": 1778030954,
+    "file_id": "395171044999343",
+    "downloaded": true,
+    "path": "assets/videos/cooperation-kitchen.mp4"
+  },
+  "kindness-kite-festival": {
+    "provider": "minimax",
+    "task_id": "395169752219899",
+    "status": "success",
+    "updated_at": 1778031043,
+    "file_id": "395173172777040",
+    "downloaded": true,
+    "path": "assets/videos/kindness-kite-festival.mp4"
+  },
+  "perspective-planet": {
+    "provider": "minimax",
+    "task_id": "395172302815331",
+    "status": "success",
+    "updated_at": 1778031136,
+    "file_id": "395170306642165",
+    "downloaded": true,
+    "path": "assets/videos/perspective-planet.mp4"
+  },
+  "conflict-compass-cove": {
+    "provider": "minimax",
+    "task_id": "395173859000654",
+    "status": "success",
+    "updated_at": 1778031251,
+    "file_id": "395171279220858",
+    "downloaded": true,
+    "path": "assets/videos/conflict-compass-cove.mp4"
+  },
+  "care-carousel": {
+    "provider": "minimax",
+    "task_id": "395173406396637",
+    "status": "success",
+    "updated_at": 1778031384,
+    "file_id": "395176188571777",
+    "downloaded": true,
+    "path": "assets/videos/care-carousel.mp4"
+  },
+  "community-caravan": {
+    "provider": "minimax",
+    "task_id": "395174620291298",
+    "status": "success",
+    "updated_at": 1778031455,
+    "file_id": "395176353775684",
+    "downloaded": true,
+    "path": "assets/videos/community-caravan.mp4"
+  },
+  "trust-telescope": {
+    "provider": "minimax",
+    "task_id": "395176472543298",
+    "status": "success",
+    "updated_at": 1778031544,
+    "file_id": "395174731055267",
+    "downloaded": true,
+    "path": "assets/videos/trust-telescope.mp4"
+  },
+  "resilience-reef": {
+    "provider": "minimax",
+    "task_id": "395175492235472",
+    "status": "success",
+    "updated_at": 1778031630,
+    "file_id": "395176353538124",
+    "downloaded": true,
+    "path": "assets/videos/resilience-reef.mp4"
+  },
+  "creative-solutions-studio": {
+    "provider": "minimax",
+    "task_id": "395174510076150",
+    "status": "success",
+    "updated_at": 1778031723,
+    "file_id": "395176353775699",
+    "downloaded": true,
+    "path": "assets/videos/creative-solutions-studio.mp4"
   }
 }

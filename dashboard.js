@@ -5,9 +5,9 @@ const recommendation = document.querySelector("#recommendation-panel");
 const comingSoon = document.querySelector("#coming-soon");
 const DASHBOARD_PROGRESS_KEY = "kindKingdomProgress";
 const COMING_SOON_GAMES = [
-  { title: "Peacekeeper Palace", skill: "Conflict Repair", time: "8 min" },
-  { title: "Generous Grove", skill: "Giving", time: "6 min" },
-  { title: "Focus Fireflies", skill: "Attention", time: "5 min" }
+  { title: "Wonder Workshop", skill: "Inventive Kindness", time: "7 min" },
+  { title: "Harmony Harbor", skill: "Group Balance", time: "6 min" },
+  { title: "Bravery Balloon", skill: "Trying New Things", time: "5 min" }
 ];
 const skillAliases = {
   "Kind Words": "Kindness",
@@ -21,6 +21,7 @@ const skillAliases = {
   "Accountability": "Apology"
 };
 const progress = readProgress();
+const DEV_UNLOCK_ALL_GAMES = true;
 let activeValue = "All";
 let searchTerm = "";
 
@@ -46,8 +47,12 @@ function renderGames() {
 
 function gameCard(game, index) {
   const meta = gameMeta(game, index);
-  const unlocked = progress.points >= meta.unlockAt;
-  const tag = unlocked ? "Unlocked" : `${meta.unlockAt - progress.points} pts to unlock`;
+  const unlocked = DEV_UNLOCK_ALL_GAMES || progress.points >= meta.unlockAt;
+  const tag = DEV_UNLOCK_ALL_GAMES
+    ? "Dev unlocked"
+    : unlocked
+      ? "Unlocked"
+      : `${meta.unlockAt - progress.points} pts to unlock`;
   const cardBody = `
     <span class="map-pin">${game.icon}</span>
     <span class="game-photo">
