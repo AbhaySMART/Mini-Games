@@ -8527,3 +8527,28 @@ body * {
   width: 860px !important;
   max-width: calc(100vw - 96px) !important;
 }
+
+/* Phaser DOM lives in a full-canvas overlay. Let clicks pass through empty overlay space
+   while keeping actual forms and panels interactive. */
+.phaser-game-shell > div {
+  pointer-events: none !important;
+}
+
+.kk-login-form,
+.kk-ai-panel,
+.kk-news-panel,
+.kk-journal-panel,
+.kk-reward-panel,
+.kk-reward-panel.room,
+.kk-reward-panel.shop,
+.kk-reward-panel.closet {
+  pointer-events: auto !important;
+}
+
+.kk-login-form *,
+.kk-ai-panel *,
+.kk-news-panel *,
+.kk-journal-panel *,
+.kk-reward-panel * {
+  pointer-events: auto !important;
+}

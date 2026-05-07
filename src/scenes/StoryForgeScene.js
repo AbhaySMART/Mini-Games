@@ -1,6 +1,6 @@
-import { StoryForgeSystem } from "../systems/StoryForgeSystem.js?v=76";
-import { EmotionSystem } from "../systems/EmotionSystem.js?v=76";
-import { NPCMemorySystem } from "../systems/NPCMemorySystem.js?v=76";
+import { StoryForgeSystem } from "../systems/StoryForgeSystem.js?v=77";
+import { EmotionSystem } from "../systems/EmotionSystem.js?v=77";
+import { NPCMemorySystem } from "../systems/NPCMemorySystem.js?v=77";
 
 export class StoryForgeScene extends Phaser.Scene {
   constructor() {

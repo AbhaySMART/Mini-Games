@@ -1,5 +1,5 @@
-import { userScopedKey } from "./AuthSystem.js?v=76";
-import { PlayerData } from "./PlayerData.js?v=76";
+import { userScopedKey } from "./AuthSystem.js?v=77";
+import { PlayerData } from "./PlayerData.js?v=77";
 
 const REWARDS_KEY = "kindKingdomRewards";
 const CLAIMS_KEY = "kindKingdomRewardClaims";
