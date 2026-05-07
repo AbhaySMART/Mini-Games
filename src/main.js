@@ -54,9 +54,10 @@ function render() {
   root.className = `kind-kingdom-app-shell kk-view-${state.view}`;
   root.innerHTML = AuthSystem.isLoggedIn() ? renderAuthedView() : renderLogin();
   if (state.view === "map") {
+    requestAnimationFrame(initPhaserMap);
     syncMapHint();
-    requestAnimationFrame(centerMapOnPlayer);
   } else {
+    destroyPhaserMap();
     root.insertAdjacentHTML("beforeend", pageScrollControlsMarkup());
   }
 }
@@ -183,24 +184,8 @@ function renderMap() {
         <a class="kk-dom-link" href="card-view.html">Card View</a>
       </div>
       <div class="kk-map-layout">
-        <div class="kk-map-stage" data-map-stage tabindex="0" aria-label="Kind Kingdom island map. Use arrow keys or WASD to move.">
-          <div class="kk-map-world">
-            <div class="kk-map-sun"></div>
-            <div class="kk-map-cloud c1"></div>
-            <div class="kk-map-cloud c2"></div>
-            <div class="kk-map-cloud c3"></div>
-            ${islandMarkup()}
-            ${bridgeMarkup()}
-            ${regionLabelMarkup()}
-            ${portals.map((portal) => portalMarkup(portal, progress)).join("")}
-            ${guideNpcs.map((npc, index) => guideMarkup(npc, index, progress, mood)).join("")}
-            <div class="kk-map-player" data-player-marker style="left:${clamp(player.x, 50, MAP_WIDTH - 50)}px; top:${clamp(player.y, 70, MAP_HEIGHT - 70)}px;">
-              <div class="kk-player-token">
-                ${heroMarkup(PlayerData.getCharacter() || "knight", true)}
-                <span>YOU</span>
-              </div>
-            </div>
-          </div>
+        <div class="kk-phaser-map-stage" data-map-stage data-phaser-map tabindex="0" aria-label="Kind Kingdom Phaser map. Use arrow keys or WASD to move.">
+          <div class="kk-map-loading">Loading kingdom map...</div>
         </div>
         <aside class="kk-dom-card kk-map-side">
           <p class="kk-eyebrow">Nearby</p>
@@ -608,6 +593,10 @@ function nearestPortal() {
 }
 
 function movePlayer(dx, dy) {
+  if (phaserMapApi) {
+    phaserMapApi.moveBy(dx, dy);
+    return;
+  }
   const player = PlayerData.loadPlayer();
   PlayerData.savePosition(clamp(player.x + dx, 50, MAP_WIDTH - 50), clamp(player.y + dy, 70, MAP_HEIGHT - 70));
   const marker = root.querySelector("[data-player-marker]");
@@ -623,6 +612,10 @@ function movePlayer(dx, dy) {
 }
 
 function centerMapOnPlayer() {
+  if (phaserMapApi) {
+    phaserMapApi.centerOnPlayer();
+    return;
+  }
   const stage = root.querySelector("[data-map-stage]");
   if (!stage) return;
   const player = PlayerData.loadPlayer();
@@ -637,7 +630,7 @@ function centerMapOnPlayer() {
 function syncMapHint() {
   const hint = root.querySelector("[data-map-hint]");
   if (!hint) return;
-  const nearby = nearestPortal();
+  const nearby = phaserMapApi?.nearby() || nearestPortal();
   state.nearestSlug = nearby && nearby.distance < 105 ? nearby.game.slug : null;
   hint.textContent = state.nearestSlug ? `Press E to enter ${nearby.game.title}` : "Move near a portal.";
 }
@@ -667,7 +660,7 @@ async function handleClick(event) {
   }
   if (action === "enter-game") return enterGame(target.dataset.slug);
   if (action === "enter-nearest") {
-    const nearby = nearestPortal();
+    const nearby = phaserMapApi?.nearby() || nearestPortal();
     if (nearby?.distance < 120) return enterGame(nearby.game.slug);
     return setMessage("Move closer to a game portal first.");
   }
@@ -802,7 +795,7 @@ function handleKeydown(event) {
   if (event.key.toLowerCase() === "e" || event.code === "KeyE") {
     event.preventDefault();
     event.stopPropagation();
-    const nearby = nearestPortal();
+    const nearby = phaserMapApi?.nearby() || nearestPortal();
     if (nearby?.distance < 120) enterGame(nearby.game.slug);
   }
 }
@@ -856,6 +849,238 @@ function moveFromPressedKeys() {
   if (pressedMapKeys.has("up")) dy -= 18;
   if (pressedMapKeys.has("down")) dy += 18;
   if (dx || dy) movePlayer(dx, dy);
+}
+
+async function initPhaserMap() {
+  const parent = root.querySelector("[data-phaser-map]");
+  if (!parent || phaserMapGame) return;
+  await loadPhaser();
+  if (!root.querySelector("[data-phaser-map]") || state.view !== "map") return;
+
+  const width = Math.max(720, parent.clientWidth || 720);
+  const height = Math.max(520, parent.clientHeight || 560);
+  const scene = createPhaserMapScene();
+
+  phaserMapGame = new window.Phaser.Game({
+    type: window.Phaser.AUTO,
+    parent,
+    width,
+    height,
+    backgroundColor: "#6fb7ff",
+    pixelArt: true,
+    scale: {
+      mode: window.Phaser.Scale.RESIZE,
+      autoCenter: window.Phaser.Scale.CENTER_BOTH
+    },
+    scene: [scene]
+  });
+}
+
+function destroyPhaserMap() {
+  phaserMapApi = null;
+  if (!phaserMapGame) return;
+  phaserMapGame.destroy(true);
+  phaserMapGame = null;
+}
+
+function loadPhaser() {
+  if (window.Phaser) return Promise.resolve();
+  if (phaserLoadingPromise) return phaserLoadingPromise;
+  phaserLoadingPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js";
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+  return phaserLoadingPromise;
+}
+
+function createPhaserMapScene() {
+  return class DomOnlyKingdomMapScene extends window.Phaser.Scene {
+    constructor() {
+      super("DomOnlyKingdomMapScene");
+    }
+
+    create() {
+      this.locations = [];
+      this.playerData = PlayerData.loadPlayer();
+      this.progress = PlayerData.loadProgress();
+      this.rewards = RewardSystem.load();
+      this.mood = EmotionSystem.getKingdomMood(this.progress);
+      this.cameras.main.setBounds(0, 0, MAP_WIDTH, MAP_HEIGHT);
+      this.cameras.main.setZoom(0.88);
+      this.drawWorld();
+      this.createPortals();
+      this.createGuides();
+      this.createPlayer();
+      this.createHud();
+      this.cursors = this.input.keyboard.createCursorKeys();
+      this.keys = this.input.keyboard.addKeys("W,A,S,D,E");
+      this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+      phaserMapApi = {
+        moveBy: (dx, dy) => this.movePlayer(dx, dy),
+        centerOnPlayer: () => this.cameras.main.centerOn(this.player.x, this.player.y),
+        nearby: () => this.nearestPortal()
+      };
+      syncMapHint();
+    }
+
+    drawWorld() {
+      this.add.rectangle(MAP_WIDTH / 2, MAP_HEIGHT / 2, MAP_WIDTH, MAP_HEIGHT, 0x7cc7ff);
+      this.add.rectangle(MAP_WIDTH / 2, MAP_HEIGHT / 2 + 520, MAP_WIDTH, MAP_HEIGHT, 0x91e5f6, 0.24);
+      this.add.circle(2780, 180, 82, 0xffd166, 0.94);
+      const regions = [
+        { name: "Castle Commons", color: 0xd9f2b4, stroke: 0x81b29a, x: 700, y: 520, w: 900, h: 620 },
+        { name: "Lantern Woods", color: 0x7fcf9f, stroke: 0x2d6a4f, x: 1660, y: 540, w: 900, h: 650 },
+        { name: "Crystal Highlands", color: 0xc8b6ff, stroke: 0x5a2da0, x: 2550, y: 620, w: 760, h: 700 },
+        { name: "Harbor Coast", color: 0x91e5f6, stroke: 0x247ba0, x: 900, y: 1450, w: 980, h: 620 },
+        { name: "Moon Meadow", color: 0xfde2ff, stroke: 0xa06cd5, x: 2050, y: 1500, w: 980, h: 650 }
+      ];
+      regions.forEach((region) => {
+        const g = this.add.graphics();
+        g.fillStyle(region.color, 1);
+        g.lineStyle(10, region.stroke, 0.32);
+        g.fillRoundedRect(region.x - region.w / 2, region.y - region.h / 2, region.w, region.h, 95);
+        g.strokeRoundedRect(region.x - region.w / 2, region.y - region.h / 2, region.w, region.h, 95);
+        this.add.text(region.x, region.y - region.h / 2 + 42, region.name.toUpperCase(), {
+          fontFamily: "Nunito, Arial, sans-serif",
+          fontSize: "18px",
+          color: "#ffffff",
+          fontStyle: "bold",
+          backgroundColor: "#2d174dcc",
+          padding: { x: 14, y: 7 },
+          stroke: "#1d1236",
+          strokeThickness: 3
+        }).setOrigin(0.5).setDepth(50);
+      });
+      for (let i = 0; i < 10; i += 1) {
+        this.add.ellipse(280 + i * 290, 145 + (i % 4) * 90, 180 + (i % 3) * 40, 54, 0xffffff, 0.14).setDepth(2);
+      }
+    }
+
+    createPortals() {
+      mapPortals().forEach((portal) => this.createPortal(portal));
+    }
+
+    createPortal(portalData) {
+      const { game, index, x, y } = portalData;
+      const required = UnlockSystem.requiredPoints(index);
+      const complete = UnlockSystem.isCompleted(game.slug);
+      const unlocked = UnlockSystem.isUnlocked(required);
+      const container = this.add.container(x, y).setDepth(20);
+      container.game = game;
+      container.index = index;
+      container.required = required;
+      container.locked = !unlocked;
+      container.add(this.add.ellipse(0, 50, 130, 34, 0x000000, 0.2));
+      container.add(this.add.circle(0, -2, 68, complete ? 0xffd166 : 0x5a2da0, complete ? 0.28 : 0.12));
+      container.add(this.add.ellipse(0, 44, 110, 36, 0xe7d2a0, unlocked ? 0.92 : 0.34).setStrokeStyle(3, 0x7a5a35, unlocked ? 0.36 : 0.18));
+      container.add(this.add.rectangle(0, -8, 108, 104, complete ? 0xfff2a8 : 0xfffbef, unlocked ? 0.96 : 0.38).setStrokeStyle(4, complete ? 0x2ec4b6 : 0x5a2da0, unlocked ? 0.82 : 0.32));
+      container.add(this.add.rectangle(0, -68, 114, 22, complete ? 0xffb703 : 0x5a2da0, unlocked ? 0.94 : 0.4).setStrokeStyle(3, 0xffffff, unlocked ? 0.55 : 0.16));
+      container.add(this.add.text(0, -16, game.icon, { fontSize: "34px" }).setOrigin(0.5));
+      container.add(this.add.text(0, 70, game.title, {
+        fontFamily: "Nunito, Arial, sans-serif",
+        fontSize: "13px",
+        color: "#ffffff",
+        backgroundColor: complete ? "#14746f" : "#2d174dcc",
+        padding: { x: 8, y: 5 },
+        align: "center",
+        wordWrap: { width: 138 },
+        stroke: "#1d1236",
+        strokeThickness: 3
+      }).setOrigin(0.5, 0));
+      container.setSize(150, 170);
+      container.setInteractive(new window.Phaser.Geom.Rectangle(-75, -85, 150, 170), window.Phaser.Geom.Rectangle.Contains);
+      container.on("pointerdown", () => unlocked ? enterGame(game.slug) : setMessage(`Need ${required} points.`));
+      this.locations.push(container);
+    }
+
+    createGuides() {
+      [
+        { x: 365, y: 235, name: "Crystal Guide", color: 0x7b4dff },
+        { x: 1340, y: 230, name: "Gate Keeper", color: 0x2ec4b6 },
+        { x: 2790, y: 250, name: "Roundtable Page", color: 0xd76d77 },
+        { x: 1820, y: 1000, name: "Lantern Keeper", color: 0xffb703 }
+      ].forEach((npc) => {
+        this.add.circle(npc.x, npc.y, 34, npc.color, 0.95).setStrokeStyle(4, 0xffffff).setDepth(35);
+        this.add.text(npc.x, npc.y, npc.name.split(" ").map((part) => part[0]).join(""), {
+          fontFamily: "Nunito, Arial, sans-serif",
+          fontSize: "16px",
+          color: "#ffffff",
+          fontStyle: "bold"
+        }).setOrigin(0.5).setDepth(36);
+        this.add.text(npc.x, npc.y + 48, npc.name, {
+          fontFamily: "Nunito, Arial, sans-serif",
+          fontSize: "15px",
+          color: "#2d174d",
+          backgroundColor: "#ffffffdd",
+          padding: { x: 8, y: 5 },
+          stroke: "#ffffff",
+          strokeThickness: 2
+        }).setOrigin(0.5).setDepth(36);
+      });
+    }
+
+    createPlayer() {
+      const x = clamp(this.playerData.x || 520, 60, MAP_WIDTH - 60);
+      const y = clamp(this.playerData.y || 420, 80, MAP_HEIGHT - 80);
+      this.player = this.add.container(x, y).setDepth(100);
+      this.player.add(this.add.circle(0, 0, 42, 0xffd166, 0.72).setStrokeStyle(5, 0xffffff));
+      this.player.add(this.add.rectangle(0, 4, 28, 44, 0x2ec4b6).setStrokeStyle(4, 0x053f3b));
+      this.player.add(this.add.circle(0, -28, 17, 0xffd6bd).setStrokeStyle(3, 0x2d174d));
+      this.player.add(this.add.text(0, 45, "YOU", {
+        fontFamily: "Nunito, Arial, sans-serif",
+        fontSize: "14px",
+        color: "#053f3b",
+        backgroundColor: "#77e5dc",
+        padding: { x: 8, y: 3 },
+        fontStyle: "bold"
+      }).setOrigin(0.5));
+      this.player.setSize(80, 100);
+    }
+
+    createHud() {
+      this.hud = this.add.text(24, 22, "WASD / Arrow keys move • E enters nearby portal", {
+        fontFamily: "Nunito, Arial, sans-serif",
+        fontSize: "18px",
+        color: "#ffffff",
+        backgroundColor: "#2d174dcc",
+        padding: { x: 12, y: 8 }
+      }).setScrollFactor(0).setDepth(200);
+    }
+
+    update() {
+      let dx = 0;
+      let dy = 0;
+      const speed = 5.2;
+      if (this.cursors.left.isDown || this.keys.A.isDown) dx -= speed;
+      if (this.cursors.right.isDown || this.keys.D.isDown) dx += speed;
+      if (this.cursors.up.isDown || this.keys.W.isDown) dy -= speed;
+      if (this.cursors.down.isDown || this.keys.S.isDown) dy += speed;
+      if (dx || dy) this.movePlayer(dx, dy);
+      if (window.Phaser.Input.Keyboard.JustDown(this.keys.E)) {
+        const nearby = this.nearestPortal();
+        if (nearby?.distance < 120) enterGame(nearby.game.slug);
+      }
+      syncMapHint();
+    }
+
+    movePlayer(dx, dy) {
+      this.player.x = clamp(this.player.x + dx, 60, MAP_WIDTH - 60);
+      this.player.y = clamp(this.player.y + dy, 80, MAP_HEIGHT - 80);
+      PlayerData.savePosition(this.player.x, this.player.y);
+    }
+
+    nearestPortal() {
+      return this.locations
+        .map((portal) => ({
+          game: portal.game,
+          distance: window.Phaser.Math.Distance.Between(this.player.x, this.player.y, portal.x, portal.y)
+        }))
+        .sort((a, b) => a.distance - b.distance)[0];
+    }
+  };
 }
 
 function navigate(view, message = "") {

@@ -9605,6 +9605,34 @@ body * {
   align-items: stretch;
 }
 
+.kk-phaser-map-stage {
+  position: relative;
+  min-height: 560px;
+  height: 560px;
+  overflow: hidden;
+  border: 5px solid rgba(255,255,255,.95);
+  border-radius: 28px;
+  background: #6fb7ff;
+  box-shadow: inset 0 0 60px rgba(20,51,91,.16), 0 18px 36px rgba(35,17,72,.22);
+  outline: none;
+}
+
+.kk-phaser-map-stage canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.kk-map-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 1000;
+  background: linear-gradient(135deg, #6fb7ff, #3d2466);
+}
+
 .kk-map-stage {
   position: relative;
   min-height: 560px !important;
