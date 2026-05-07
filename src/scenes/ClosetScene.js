@@ -1,6 +1,6 @@
-import { PlayerData } from "../systems/PlayerData.js?v=72";
-import { RewardSystem, SHOP_ITEMS } from "../systems/RewardSystem.js?v=72";
-import { HERO_LAYER_ASSETS, getHero } from "../systems/AssetCatalog.js?v=72";
+import { PlayerData } from "../systems/PlayerData.js?v=73";
+import { RewardSystem, SHOP_ITEMS } from "../systems/RewardSystem.js?v=73";
+import { HERO_LAYER_ASSETS, getHero } from "../systems/AssetCatalog.js?v=73";
 
 const EQUIP_CATEGORIES = ["outfits", "crowns", "capes", "pets", "trails", "effects"];
 
@@ -15,6 +15,7 @@ export class ClosetScene extends Phaser.Scene {
     this.add.circle(132, 620, 120, 0x7bdff2, 0.16);
     this.panel = this.add.dom(480, 70).createFromHTML(`<div class="kk-reward-panel closet"></div>`);
     this.panel.setOrigin(0.5, 0);
+    this.panel.setSize(760, 650);
     this.enablePanelScroll();
     this.render();
   }
@@ -66,8 +67,8 @@ export class ClosetScene extends Phaser.Scene {
         <button data-nav="dashboard">Dashboard</button>
       </div>
     `;
-    this.panel.updateSize();
     this.panel.setOrigin(0.5, 0);
+    this.panel.setSize(760, 650);
     this.bind();
   }
 

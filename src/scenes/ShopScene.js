@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=72";
-import { RewardSystem, SHOP_ITEMS, CURRENT_EVENT } from "../systems/RewardSystem.js?v=72";
+import { PlayerData } from "../systems/PlayerData.js?v=73";
+import { RewardSystem, SHOP_ITEMS, CURRENT_EVENT } from "../systems/RewardSystem.js?v=73";
 
 const CATEGORIES = ["outfits", "capes", "crowns", "pets", "trails", "room", "effects"];
 
@@ -15,6 +15,7 @@ export class ShopScene extends Phaser.Scene {
     this.add.circle(840, 95, 76, 0xffd166, 0.88);
     this.panel = this.add.dom(480, 80).createFromHTML(`<div class="kk-reward-panel shop"></div>`);
     this.panel.setOrigin(0.5, 0);
+    this.panel.setSize(760, 650);
     this.enablePanelScroll();
     this.render();
   }
@@ -60,8 +61,8 @@ export class ShopScene extends Phaser.Scene {
         <button data-nav="dashboard">Dashboard</button>
       </div>
     `;
-    this.panel.updateSize();
     this.panel.setOrigin(0.5, 0);
+    this.panel.setSize(760, 650);
     this.bind();
   }
 

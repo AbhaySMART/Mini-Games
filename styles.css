@@ -8514,11 +8514,16 @@ body * {
 }
 
 /* Stable top-anchored panel widths for Phaser DOM scenes. */
-.kk-ai-panel,
-.kk-news-panel,
-.kk-journal-panel,
+.kk-reward-panel.shop,
 .kk-reward-panel.room,
 .kk-reward-panel.closet {
-  width: 820px !important;
+  width: 760px !important;
+  max-width: calc(100vw - 96px) !important;
+}
+
+.kk-ai-panel,
+.kk-news-panel,
+.kk-journal-panel {
+  width: 860px !important;
   max-width: calc(100vw - 96px) !important;
 }
