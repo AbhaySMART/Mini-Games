@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=77";
-import { RewardSystem, SHOP_ITEMS, CURRENT_EVENT } from "../systems/RewardSystem.js?v=77";
+import { PlayerData } from "../systems/PlayerData.js?v=79";
+import { RewardSystem, SHOP_ITEMS, CURRENT_EVENT } from "../systems/RewardSystem.js?v=79";
 
 const CATEGORIES = ["outfits", "capes", "crowns", "pets", "trails", "room", "effects"];
 

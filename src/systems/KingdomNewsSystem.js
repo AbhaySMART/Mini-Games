@@ -1,7 +1,7 @@
-import { userScopedKey } from "./AuthSystem.js?v=77";
-import { PlayerData } from "./PlayerData.js?v=77";
-import { EmotionSystem } from "./EmotionSystem.js?v=77";
-import { CURRENT_EVENT } from "./RewardSystem.js?v=77";
+import { userScopedKey } from "./AuthSystem.js?v=79";
+import { PlayerData } from "./PlayerData.js?v=79";
+import { EmotionSystem } from "./EmotionSystem.js?v=79";
+import { CURRENT_EVENT } from "./RewardSystem.js?v=79";
 
 export const KINGDOM_NEWS_KEY = "kindKingdomNews";
 

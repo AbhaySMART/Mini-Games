@@ -1,11 +1,11 @@
-import { AuthSystem } from "../systems/AuthSystem.js?v=77";
-import { PlayerData } from "../systems/PlayerData.js?v=77";
-import { UnlockSystem, DEV_UNLOCK_ALL_GAMES } from "../systems/UnlockSystem.js?v=77";
-import { QuestSystem } from "../systems/QuestSystem.js?v=77";
-import { RewardSystem } from "../systems/RewardSystem.js?v=77";
-import { EmotionSystem } from "../systems/EmotionSystem.js?v=77";
-import { NPCMemorySystem } from "../systems/NPCMemorySystem.js?v=77";
-import { FRONT_FRAME, getHero } from "../systems/AssetCatalog.js?v=77";
+import { AuthSystem } from "../systems/AuthSystem.js?v=79";
+import { PlayerData } from "../systems/PlayerData.js?v=79";
+import { UnlockSystem, DEV_UNLOCK_ALL_GAMES } from "../systems/UnlockSystem.js?v=79";
+import { QuestSystem } from "../systems/QuestSystem.js?v=79";
+import { RewardSystem } from "../systems/RewardSystem.js?v=79";
+import { EmotionSystem } from "../systems/EmotionSystem.js?v=79";
+import { NPCMemorySystem } from "../systems/NPCMemorySystem.js?v=79";
+import { FRONT_FRAME, getHero } from "../systems/AssetCatalog.js?v=79";
 
 const WORLD_WIDTH = 3200;
 const WORLD_HEIGHT = 2100;
