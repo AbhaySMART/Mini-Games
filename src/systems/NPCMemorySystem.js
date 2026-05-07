@@ -1,6 +1,6 @@
-import { userScopedKey } from "./AuthSystem.js?v=61";
-import { PlayerData } from "./PlayerData.js?v=61";
-import { EmotionSystem } from "./EmotionSystem.js?v=61";
+import { userScopedKey } from "./AuthSystem.js?v=62";
+import { PlayerData } from "./PlayerData.js?v=62";
+import { EmotionSystem } from "./EmotionSystem.js?v=62";
 
 export const NPC_MEMORY_KEY = "kindKingdomNPCMemory";
 

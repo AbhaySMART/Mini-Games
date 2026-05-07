@@ -1,6 +1,6 @@
-import { StoryForgeSystem } from "../systems/StoryForgeSystem.js?v=61";
-import { EmotionSystem } from "../systems/EmotionSystem.js?v=61";
-import { NPCMemorySystem } from "../systems/NPCMemorySystem.js?v=61";
+import { StoryForgeSystem } from "../systems/StoryForgeSystem.js?v=62";
+import { EmotionSystem } from "../systems/EmotionSystem.js?v=62";
+import { NPCMemorySystem } from "../systems/NPCMemorySystem.js?v=62";
 
 export class StoryForgeScene extends Phaser.Scene {
   constructor() {
@@ -101,9 +101,12 @@ export class StoryForgeScene extends Phaser.Scene {
   enablePanelScroll() {
     const node = this.panel.node;
     node.addEventListener("wheel", (event) => {
+      const before = node.scrollTop;
       node.scrollTop += event.deltaY;
-      event.preventDefault();
-      event.stopPropagation();
+      if (node.scrollTop !== before) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
     }, { passive: false });
 
     let lastY = 0;
@@ -112,10 +115,13 @@ export class StoryForgeScene extends Phaser.Scene {
     }, { passive: true });
     node.addEventListener("touchmove", (event) => {
       const y = event.touches[0]?.clientY || lastY;
+      const before = node.scrollTop;
       node.scrollTop += lastY - y;
       lastY = y;
-      event.preventDefault();
-      event.stopPropagation();
+      if (node.scrollTop !== before) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
     }, { passive: false });
   }
 }

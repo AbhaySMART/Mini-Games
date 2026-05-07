@@ -1,5 +1,5 @@
-import { PlayerData } from "./PlayerData.js?v=61";
-import { userScopedKey } from "./AuthSystem.js?v=61";
+import { PlayerData } from "./PlayerData.js?v=62";
+import { userScopedKey } from "./AuthSystem.js?v=62";
 
 export const EMOTION_KEY = "kindKingdomEmotion";
 
