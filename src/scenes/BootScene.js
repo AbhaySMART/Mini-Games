@@ -1,6 +1,6 @@
-import { PlayerData } from "../systems/PlayerData.js?v=73";
-import { AuthSystem } from "../systems/AuthSystem.js?v=73";
-import { HERO_LAYER_ASSETS, WALK_FRAMES } from "../systems/AssetCatalog.js?v=73";
+import { PlayerData } from "../systems/PlayerData.js?v=74";
+import { AuthSystem } from "../systems/AuthSystem.js?v=74";
+import { HERO_LAYER_ASSETS, WALK_FRAMES } from "../systems/AssetCatalog.js?v=74";
 
 export class BootScene extends Phaser.Scene {
   constructor() {
