@@ -1,4 +1,4 @@
-import { KingdomNewsSystem } from "../systems/KingdomNewsSystem.js?v=74";
+import { KingdomNewsSystem } from "../systems/KingdomNewsSystem.js?v=75";
 
 export class KingdomNewsScene extends Phaser.Scene {
   constructor() {
@@ -12,6 +12,7 @@ export class KingdomNewsScene extends Phaser.Scene {
     this.add.circle(820, 650, 130, 0x7bdff2, 0.16);
     this.panel = this.add.dom(480, 60).createFromHTML(`<div class="kk-news-panel" style="width:860px; max-width:860px;"></div>`);
     this.panel.setOrigin(0.5, 0);
+    this.panel.setSize(860, 650);
     this.enablePanelScroll();
     this.posts = KingdomNewsSystem.latest(8);
     this.selectedId = this.posts[0]?.id || null;

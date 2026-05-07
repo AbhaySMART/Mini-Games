@@ -1,5 +1,5 @@
-import { PlayerData } from "./PlayerData.js?v=74";
-import { userScopedKey } from "./AuthSystem.js?v=74";
+import { PlayerData } from "./PlayerData.js?v=75";
+import { userScopedKey } from "./AuthSystem.js?v=75";
 
 const STORY_HISTORY_KEY = "kindKingdomStoryForge";
 const LEGACY_STORY_HISTORY_KEY = "kindKingdomAIStories";

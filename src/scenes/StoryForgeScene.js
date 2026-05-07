@@ -1,6 +1,6 @@
-import { StoryForgeSystem } from "../systems/StoryForgeSystem.js?v=74";
-import { EmotionSystem } from "../systems/EmotionSystem.js?v=74";
-import { NPCMemorySystem } from "../systems/NPCMemorySystem.js?v=74";
+import { StoryForgeSystem } from "../systems/StoryForgeSystem.js?v=75";
+import { EmotionSystem } from "../systems/EmotionSystem.js?v=75";
+import { NPCMemorySystem } from "../systems/NPCMemorySystem.js?v=75";
 
 export class StoryForgeScene extends Phaser.Scene {
   constructor() {
@@ -16,6 +16,7 @@ export class StoryForgeScene extends Phaser.Scene {
     this.add.circle(850, 650, 128, 0xff8fab, 0.14);
     this.panel = this.add.dom(480, 60).createFromHTML(`<div class="kk-ai-panel" style="width:860px; max-width:860px;"></div>`);
     this.panel.setOrigin(0.5, 0);
+    this.panel.setSize(860, 650);
     this.enablePanelScroll();
     this.render();
     this.generate();

@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=74";
-import { FRONT_FRAME, HEROES } from "../systems/AssetCatalog.js?v=74";
+import { PlayerData } from "../systems/PlayerData.js?v=75";
+import { FRONT_FRAME, HEROES } from "../systems/AssetCatalog.js?v=75";
 
 export class CharacterSelectScene extends Phaser.Scene {
   constructor() {
