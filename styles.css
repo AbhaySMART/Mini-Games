@@ -8469,6 +8469,8 @@ body * {
 
 .kk-reward-panel.shop {
   max-height: min(620px, calc(100dvh - 120px)) !important;
+  width: 760px !important;
+  max-width: calc(100vw - 96px) !important;
   align-content: start !important;
 }
 
@@ -8509,4 +8511,14 @@ body * {
   align-self: center !important;
   margin-left: auto !important;
   margin-right: auto !important;
+}
+
+/* Stable top-anchored panel widths for Phaser DOM scenes. */
+.kk-ai-panel,
+.kk-news-panel,
+.kk-journal-panel,
+.kk-reward-panel.room,
+.kk-reward-panel.closet {
+  width: 820px !important;
+  max-width: calc(100vw - 96px) !important;
 }

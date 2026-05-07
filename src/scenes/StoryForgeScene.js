@@ -1,6 +1,6 @@
-import { StoryForgeSystem } from "../systems/StoryForgeSystem.js?v=70";
-import { EmotionSystem } from "../systems/EmotionSystem.js?v=70";
-import { NPCMemorySystem } from "../systems/NPCMemorySystem.js?v=70";
+import { StoryForgeSystem } from "../systems/StoryForgeSystem.js?v=72";
+import { EmotionSystem } from "../systems/EmotionSystem.js?v=72";
+import { NPCMemorySystem } from "../systems/NPCMemorySystem.js?v=72";
 
 export class StoryForgeScene extends Phaser.Scene {
   constructor() {
@@ -14,7 +14,8 @@ export class StoryForgeScene extends Phaser.Scene {
     this.add.circle(124, 108, 72, 0x7bdff2, 0.22);
     this.add.circle(812, 118, 82, 0xffd166, 0.28);
     this.add.circle(850, 650, 128, 0xff8fab, 0.14);
-    this.panel = this.add.dom(480, 380).createFromHTML(`<div class="kk-ai-panel"></div>`);
+    this.panel = this.add.dom(480, 60).createFromHTML(`<div class="kk-ai-panel"></div>`);
+    this.panel.setOrigin(0.5, 0);
     this.enablePanelScroll();
     this.render();
     this.generate();
@@ -46,6 +47,8 @@ export class StoryForgeScene extends Phaser.Scene {
         ${StoryForgeSystem.latest(4).map((item) => `<button data-history="${item.id}">${item.title}<small>${item.skill}</small></button>`).join("") || "<p>No generated stories yet.</p>"}
       </div>
     `;
+    this.panel.updateSize();
+    this.panel.setOrigin(0.5, 0);
     this.bind();
   }
 

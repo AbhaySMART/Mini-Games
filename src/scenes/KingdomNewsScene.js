@@ -1,4 +1,4 @@
-import { KingdomNewsSystem } from "../systems/KingdomNewsSystem.js?v=70";
+import { KingdomNewsSystem } from "../systems/KingdomNewsSystem.js?v=72";
 
 export class KingdomNewsScene extends Phaser.Scene {
   constructor() {
@@ -10,7 +10,8 @@ export class KingdomNewsScene extends Phaser.Scene {
     this.add.rectangle(480, 380, 960, 760, 0x1f1740);
     this.add.circle(120, 112, 70, 0xffd166, 0.34);
     this.add.circle(820, 650, 130, 0x7bdff2, 0.16);
-    this.panel = this.add.dom(480, 380).createFromHTML(`<div class="kk-news-panel"></div>`);
+    this.panel = this.add.dom(480, 60).createFromHTML(`<div class="kk-news-panel"></div>`);
+    this.panel.setOrigin(0.5, 0);
     this.enablePanelScroll();
     this.posts = KingdomNewsSystem.latest(8);
     this.selectedId = this.posts[0]?.id || null;
@@ -35,6 +36,8 @@ export class KingdomNewsScene extends Phaser.Scene {
         ${posts.map((post) => headlineTemplate(post, post.id === selected?.id)).join("")}
       </div>
     `;
+    this.panel.updateSize();
+    this.panel.setOrigin(0.5, 0);
     this.panel.node.querySelector("[data-nav]")?.addEventListener("click", () => this.scene.start("DashboardScene"));
     this.panel.node.querySelectorAll("[data-news-id]").forEach((button) => {
       button.addEventListener("click", () => {

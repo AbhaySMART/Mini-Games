@@ -1,4 +1,4 @@
-import { userScopedKey } from "./AuthSystem.js?v=70";
+import { userScopedKey } from "./AuthSystem.js?v=72";
 
 export const REFLECTION_JOURNAL_KEY = "kindKingdomReflectionJournal";
 
