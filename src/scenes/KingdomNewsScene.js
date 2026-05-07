@@ -1,4 +1,4 @@
-import { KingdomNewsSystem } from "../systems/KingdomNewsSystem.js?v=69";
+import { KingdomNewsSystem } from "../systems/KingdomNewsSystem.js?v=70";
 
 export class KingdomNewsScene extends Phaser.Scene {
   constructor() {

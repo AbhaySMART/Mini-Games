@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=69";
-import { RewardSystem, SHOP_ITEMS, BADGES, CURRENT_EVENT } from "../systems/RewardSystem.js?v=69";
+import { PlayerData } from "../systems/PlayerData.js?v=70";
+import { RewardSystem, SHOP_ITEMS, BADGES, CURRENT_EVENT } from "../systems/RewardSystem.js?v=70";
 
 export class PlayerRoomScene extends Phaser.Scene {
   constructor() {

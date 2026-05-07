@@ -1,9 +1,9 @@
-import { AuthSystem } from "../systems/AuthSystem.js?v=69";
-import { PlayerData } from "../systems/PlayerData.js?v=69";
-import { QuestSystem } from "../systems/QuestSystem.js?v=69";
-import { RewardSystem, CURRENT_EVENT } from "../systems/RewardSystem.js?v=69";
-import { EmotionSystem } from "../systems/EmotionSystem.js?v=69";
-import { KingdomNewsSystem } from "../systems/KingdomNewsSystem.js?v=69";
+import { AuthSystem } from "../systems/AuthSystem.js?v=70";
+import { PlayerData } from "../systems/PlayerData.js?v=70";
+import { QuestSystem } from "../systems/QuestSystem.js?v=70";
+import { RewardSystem, CURRENT_EVENT } from "../systems/RewardSystem.js?v=70";
+import { EmotionSystem } from "../systems/EmotionSystem.js?v=70";
+import { KingdomNewsSystem } from "../systems/KingdomNewsSystem.js?v=70";
 
 const HERO_NAMES = {
   knight: "Kind Knight",

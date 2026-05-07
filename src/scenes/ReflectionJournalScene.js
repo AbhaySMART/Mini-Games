@@ -1,4 +1,4 @@
-import { ReflectionJournalSystem } from "../systems/ReflectionJournalSystem.js?v=69";
+import { ReflectionJournalSystem } from "../systems/ReflectionJournalSystem.js?v=70";
 
 export class ReflectionJournalScene extends Phaser.Scene {
   constructor() {

@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=69";
-import { RewardSystem, SHOP_ITEMS, CURRENT_EVENT } from "../systems/RewardSystem.js?v=69";
+import { PlayerData } from "../systems/PlayerData.js?v=70";
+import { RewardSystem, SHOP_ITEMS, CURRENT_EVENT } from "../systems/RewardSystem.js?v=70";
 
 const CATEGORIES = ["outfits", "capes", "crowns", "pets", "trails", "room", "effects"];
 
@@ -60,6 +60,8 @@ export class ShopScene extends Phaser.Scene {
         <button data-nav="dashboard">Dashboard</button>
       </div>
     `;
+    this.panel.updateSize();
+    this.panel.setOrigin(0.5, 0);
     this.bind();
   }
 
