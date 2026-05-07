@@ -1,4 +1,4 @@
-import { PlayerData } from "./PlayerData.js?v=62";
+import { PlayerData } from "./PlayerData.js?v=69";
 
 export const DEV_UNLOCK_ALL_GAMES = true;
 

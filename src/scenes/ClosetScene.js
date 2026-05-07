@@ -1,6 +1,6 @@
-import { PlayerData } from "../systems/PlayerData.js?v=62";
-import { RewardSystem, SHOP_ITEMS } from "../systems/RewardSystem.js?v=62";
-import { HERO_LAYER_ASSETS, getHero } from "../systems/AssetCatalog.js?v=62";
+import { PlayerData } from "../systems/PlayerData.js?v=69";
+import { RewardSystem, SHOP_ITEMS } from "../systems/RewardSystem.js?v=69";
+import { HERO_LAYER_ASSETS, getHero } from "../systems/AssetCatalog.js?v=69";
 
 const EQUIP_CATEGORIES = ["outfits", "crowns", "capes", "pets", "trails", "effects"];
 
