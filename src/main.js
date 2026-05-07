@@ -1,15 +1,15 @@
-import { LoginScene } from "./scenes/LoginScene.js?v=75";
-import { DashboardScene } from "./scenes/DashboardScene.js?v=75";
-import { BootScene } from "./scenes/BootScene.js?v=75";
-import { CharacterSelectScene } from "./scenes/CharacterSelectScene.js?v=75";
-import { KingdomMapScene } from "./scenes/KingdomMapScene.js?v=75";
-import { MiniGameLauncherScene } from "./scenes/MiniGameLauncherScene.js?v=75";
-import { ShopScene } from "./scenes/ShopScene.js?v=75";
-import { ClosetScene } from "./scenes/ClosetScene.js?v=75";
-import { PlayerRoomScene } from "./scenes/PlayerRoomScene.js?v=75";
-import { StoryForgeScene } from "./scenes/StoryForgeScene.js?v=75";
-import { KingdomNewsScene } from "./scenes/KingdomNewsScene.js?v=75";
-import { ReflectionJournalScene } from "./scenes/ReflectionJournalScene.js?v=75";
+import { LoginScene } from "./scenes/LoginScene.js?v=76";
+import { DashboardScene } from "./scenes/DashboardScene.js?v=76";
+import { BootScene } from "./scenes/BootScene.js?v=76";
+import { CharacterSelectScene } from "./scenes/CharacterSelectScene.js?v=76";
+import { KingdomMapScene } from "./scenes/KingdomMapScene.js?v=76";
+import { MiniGameLauncherScene } from "./scenes/MiniGameLauncherScene.js?v=76";
+import { ShopScene } from "./scenes/ShopScene.js?v=76";
+import { ClosetScene } from "./scenes/ClosetScene.js?v=76";
+import { PlayerRoomScene } from "./scenes/PlayerRoomScene.js?v=76";
+import { StoryForgeScene } from "./scenes/StoryForgeScene.js?v=76";
+import { KingdomNewsScene } from "./scenes/KingdomNewsScene.js?v=76";
+import { ReflectionJournalScene } from "./scenes/ReflectionJournalScene.js?v=76";
 
 const config = {
   type: Phaser.AUTO,

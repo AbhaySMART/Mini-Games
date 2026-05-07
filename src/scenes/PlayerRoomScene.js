@@ -1,5 +1,5 @@
-import { PlayerData } from "../systems/PlayerData.js?v=75";
-import { RewardSystem, SHOP_ITEMS, BADGES, CURRENT_EVENT } from "../systems/RewardSystem.js?v=75";
+import { PlayerData } from "../systems/PlayerData.js?v=76";
+import { RewardSystem, SHOP_ITEMS, BADGES, CURRENT_EVENT } from "../systems/RewardSystem.js?v=76";
 
 export class PlayerRoomScene extends Phaser.Scene {
   constructor() {
@@ -9,8 +9,8 @@ export class PlayerRoomScene extends Phaser.Scene {
   create() {
     this.cameras.main.setBackgroundColor("#6d4b8d");
     this.add.rectangle(480, 380, 960, 760, 0x6d4b8d);
-    this.panel = this.add.dom(480, 60).createFromHTML(`<div class="kk-reward-panel room" style="width:760px; max-width:760px;"></div>`);
-    this.panel.setOrigin(0.5, 0);
+    this.panel = this.add.dom(100, 60).createFromHTML(`<div class="kk-reward-panel room" style="width:760px; max-width:760px;"></div>`);
+    this.panel.setOrigin(0, 0);
     this.panel.setSize(760, 650);
     this.enablePanelScroll();
     this.render();
@@ -78,7 +78,7 @@ export class PlayerRoomScene extends Phaser.Scene {
         <button data-nav="dashboard">Dashboard</button>
       </div>
     `;
-    this.panel.setOrigin(0.5, 0);
+    this.panel.setOrigin(0, 0);
     this.bind();
   }
 

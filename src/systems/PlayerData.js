@@ -1,4 +1,4 @@
-import { userScopedKey } from "./AuthSystem.js?v=75";
+import { userScopedKey } from "./AuthSystem.js?v=76";
 
 export const PLAYER_KEY = "kindKingdomPlayer";
 export const PROGRESS_KEY = "kindKingdomProgress";

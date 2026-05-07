@@ -1,4 +1,4 @@
-import { ReflectionJournalSystem } from "../systems/ReflectionJournalSystem.js?v=75";
+import { ReflectionJournalSystem } from "../systems/ReflectionJournalSystem.js?v=76";
 
 export class ReflectionJournalScene extends Phaser.Scene {
   constructor() {
@@ -10,8 +10,8 @@ export class ReflectionJournalScene extends Phaser.Scene {
     this.add.rectangle(480, 380, 960, 760, 0x6fb7ff);
     this.add.rectangle(480, 520, 960, 380, 0xb9ef9a);
     this.add.circle(818, 122, 72, 0xffd166, 0.92);
-    this.panel = this.add.dom(480, 60).createFromHTML(`<div class="kk-journal-panel" style="width:860px; max-width:860px;"></div>`);
-    this.panel.setOrigin(0.5, 0);
+    this.panel = this.add.dom(50, 60).createFromHTML(`<div class="kk-journal-panel" style="width:860px; max-width:860px;"></div>`);
+    this.panel.setOrigin(0, 0);
     this.panel.setSize(860, 650);
     this.enablePanelScroll();
     this.render();
@@ -37,7 +37,7 @@ export class ReflectionJournalScene extends Phaser.Scene {
         `}
       </div>
     `;
-    this.panel.setOrigin(0.5, 0);
+    this.panel.setOrigin(0, 0);
     this.panel.node.querySelector("[data-nav]")?.addEventListener("click", () => this.scene.start("DashboardScene"));
   }
 
