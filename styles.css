@@ -10215,6 +10215,7 @@ body * {
 }
 
 .kk-ar-mission-card,
+.kk-room-create-card,
 .kk-room-code-card,
 .kk-coop-card,
 .kk-multiplayer-log {
@@ -10237,6 +10238,132 @@ body * {
 
 .kk-multiplayer-layout {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.kk-room-create-card,
+.kk-room-code-card,
+.kk-room-lobby-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.kk-room-create-card h3,
+.kk-room-code-card h3,
+.kk-room-lobby-card h3,
+.kk-multiplayer-log h3 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+  color: #2d174d;
+}
+
+.kk-room-visibility {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kk-room-visibility button,
+.kk-wide-button,
+.kk-room-code-display button {
+  display: inline-grid;
+  place-items: center;
+  text-align: center;
+}
+
+.kk-room-visibility button {
+  border: 3px solid #d8caff;
+  border-radius: 18px;
+  padding: 12px;
+  font-weight: 1000;
+  color: #2d174d;
+  background: #efe7ff;
+  box-shadow: 0 5px 0 #b6a2e6;
+}
+
+.kk-room-visibility button.selected {
+  border-color: #ffd166;
+  background: #ffd166;
+  color: #3f2a00;
+  box-shadow: 0 5px 0 #c99517;
+}
+
+.kk-wide-button {
+  width: 100%;
+}
+
+.kk-room-code-display {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  border-radius: 20px;
+  border: 3px dashed #b8a6e8;
+  background: #f8f3ff;
+  padding: 14px;
+  text-align: center;
+}
+
+.kk-room-code-display span {
+  font-size: .82rem;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #6f57a0;
+}
+
+.kk-room-code-display strong {
+  font-family: "Nunito", sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1;
+  color: #2d174d;
+}
+
+.kk-room-code-display button {
+  min-width: 150px;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font: inherit;
+  font-weight: 1000;
+  color: #064743;
+  background: #77e5dc;
+  box-shadow: 0 5px 0 #1b8f85;
+}
+
+.kk-public-room-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.kk-public-room-list > b {
+  color: #2d174d;
+}
+
+.kk-public-room-list button {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: center;
+  border: 3px solid #d8caff;
+  border-radius: 16px;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 1000;
+  color: #2d174d;
+  background: #ffffff;
+  box-shadow: 0 4px 0 #b6a2e6;
+  text-align: left;
+}
+
+.kk-public-room-list button span {
+  color: #7b4dff;
+}
+
+.kk-public-room-list button small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #5a4c78;
 }
 
 .kk-multiplayer-log {

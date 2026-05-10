@@ -29,7 +29,10 @@ const state = {
   arStage: "permission",
   arCompletedMissionId: "",
   arMissionId: "kindness-spirit",
-  multiplayerRoom: "kind-kingdom-room",
+  multiplayerRoom: "",
+  multiplayerVisibility: "private",
+  multiplayerCreated: false,
+  multiplayerHost: false,
   multiplayerJoined: false,
   multiplayerLog: []
 };
@@ -481,22 +484,55 @@ function arPhoneStep(step, mission) {
 function renderMultiplayer() {
   const progress = PlayerData.loadProgress();
   const log = state.multiplayerLog.slice(-6).reverse();
+  const publicRooms = publicMultiplayerRooms().filter((room) => room.code !== state.multiplayerRoom).slice(0, 4);
+  const roomCode = state.multiplayerRoom || "No room yet";
+  const visibilityLabel = state.multiplayerVisibility === "public" ? "Public" : "Private";
+  const connectedText = state.multiplayerJoined
+    ? `${state.multiplayerHost ? "Hosting" : "Joined"} ${visibilityLabel.toLowerCase()} room ${roomCode}.`
+    : "Create a room or join a friend with their code.";
 
   return `
     <section class="kk-dom-page kk-multiplayer-page">
-      ${panelHead("Kind Kingdom Multiplayer", "Co-op kindness missions", "Join a shared room on this device/browser network flow. Students can coordinate missions, send kindness signals, and earn co-op rewards.", true, `${progress.points} pts`)}
+      ${panelHead("Kind Kingdom Multiplayer", "Co-op kindness missions", "Create a room, share the code with friends, or join a room someone already made.", true, `${progress.points} pts`)}
       <div class="kk-multiplayer-layout">
+        <article class="kk-dom-card kk-room-create-card">
+          <p class="kk-eyebrow">Step 1</p>
+          <h3>Create a Room</h3>
+          <p>Start a co-op session, then give the room code to your friends.</p>
+          <div class="kk-room-visibility" role="group" aria-label="Room visibility">
+            <button class="${state.multiplayerVisibility === "private" ? "selected" : ""}" data-action="set-room-visibility" data-visibility="private">Private</button>
+            <button class="${state.multiplayerVisibility === "public" ? "selected" : ""}" data-action="set-room-visibility" data-visibility="public">Public</button>
+          </div>
+          <button class="kk-primary kk-wide-button" data-action="create-multiplayer-room">Create ${visibilityLabel} Room</button>
+          <div class="kk-room-code-display">
+            <span>Room Code</span>
+            <strong>${escapeHtml(roomCode)}</strong>
+            <button data-action="copy-room-code" ${state.multiplayerRoom ? "" : "disabled"}>Copy Code</button>
+          </div>
+        </article>
+
         <article class="kk-dom-card kk-room-code-card">
-          <label>Room Code
-            <input data-multiplayer-room value="${escapeAttr(state.multiplayerRoom)}" maxlength="32">
+          <p class="kk-eyebrow">Step 2</p>
+          <h3>Join a Friend</h3>
+          <label>Enter Room Code
+            <input data-multiplayer-room value="${escapeAttr(state.multiplayerRoom)}" maxlength="16" placeholder="KK-ABCD">
           </label>
           <div class="kk-dom-actions">
-            <button class="kk-primary" data-action="join-multiplayer">${state.multiplayerJoined ? "Rejoin Room" : "Join Room"}</button>
-            <button data-action="multiplayer-ping">Send Kindness Signal</button>
+            <button class="kk-primary" data-action="join-multiplayer">Join Room</button>
           </div>
-          <p>${state.multiplayerJoined ? `Connected to ${escapeHtml(state.multiplayerRoom)}.` : "Join a room to start a co-op mission."}</p>
+          <p>${escapeHtml(connectedText)}</p>
+          <div class="kk-public-room-list">
+            <b>Public Rooms</b>
+            ${publicRooms.map((room) => `
+              <button data-action="join-public-room" data-room="${escapeAttr(room.code)}">
+                <span>${escapeHtml(room.code)}</span>
+                <small>${escapeHtml(room.host)}'s room</small>
+              </button>
+            `).join("") || "<small>No public rooms yet. Create one to make it appear here.</small>"}
+          </div>
         </article>
-        <article class="kk-dom-card kk-coop-card">
+
+        <article class="kk-dom-card kk-coop-card kk-room-lobby-card">
           <p class="kk-eyebrow">Active co-op mission</p>
           <h3>Restore the Shared Portal</h3>
           <p>Each player does one helpful action nearby, then confirms it. When the group completes the mission, everyone can earn points.</p>
@@ -505,8 +541,12 @@ function renderMultiplayer() {
             <span>2. Tell your teammate what you did.</span>
             <span>3. Confirm the portal together.</span>
           </div>
-          <button class="kk-primary" data-action="complete-multiplayer-mission">Complete Co-op Mission</button>
+          <div class="kk-dom-actions">
+            <button data-action="multiplayer-ping" ${state.multiplayerJoined ? "" : "disabled"}>Send Kindness Signal</button>
+            <button class="kk-primary" data-action="complete-multiplayer-mission" ${state.multiplayerJoined ? "" : "disabled"}>Complete Co-op Mission</button>
+          </div>
         </article>
+
         <aside class="kk-dom-card kk-multiplayer-log">
           <h3>Room Activity</h3>
           ${log.map((item) => `<p><b>${escapeHtml(item.name)}:</b> ${escapeHtml(item.text)}</p>`).join("") || "<p>No room activity yet.</p>"}
@@ -777,9 +817,27 @@ function createThreeKindnessCreature(THREE, mount, index = 0) {
   };
 }
 
-function joinMultiplayerRoom() {
+function createMultiplayerRoom() {
+  state.multiplayerRoom = generateRoomCode();
+  state.multiplayerCreated = true;
+  state.multiplayerHost = true;
+  state.multiplayerJoined = false;
+  state.multiplayerLog = [];
+  if (state.multiplayerVisibility === "public") savePublicMultiplayerRoom(state.multiplayerRoom);
+  return connectMultiplayerRoom(`created a ${state.multiplayerVisibility} room.`);
+}
+
+function joinMultiplayerRoom(roomOverride = "") {
   const input = root.querySelector("[data-multiplayer-room]");
-  state.multiplayerRoom = String(input?.value || state.multiplayerRoom || "kind-kingdom-room").trim() || "kind-kingdom-room";
+  const code = normalizeRoomCode(roomOverride || input?.value || state.multiplayerRoom);
+  if (!code) return setMessage("Enter a room code, or create a room first.");
+  state.multiplayerRoom = code;
+  state.multiplayerCreated = false;
+  state.multiplayerHost = false;
+  return connectMultiplayerRoom(`joined room ${state.multiplayerRoom}.`);
+}
+
+function connectMultiplayerRoom(statusText) {
   if (multiplayerChannel) multiplayerChannel.close();
   if ("BroadcastChannel" in window) {
     multiplayerChannel = new BroadcastChannel(`kk-${state.multiplayerRoom}`);
@@ -790,16 +848,53 @@ function joinMultiplayerRoom() {
     };
   }
   state.multiplayerJoined = true;
-  state.multiplayerLog.push({ name: AuthSystem.currentUser(), text: `joined ${state.multiplayerRoom}.`, at: Date.now() });
+  state.multiplayerLog.push({ name: AuthSystem.currentUser(), text: statusText, at: Date.now() });
   return render();
 }
 
 function sendMultiplayerMessage(text) {
-  if (!state.multiplayerJoined) joinMultiplayerRoom();
+  if (!state.multiplayerJoined) return setMessage("Create or join a room before using multiplayer actions.");
   const message = { user: AuthSystem.currentUser(), name: AuthSystem.currentUser(), text, at: Date.now() };
   state.multiplayerLog.push(message);
   multiplayerChannel?.postMessage(message);
   return render();
+}
+
+function generateRoomCode() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let suffix = "";
+  for (let i = 0; i < 4; i += 1) suffix += alphabet[Math.floor(Math.random() * alphabet.length)];
+  return `KK-${suffix}`;
+}
+
+function publicMultiplayerRooms() {
+  try {
+    return JSON.parse(localStorage.getItem("kkPublicRooms") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function savePublicMultiplayerRoom(code) {
+  const rooms = publicMultiplayerRooms().filter((room) => room.code !== code).slice(0, 8);
+  rooms.unshift({ code, host: AuthSystem.currentUser(), at: Date.now() });
+  localStorage.setItem("kkPublicRooms", JSON.stringify(rooms));
+}
+
+function normalizeRoomCode(value) {
+  const code = String(value || "").trim().toUpperCase().replace(/\s+/g, "");
+  if (!code) return "";
+  return code.startsWith("KK-") ? code : `KK-${code.replace(/^KK-?/, "")}`;
+}
+
+async function copyRoomCode() {
+  if (!state.multiplayerRoom) return setMessage("Create a room first, then copy the code.");
+  try {
+    await navigator.clipboard.writeText(state.multiplayerRoom);
+    return setMessage(`Copied room code ${state.multiplayerRoom}.`);
+  } catch {
+    return setMessage(`Room code: ${state.multiplayerRoom}`);
+  }
 }
 
 function panelHead(title, eyebrow, text, backButton = false, pill = "") {
@@ -1198,9 +1293,19 @@ async function handleClick(event) {
     state.message = "";
     return render();
   }
+  if (action === "set-room-visibility") {
+    state.multiplayerVisibility = event.target.dataset.visibility === "public" ? "public" : "private";
+    return render();
+  }
+  if (action === "create-multiplayer-room") return createMultiplayerRoom();
+  if (action === "copy-room-code") return copyRoomCode();
+  if (action === "join-public-room") {
+    return joinMultiplayerRoom(event.target.closest("[data-room]")?.dataset.room || "");
+  }
   if (action === "join-multiplayer") return joinMultiplayerRoom();
   if (action === "multiplayer-ping") return sendMultiplayerMessage("sent a kindness signal to the room.");
   if (action === "complete-multiplayer-mission") {
+    if (!state.multiplayerJoined) return setMessage("Create or join a room before completing a co-op mission.");
     UnlockSystem.addPoints(35);
     PlayerData.addSkillXP("Teamwork", 15);
     EmotionSystem.recordChoice(true, { skill: "Teamwork", label: "Shared Portal Mission" });
