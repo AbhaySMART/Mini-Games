@@ -25,6 +25,9 @@ const state = {
   nearestSlug: null,
   showMapControls: false,
   arCameraActive: false,
+  arCameraDenied: false,
+  arStage: "permission",
+  arCompletedMissionId: "",
   arMissionId: "kindness-spirit",
   multiplayerRoom: "kind-kingdom-room",
   multiplayerJoined: false,
@@ -372,28 +375,38 @@ function renderJournal() {
 
 function renderARExperience() {
   const mission = arMissions().find((item) => item.id === state.arMissionId) || arMissions()[0];
+  const stage = state.arStage || "permission";
+  const roomVisible = stage !== "permission";
+  const isScanning = stage === "scan";
+  const showMagic = ["explore", "challenge", "reward"].includes(stage);
+  const showChallenge = stage === "challenge";
+  const showReward = stage === "reward";
+  const showExploreHint = stage === "explore";
 
   return `
     <section class="kk-dom-page kk-ar-page kk-ar-single-page">
       <button class="kk-ar-back-icon" data-action="nav" data-view="dashboard" aria-label="Back">←</button>
       <div class="kk-phone kk-ar-live-phone">
-        <div class="kk-phone-screen discover ${state.arCameraActive ? "camera-on" : ""}">
+        <div class="kk-phone-screen ${roomVisible ? "discover" : "permission"} ${state.arCameraActive ? "camera-on" : ""} ${state.arCameraDenied ? "camera-denied" : ""}">
           <video data-ar-video autoplay playsinline muted></video>
-          <div class="kk-room-sim">
+          <div class="kk-room-sim ${roomVisible ? "" : "hidden"}">
             <div class="kk-room-window"></div>
             <div class="kk-room-plant"></div>
             <div class="kk-room-couch"></div>
             <div class="kk-room-table"></div>
-            <div class="kk-ar-portal"></div>
-            <div class="kk-ar-crystal one"></div>
-            <div class="kk-ar-crystal two"></div>
-            <div class="kk-phone-creature kk-live-creature" data-kk-3d-creature></div>
-            <div class="kk-phone-mission kk-live-mission">
+            ${isScanning ? `<div class="kk-ar-scan-overlay"><span></span><b>Scanning area...</b><button data-action="ar-finish-scan">Place Magic</button></div>` : ""}
+            ${showMagic ? `<button class="kk-ar-portal" data-action="ar-open-challenge" aria-label="Open kindness portal"></button>
+            <div class="kk-ar-crystal one"></div><div class="kk-ar-crystal two"></div>
+            <button class="kk-phone-creature kk-live-creature" data-action="ar-open-challenge" aria-label="Talk to kindness spirit">
+              <span data-kk-3d-creature></span>
+            </button>` : ""}
+            ${showExploreHint ? `<div class="kk-phone-hint">Tap the spirit or portal</div>` : ""}
+            ${showChallenge ? `<div class="kk-phone-mission kk-live-mission">
               <b>${escapeHtml(mission.name)}</b>
               <p>${escapeHtml(mission.prompt)}</p>
               <small>Reward: +${mission.points} Kindness Points</small>
-            </div>
-            <div class="kk-phone-verify">
+            </div>` : ""}
+            ${showChallenge ? `<div class="kk-phone-verify">
               <select data-ar-proof-type aria-label="Challenge completed">
                 <option value="">Choose completed action</option>
                 ${mission.verifications.map((item) => `<option value="${escapeAttr(item)}">${escapeHtml(item)}</option>`).join("")}
@@ -404,9 +417,11 @@ function renderARExperience() {
                 <span>I did this in real life.</span>
               </label>
               <button data-action="complete-ar-mission" data-mission="${mission.id}">Complete</button>
-            </div>
+            </div>` : ""}
+            ${showReward ? `<div class="kk-phone-reward kk-live-reward"><b>Challenge Complete!</b><span>+${mission.points}</span><p>Kindness Points</p><button data-action="ar-reset">Explore Again</button></div>` : ""}
             ${state.message ? `<div class="kk-phone-toast">${escapeHtml(state.message)}</div>` : ""}
           </div>
+          ${stage === "permission" ? `<div class="kk-phone-permission"><b>AR Camera</b><p>Allow camera access to begin.</p><button data-action="start-ar-camera">Open Camera</button></div>` : ""}
           <div class="kk-phone-top"><button data-action="nav" data-view="dashboard">×</button><button data-action="spawn-ar-mission" data-mission="${nextARMissionId(mission.id)}">?</button></div>
           <div class="kk-phone-bottom">
             <button data-action="nav" data-view="map">Map</button>
@@ -567,11 +582,15 @@ async function startARCamera() {
       audio: false
     });
     state.arCameraActive = true;
-    state.message = "Camera opened. Tap a glowing AR object to choose a mission.";
+    state.arCameraDenied = false;
+    state.arStage = "scan";
+    state.message = "";
     render();
   } catch {
     state.arCameraActive = false;
-    setMessage("Camera permission was blocked. You can still use AR missions in practice mode.");
+    state.arCameraDenied = true;
+    state.arStage = "scan";
+    setMessage("Camera blocked. Practice room loaded.");
   }
 }
 
@@ -631,8 +650,8 @@ function createThreeKindnessCreature(THREE, mount, index = 0) {
   const width = Math.max(90, mount.clientWidth || 140);
   const height = Math.max(90, mount.clientHeight || 140);
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
-  camera.position.set(0, 1.1, 5.3);
+  const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 100);
+  camera.position.set(0, 0.95, 5.9);
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(width, height);
@@ -640,8 +659,9 @@ function createThreeKindnessCreature(THREE, mount, index = 0) {
   mount.appendChild(renderer.domElement);
 
   const creature = new THREE.Group();
-  const blue = new THREE.MeshStandardMaterial({ color: 0x5ddcff, roughness: 0.42 });
-  const purple = new THREE.MeshStandardMaterial({ color: 0x9b6dff, roughness: 0.45 });
+  const blue = new THREE.MeshPhysicalMaterial({ color: 0x54d7ff, roughness: 0.34, metalness: 0.02, clearcoat: 0.45, clearcoatRoughness: 0.22 });
+  const belly = new THREE.MeshPhysicalMaterial({ color: 0xbdf7ff, roughness: 0.42, clearcoat: 0.35 });
+  const purple = new THREE.MeshPhysicalMaterial({ color: 0x9b6dff, roughness: 0.36, clearcoat: 0.4 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x101032, roughness: 0.25 });
   const white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
   const blush = new THREE.MeshStandardMaterial({ color: 0xff8fab, roughness: 0.4 });
@@ -662,6 +682,10 @@ function createThreeKindnessCreature(THREE, mount, index = 0) {
   head.scale.set(1.05, 0.92, 0.9);
   head.position.y = 0.75;
   creature.add(head);
+  const bellyPatch = new THREE.Mesh(new THREE.SphereGeometry(0.58, 24, 16), belly);
+  bellyPatch.scale.set(0.92, 0.72, 0.18);
+  bellyPatch.position.set(0, -0.42, 0.77);
+  creature.add(bellyPatch);
   const aura = new THREE.Mesh(new THREE.SphereGeometry(1.58, 32, 20), glow);
   aura.scale.set(1.1, 1.02, 0.8);
   aura.position.y = 0.18;
@@ -714,14 +738,24 @@ function createThreeKindnessCreature(THREE, mount, index = 0) {
     creature.add(foot);
   });
 
+  for (let i = 0; i < 10; i += 1) {
+    const mote = new THREE.Mesh(new THREE.SphereGeometry(0.035 + (i % 3) * 0.012, 10, 8), white);
+    const angle = i / 10 * Math.PI * 2;
+    mote.position.set(Math.cos(angle) * (1.35 + (i % 2) * 0.18), 0.12 + Math.sin(i) * 0.9, Math.sin(angle) * 0.35);
+    creature.add(mote);
+  }
+
   scene.add(creature);
-  scene.add(new THREE.AmbientLight(0xffffff, 1.75));
-  const key = new THREE.DirectionalLight(0xffffff, 2.2);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x4c2a92, 1.9));
+  const key = new THREE.DirectionalLight(0xffffff, 2.8);
   key.position.set(3, 5, 4);
   scene.add(key);
-  const rim = new THREE.PointLight(0x9b6dff, 2.4, 7);
+  const rim = new THREE.PointLight(0x9b6dff, 3.5, 8);
   rim.position.set(-2.5, 1.5, 3);
   scene.add(rim);
+  const cyan = new THREE.PointLight(0x7bdff2, 1.8, 7);
+  cyan.position.set(2.6, -0.6, 3);
+  scene.add(cyan);
 
   let frame = 0;
   let stopped = false;
@@ -1128,17 +1162,41 @@ async function handleClick(event) {
   if (action === "start-ar-camera") return startARCamera();
   if (action === "spawn-ar-mission") {
     state.arMissionId = target.dataset.mission;
+    state.arStage = state.arCameraActive || state.arCameraDenied ? "scan" : "permission";
+    state.message = "";
+    state.arCompletedMissionId = "";
+    return render();
+  }
+  if (action === "ar-finish-scan") {
+    state.arStage = "explore";
+    state.message = "";
+    return render();
+  }
+  if (action === "ar-open-challenge") {
+    state.arStage = "challenge";
+    state.message = "";
+    return render();
+  }
+  if (action === "ar-reset") {
+    state.arStage = state.arCameraActive || state.arCameraDenied ? "explore" : "permission";
+    state.message = "";
+    state.arCompletedMissionId = "";
     return render();
   }
   if (action === "complete-ar-mission") {
     const mission = arMissions().find((item) => item.id === target.dataset.mission) || arMissions()[0];
     const verification = verifyARMission(mission);
     if (!verification.ok) return setMessage(verification.message);
-    UnlockSystem.addPoints(mission.points);
-    PlayerData.addSkillXP(mission.skill, mission.xp);
-    EmotionSystem.recordChoice(true, { skill: mission.skill, label: mission.name });
-    NPCMemorySystem.recordStoryChoice({ npcName: mission.npc, skill: mission.skill, title: mission.name, correct: true });
-    return navigate("dashboard", `${mission.name} complete. +${mission.points} Kindness Points earned.`);
+    if (state.arCompletedMissionId !== mission.id) {
+      UnlockSystem.addPoints(mission.points);
+      PlayerData.addSkillXP(mission.skill, mission.xp);
+      EmotionSystem.recordChoice(true, { skill: mission.skill, label: mission.name });
+      NPCMemorySystem.recordStoryChoice({ npcName: mission.npc, skill: mission.skill, title: mission.name, correct: true });
+    }
+    state.arCompletedMissionId = mission.id;
+    state.arStage = "reward";
+    state.message = "";
+    return render();
   }
   if (action === "join-multiplayer") return joinMultiplayerRoom();
   if (action === "multiplayer-ping") return sendMultiplayerMessage("sent a kindness signal to the room.");
