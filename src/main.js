@@ -8,7 +8,7 @@ import { KingdomNewsSystem } from "./systems/KingdomNewsSystem.js?v=79";
 import { ReflectionJournalSystem } from "./systems/ReflectionJournalSystem.js?v=79";
 import { EmotionSystem } from "./systems/EmotionSystem.js?v=79";
 import { NPCMemorySystem } from "./systems/NPCMemorySystem.js?v=79";
-import { HEROES, HERO_LAYER_ASSETS, getHero } from "./systems/AssetCatalog.js?v=79";
+import { HEROES, HERO_LAYER_ASSETS, WALK_FRAMES, getHero } from "./systems/AssetCatalog.js?v=79";
 
 const root = document.querySelector("#game");
 const SHOP_CATEGORIES = ["outfits", "capes", "crowns", "pets", "trails", "room", "effects"];
@@ -23,7 +23,12 @@ const state = {
   story: null,
   selectedNewsId: null,
   nearestSlug: null,
-  showMapControls: false
+  showMapControls: false,
+  arCameraActive: false,
+  arMissionId: "kindness-spirit",
+  multiplayerRoom: "kind-kingdom-room",
+  multiplayerJoined: false,
+  multiplayerLog: []
 };
 
 let scrollHoldTimer = null;
@@ -32,6 +37,8 @@ let movementLoop = null;
 let phaserMapGame = null;
 let phaserMapApi = null;
 let phaserLoadingPromise = null;
+let arCameraStream = null;
+let multiplayerChannel = null;
 
 root.addEventListener("click", handleClick);
 root.addEventListener("submit", handleSubmit);
@@ -58,8 +65,10 @@ function render() {
     syncMapHint();
   } else {
     destroyPhaserMap();
+    if (state.view !== "ar") stopARCamera();
     root.insertAdjacentHTML("beforeend", pageScrollControlsMarkup());
   }
+  if (state.view === "ar" && state.arCameraActive) requestAnimationFrame(attachARVideo);
 }
 
 function renderAuthedView() {
@@ -72,7 +81,9 @@ function renderAuthedView() {
     room: renderRoom,
     story: renderStoryForge,
     news: renderNews,
-    journal: renderJournal
+    journal: renderJournal,
+    ar: renderARExperience,
+    multiplayer: renderMultiplayer
   };
   return (views[state.view] || renderDashboard)();
 }
@@ -127,6 +138,8 @@ function renderDashboard() {
       </div>
       <div class="kk-old-button-row primary">
         <button data-action="nav" data-view="${player.character ? "map" : "character"}">Begin Gameplay</button>
+        <button data-action="nav" data-view="ar">AR Experience</button>
+        <button data-action="nav" data-view="multiplayer">Multiplayer</button>
         <button data-action="nav" data-view="story">Story Forge</button>
         <button data-action="nav" data-view="shop">Shop</button>
         <button data-action="nav" data-view="closet">Closet</button>
@@ -164,37 +177,22 @@ function renderCharacterSelect() {
 
 function renderMap() {
   const progress = PlayerData.loadProgress();
-  const player = PlayerData.loadPlayer();
   const mood = EmotionSystem.getKingdomMood(progress);
-  const portals = mapPortals();
-  const activeQuest = QuestSystem.getActiveQuest(progress);
-  const guideNpcs = ["Crystal Guide", "Gate Keeper", "Roundtable Page", "Lantern Keeper"];
   const showControls = shouldShowMapControls();
   const touchControls = isTouchMapDevice();
 
   return `
-    <section class="kk-dom-page kk-map-page ${moodClass(mood)}">
-      ${panelHead("Kind Kingdom Map", `${mood.sky} world`, "Walk with arrow keys or WASD. Press E near a portal, or use an Enter button directly.", true)}
-      <div class="kk-map-toolbar">
-        <button class="kk-primary" data-action="nav" data-view="dashboard">Dashboard</button>
-        <button data-action="nav" data-view="shop">Shop</button>
-        <button data-action="nav" data-view="closet">Closet</button>
-        <button data-action="nav" data-view="room">My Room</button>
-        ${touchControls ? "" : `<button data-action="toggle-map-controls">${showControls ? "Hide" : "Show"} On-Screen Controls</button>`}
-        <a class="kk-dom-link" href="card-view.html">Card View</a>
+    <section class="kk-dom-page kk-map-page kk-phaser-only-map ${moodClass(mood)}">
+      <div class="kk-phaser-map-stage" data-map-stage data-phaser-map tabindex="0" aria-label="Kind Kingdom map. Use arrow keys or WASD to move.">
+        <div class="kk-map-loading">Loading kingdom map...</div>
       </div>
-      <div class="kk-map-layout">
-        <div class="kk-phaser-map-stage" data-map-stage data-phaser-map tabindex="0" aria-label="Kind Kingdom Phaser map. Use arrow keys or WASD to move.">
-          <div class="kk-map-loading">Loading kingdom map...</div>
-        </div>
-        <aside class="kk-dom-card kk-map-side">
-          <p class="kk-eyebrow">Nearby</p>
-          <h3 data-map-hint>Move near a portal.</h3>
-          <p>${escapeHtml(activeQuest.npc)}: ${escapeHtml(activeQuest.prompt)}</p>
-          ${showControls ? mapControlsMarkup() : `<button class="kk-primary kk-show-controls" data-action="toggle-map-controls">Use On-Screen Controls</button>`}
-          <p class="kk-map-status">${NPCMemorySystem.memoryFor(activeQuest.npc, progress, mood)}</p>
-        </aside>
+      <div class="kk-map-overlay-actions">
+        <button data-action="nav" data-view="dashboard">Dashboard</button>
+        <button data-action="nav" data-view="ar">AR</button>
+        <button data-action="nav" data-view="multiplayer">Multiplayer</button>
+        ${touchControls ? "" : `<button data-action="toggle-map-controls">${showControls ? "Hide" : "Touch"} Controls</button>`}
       </div>
+      ${showControls ? `<div class="kk-map-floating-pad">${mapControlsMarkup()}</div>` : ""}
       ${messageMarkup()}
     </section>
   `;
@@ -367,6 +365,201 @@ function renderJournal() {
       </div>
     </section>
   `;
+}
+
+function renderARExperience() {
+  const mission = arMissions().find((item) => item.id === state.arMissionId) || arMissions()[0];
+  const progress = PlayerData.loadProgress();
+
+  return `
+    <section class="kk-dom-page kk-ar-page">
+      ${panelHead("Kind Kingdom AR Experience", "Real-world adventure", "Open your camera, discover magical kindness objects, complete real-life missions, and send rewards back to the kingdom.", true, `${progress.points} pts`)}
+      <div class="kk-ar-layout">
+        <article class="kk-ar-viewfinder ${state.arCameraActive ? "camera-on" : ""}">
+          <video data-ar-video autoplay playsinline muted></video>
+          <div class="kk-ar-fallback">
+            <span>Camera preview</span>
+            <p>AR objects still work if camera access is not available.</p>
+          </div>
+          <button class="kk-ar-object spirit ${mission.id === "kindness-spirit" ? "active" : ""}" data-action="spawn-ar-mission" data-mission="kindness-spirit">
+            <span>✦</span><b>Kindness Spirit</b>
+          </button>
+          <button class="kk-ar-object crystal ${mission.id === "gratitude-crystal" ? "active" : ""}" data-action="spawn-ar-mission" data-mission="gratitude-crystal">
+            <span>◆</span><b>Gratitude Crystal</b>
+          </button>
+          <button class="kk-ar-object dragon ${mission.id === "calm-dragon" ? "active" : ""}" data-action="spawn-ar-mission" data-mission="calm-dragon">
+            <span>◉</span><b>Calm Dragon</b>
+          </button>
+          <button class="kk-ar-object lantern ${mission.id === "empathy-lantern" ? "active" : ""}" data-action="spawn-ar-mission" data-mission="empathy-lantern">
+            <span>✧</span><b>Empathy Lantern</b>
+          </button>
+          <div class="kk-ar-scanline"></div>
+        </article>
+        <aside class="kk-dom-card kk-ar-mission-card">
+          <p class="kk-eyebrow">${escapeHtml(mission.type)}</p>
+          <h3>${escapeHtml(mission.name)}</h3>
+          <p>${escapeHtml(mission.prompt)}</p>
+          <div class="kk-ar-steps">
+            ${mission.steps.map((step) => `<span>${escapeHtml(step)}</span>`).join("")}
+          </div>
+          <div class="kk-dom-actions">
+            <button class="kk-primary" data-action="start-ar-camera">${state.arCameraActive ? "Restart Camera" : "Open Camera"}</button>
+            <button data-action="complete-ar-mission" data-mission="${mission.id}">Complete Mission</button>
+          </div>
+          <p class="kk-map-status">Reward: +${mission.points} Kindness Points and +${mission.xp} ${escapeHtml(mission.skill)} XP.</p>
+        </aside>
+      </div>
+      ${messageMarkup()}
+    </section>
+  `;
+}
+
+function renderMultiplayer() {
+  const progress = PlayerData.loadProgress();
+  const log = state.multiplayerLog.slice(-6).reverse();
+
+  return `
+    <section class="kk-dom-page kk-multiplayer-page">
+      ${panelHead("Kind Kingdom Multiplayer", "Co-op kindness missions", "Join a shared room on this device/browser network flow. Students can coordinate missions, send kindness signals, and earn co-op rewards.", true, `${progress.points} pts`)}
+      <div class="kk-multiplayer-layout">
+        <article class="kk-dom-card kk-room-code-card">
+          <label>Room Code
+            <input data-multiplayer-room value="${escapeAttr(state.multiplayerRoom)}" maxlength="32">
+          </label>
+          <div class="kk-dom-actions">
+            <button class="kk-primary" data-action="join-multiplayer">${state.multiplayerJoined ? "Rejoin Room" : "Join Room"}</button>
+            <button data-action="multiplayer-ping">Send Kindness Signal</button>
+          </div>
+          <p>${state.multiplayerJoined ? `Connected to ${escapeHtml(state.multiplayerRoom)}.` : "Join a room to start a co-op mission."}</p>
+        </article>
+        <article class="kk-dom-card kk-coop-card">
+          <p class="kk-eyebrow">Active co-op mission</p>
+          <h3>Restore the Shared Portal</h3>
+          <p>Each player does one helpful action nearby, then confirms it. When the group completes the mission, everyone can earn points.</p>
+          <div class="kk-ar-steps">
+            <span>1. Choose a real-world helpful action.</span>
+            <span>2. Tell your teammate what you did.</span>
+            <span>3. Confirm the portal together.</span>
+          </div>
+          <button class="kk-primary" data-action="complete-multiplayer-mission">Complete Co-op Mission</button>
+        </article>
+        <aside class="kk-dom-card kk-multiplayer-log">
+          <h3>Room Activity</h3>
+          ${log.map((item) => `<p><b>${escapeHtml(item.name)}:</b> ${escapeHtml(item.text)}</p>`).join("") || "<p>No room activity yet.</p>"}
+        </aside>
+      </div>
+      ${messageMarkup()}
+    </section>
+  `;
+}
+
+function arMissions() {
+  return [
+    {
+      id: "kindness-spirit",
+      name: "Kindness Spirit",
+      type: "Encouragement mission",
+      npc: "Crystal Guide",
+      skill: "Empathy",
+      points: 30,
+      xp: 12,
+      prompt: "A floating kindness spirit appears nearby. Give someone a sincere compliment that names something specific.",
+      steps: ["Find a person nearby or message someone kindly.", "Say exactly what you appreciate.", "Notice how the moment changes."]
+    },
+    {
+      id: "gratitude-crystal",
+      name: "Gratitude Crystal",
+      type: "Gratitude hunt",
+      npc: "Garden Sage",
+      skill: "Gratitude",
+      points: 25,
+      xp: 12,
+      prompt: "A crystal is glowing around something meaningful. Pick one object in your space and explain why you are thankful for it.",
+      steps: ["Choose an object in the room.", "Name who or what it reminds you of.", "Say why it matters today."]
+    },
+    {
+      id: "calm-dragon",
+      name: "Calm Dragon",
+      type: "Breathing challenge",
+      npc: "Gate Keeper",
+      skill: "Calm Choices",
+      points: 25,
+      xp: 12,
+      prompt: "A little dragon stirs up a storm. Take four slow breaths and let the storm fade before acting.",
+      steps: ["Breathe in for four counts.", "Hold for two counts.", "Breathe out slowly four times."]
+    },
+    {
+      id: "empathy-lantern",
+      name: "Empathy Lantern",
+      type: "Emotional discovery",
+      npc: "Lantern Keeper",
+      skill: "Listening",
+      points: 30,
+      xp: 12,
+      prompt: "A lantern lights up a feeling clue. Ask someone how they are doing and listen without interrupting.",
+      steps: ["Ask one kind question.", "Listen to the full answer.", "Repeat one thing you heard."]
+    }
+  ];
+}
+
+async function startARCamera() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    state.arCameraActive = false;
+    return setMessage("Camera access is not available here, so AR preview is running in practice mode.");
+  }
+  stopARCamera();
+  try {
+    arCameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } },
+      audio: false
+    });
+    state.arCameraActive = true;
+    state.message = "Camera opened. Tap a glowing AR object to choose a mission.";
+    render();
+  } catch {
+    state.arCameraActive = false;
+    setMessage("Camera permission was blocked. You can still use AR missions in practice mode.");
+  }
+}
+
+function attachARVideo() {
+  if (!arCameraStream) return;
+  const video = root.querySelector("[data-ar-video]");
+  if (!video) return;
+  video.srcObject = arCameraStream;
+  video.play?.().catch(() => {});
+}
+
+function stopARCamera() {
+  if (!arCameraStream) return;
+  arCameraStream.getTracks().forEach((track) => track.stop());
+  arCameraStream = null;
+  state.arCameraActive = false;
+}
+
+function joinMultiplayerRoom() {
+  const input = root.querySelector("[data-multiplayer-room]");
+  state.multiplayerRoom = String(input?.value || state.multiplayerRoom || "kind-kingdom-room").trim() || "kind-kingdom-room";
+  if (multiplayerChannel) multiplayerChannel.close();
+  if ("BroadcastChannel" in window) {
+    multiplayerChannel = new BroadcastChannel(`kk-${state.multiplayerRoom}`);
+    multiplayerChannel.onmessage = (event) => {
+      if (!event.data || event.data.user === AuthSystem.currentUser()) return;
+      state.multiplayerLog.push(event.data);
+      if (state.view === "multiplayer") render();
+    };
+  }
+  state.multiplayerJoined = true;
+  state.multiplayerLog.push({ name: AuthSystem.currentUser(), text: `joined ${state.multiplayerRoom}.`, at: Date.now() });
+  return render();
+}
+
+function sendMultiplayerMessage(text) {
+  if (!state.multiplayerJoined) joinMultiplayerRoom();
+  const message = { user: AuthSystem.currentUser(), name: AuthSystem.currentUser(), text, at: Date.now() };
+  state.multiplayerLog.push(message);
+  multiplayerChannel?.postMessage(message);
+  return render();
 }
 
 function panelHead(title, eyebrow, text, backButton = false, pill = "") {
@@ -722,6 +915,28 @@ async function handleClick(event) {
     KingdomNewsSystem.markAllRead();
     return setMessage("News marked as read.");
   }
+  if (action === "start-ar-camera") return startARCamera();
+  if (action === "spawn-ar-mission") {
+    state.arMissionId = target.dataset.mission;
+    return render();
+  }
+  if (action === "complete-ar-mission") {
+    const mission = arMissions().find((item) => item.id === target.dataset.mission) || arMissions()[0];
+    UnlockSystem.addPoints(mission.points);
+    PlayerData.addSkillXP(mission.skill, mission.xp);
+    EmotionSystem.recordChoice(true, { skill: mission.skill, label: mission.name });
+    NPCMemorySystem.recordStoryChoice({ npcName: mission.npc, skill: mission.skill, title: mission.name, correct: true });
+    return navigate("dashboard", `${mission.name} complete. +${mission.points} Kindness Points earned.`);
+  }
+  if (action === "join-multiplayer") return joinMultiplayerRoom();
+  if (action === "multiplayer-ping") return sendMultiplayerMessage("sent a kindness signal to the room.");
+  if (action === "complete-multiplayer-mission") {
+    UnlockSystem.addPoints(35);
+    PlayerData.addSkillXP("Teamwork", 15);
+    EmotionSystem.recordChoice(true, { skill: "Teamwork", label: "Shared Portal Mission" });
+    sendMultiplayerMessage("completed the Shared Portal co-op mission.");
+    return setMessage("Co-op mission complete. +35 Kindness Points and +15 Teamwork XP.");
+  }
 }
 
 function handlePointerDown(event) {
@@ -857,9 +1072,10 @@ async function initPhaserMap() {
   await loadPhaser();
   if (!root.querySelector("[data-phaser-map]") || state.view !== "map") return;
 
-  const width = Math.max(720, parent.clientWidth || 720);
-  const height = Math.max(520, parent.clientHeight || 560);
-  const scene = createPhaserMapScene();
+  const width = Math.max(960, parent.clientWidth || 960);
+  const height = Math.max(760, parent.clientHeight || 760);
+  const { KingdomMapScene } = await import("./scenes/KingdomMapScene.js?v=79");
+  const scenes = createLegacyPhaserMapScenes(KingdomMapScene);
 
   phaserMapGame = new window.Phaser.Game({
     type: window.Phaser.AUTO,
@@ -868,11 +1084,15 @@ async function initPhaserMap() {
     height,
     backgroundColor: "#6fb7ff",
     pixelArt: true,
+    physics: {
+      default: "arcade",
+      arcade: { debug: false }
+    },
     scale: {
       mode: window.Phaser.Scale.RESIZE,
       autoCenter: window.Phaser.Scale.CENTER_BOTH
     },
-    scene: [scene]
+    scene: scenes
   });
 }
 
@@ -894,6 +1114,121 @@ function loadPhaser() {
     document.head.appendChild(script);
   });
   return phaserLoadingPromise;
+}
+
+function createLegacyPhaserMapScenes(KingdomMapScene) {
+  class MapAssetBootScene extends window.Phaser.Scene {
+    constructor() {
+      super("MapAssetBootScene");
+    }
+
+    preload() {
+      const allGames = games();
+      Object.entries(HERO_LAYER_ASSETS).forEach(([key, path]) => {
+        if (!this.textures.exists(`lpc-${key}`)) {
+          this.load.spritesheet(`lpc-${key}`, path, { frameWidth: 64, frameHeight: 64 });
+        }
+      });
+      ["baby-dragon", "lantern-fox", "crystal-turtle", "cloud-owl", "firefly-bunny"].forEach((pet) => {
+        if (!this.textures.exists(`pet-${pet}`)) this.load.svg(`pet-${pet}`, `assets/lpc-generated/pets/${pet}.svg`, { width: 96, height: 96 });
+      });
+      [
+        "gratitude-cape", "courage-crown", "rainbow-trail", "calm-waterfall", "empathy-wings",
+        "royal-helper-coat", "kindness-crown", "star-trail", "garden-desk", "pet-bed", "lantern-night-sky"
+      ].forEach((item) => {
+        if (!this.textures.exists(`item-${item}`)) this.load.svg(`item-${item}`, `assets/lpc-generated/items/${item}.svg`, { width: 96, height: 96 });
+      });
+      if (!this.textures.exists("kingdom-world-map")) {
+        this.load.svg("kingdom-world-map", "src/assets/maps/kingdom-world-map.svg", { width: 3200, height: 2100 });
+      }
+      allGames.forEach((game) => {
+        if (!this.textures.exists(`game-${game.slug}`)) this.load.image(`game-${game.slug}`, `assets/images/games/${game.slug}.jpg`);
+      });
+    }
+
+    create() {
+      if (!this.textures.exists("hero-hitbox")) {
+        const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+        graphics.fillStyle(0xffffff, 0.01);
+        graphics.fillRect(0, 0, 40, 40);
+        graphics.generateTexture("hero-hitbox", 40, 40);
+        graphics.destroy();
+      }
+      Object.keys(HERO_LAYER_ASSETS).forEach((key) => {
+        const animationKey = `lpc-${key}-walk`;
+        if (this.anims.exists(animationKey)) return;
+        this.anims.create({
+          key: animationKey,
+          frames: WALK_FRAMES.map((frame) => ({ key: `lpc-${key}`, frame })),
+          frameRate: 8,
+          repeat: -1
+        });
+      });
+      this.scene.start("KingdomMapScene");
+    }
+  }
+
+  class DomConnectedKingdomMapScene extends KingdomMapScene {
+    create() {
+      super.create();
+      this.installDomRoutes();
+      phaserMapApi = {
+        moveBy: (dx, dy) => this.nudgePlayer(dx, dy),
+        centerOnPlayer: () => this.cameras.main.centerOn(this.player.x, this.player.y),
+        nearby: () => {
+          const nearby = this.getNearbyLocation();
+          return nearby ? { game: nearby.game, distance: window.Phaser.Math.Distance.Between(this.player.x, this.player.y, nearby.x, nearby.y) } : null;
+        }
+      };
+      syncMapHint();
+    }
+
+    installDomRoutes() {
+      const plugin = this.scene;
+      plugin.start = (key) => {
+        const route = {
+          DashboardScene: "dashboard",
+          CharacterSelectScene: "character",
+          ShopScene: "shop",
+          ClosetScene: "closet",
+          PlayerRoomScene: "room",
+          StoryForgeScene: "story",
+          KingdomNewsScene: "news",
+          ReflectionJournalScene: "journal",
+          LoginScene: "login"
+        }[key];
+        if (route === "login") {
+          state.view = "login";
+          state.message = "";
+          render();
+        } else if (route) {
+          navigate(route);
+        }
+        return plugin;
+      };
+      plugin.launch = () => plugin;
+      plugin.pause = () => plugin;
+    }
+
+    nudgePlayer(dx, dy) {
+      if (!this.player) return;
+      const nextX = window.Phaser.Math.Clamp(this.player.x + dx, 40, MAP_WIDTH - 40);
+      const nextY = window.Phaser.Math.Clamp(this.player.y + dy, 40, MAP_HEIGHT - 40);
+      this.player.setPosition(nextX, nextY);
+      PlayerData.savePosition(nextX, nextY);
+      syncMapHint();
+    }
+
+    openLauncher(game, index, unlocked, required) {
+      if (!unlocked) {
+        this.infoText?.setText(`${game.title} needs ${required} points.`);
+        return;
+      }
+      enterGame(game.slug);
+    }
+  }
+
+  return [MapAssetBootScene, DomConnectedKingdomMapScene];
 }
 
 function createPhaserMapScene() {

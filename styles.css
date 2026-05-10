@@ -10017,3 +10017,230 @@ body * {
     max-height: none;
   }
 }
+
+.kk-phaser-only-map {
+  position: relative;
+  width: min(980px, 100%);
+  min-height: 760px;
+  height: min(760px, calc(100dvh - 24px));
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 34px;
+  border: 5px solid rgba(255,255,255,.95);
+  box-shadow: 0 24px 60px rgba(35,17,72,.28);
+  background: #6fb7ff;
+}
+
+.kk-phaser-only-map .kk-phaser-map-stage {
+  width: 100%;
+  height: 100%;
+  min-height: 100% !important;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.kk-map-overlay-actions {
+  position: absolute;
+  left: 18px;
+  top: 92px;
+  z-index: 12;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: min(560px, calc(100% - 36px));
+  pointer-events: none;
+}
+
+.kk-map-overlay-actions button {
+  pointer-events: auto;
+  border: 3px solid rgba(255,255,255,.92);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 1000;
+  color: #fff;
+  background: rgba(45,23,77,.86);
+  box-shadow: 0 5px 0 rgba(29,18,54,.45);
+}
+
+.kk-map-floating-pad {
+  position: absolute;
+  right: 18px;
+  bottom: 22px;
+  z-index: 12;
+}
+
+.kk-map-floating-pad .kk-map-pad {
+  background: rgba(255,255,255,.72);
+  border: 3px solid rgba(255,255,255,.9);
+  border-radius: 20px;
+  padding: 8px;
+}
+
+.kk-ar-page,
+.kk-multiplayer-page {
+  width: min(1120px, 100%);
+}
+
+.kk-ar-layout,
+.kk-multiplayer-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr);
+  gap: 18px;
+  width: min(1040px, 100%);
+  margin-inline: auto;
+  align-items: stretch;
+}
+
+.kk-ar-viewfinder {
+  position: relative;
+  min-height: 520px;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 5px solid #fff;
+  background:
+    radial-gradient(circle at 50% 32%, rgba(255,255,255,.35), transparent 28%),
+    linear-gradient(135deg, #20113f, #4b2a7b 46%, #77e5dc);
+  box-shadow: 0 18px 36px rgba(35,17,72,.22);
+}
+
+.kk-ar-viewfinder video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+
+.kk-ar-viewfinder.camera-on video {
+  opacity: .82;
+}
+
+.kk-ar-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  color: #fff;
+  font-weight: 1000;
+  text-shadow: 0 3px 8px rgba(0,0,0,.3);
+}
+
+.kk-ar-fallback span {
+  font-family: "Berkshire Swash", Georgia, serif;
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
+}
+
+.kk-ar-object {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  width: 138px;
+  min-height: 112px;
+  border: 4px solid rgba(255,255,255,.94);
+  border-radius: 24px;
+  background: rgba(255,255,255,.84);
+  color: #2d174d;
+  font-weight: 1000;
+  box-shadow: 0 0 28px rgba(255,209,102,.55), 0 12px 22px rgba(0,0,0,.18);
+  animation: arFloat 2.2s ease-in-out infinite;
+}
+
+.kk-ar-object span {
+  font-size: 2.6rem;
+  color: #7b4dff;
+}
+
+.kk-ar-object.active {
+  background: #fff2a8;
+  transform: scale(1.06);
+}
+
+.kk-ar-object.spirit { left: 8%; top: 16%; }
+.kk-ar-object.crystal { right: 10%; top: 22%; animation-delay: .3s; }
+.kk-ar-object.dragon { left: 20%; bottom: 14%; animation-delay: .6s; }
+.kk-ar-object.lantern { right: 18%; bottom: 18%; animation-delay: .9s; }
+
+@keyframes arFloat {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -12px; }
+}
+
+.kk-ar-scanline {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #7bdff2, #ffd166, transparent);
+  box-shadow: 0 0 22px rgba(123,223,242,.85);
+  animation: arScan 3s linear infinite;
+}
+
+@keyframes arScan {
+  from { transform: translateY(20px); opacity: .2; }
+  50% { opacity: 1; }
+  to { transform: translateY(480px); opacity: .2; }
+}
+
+.kk-ar-mission-card,
+.kk-room-code-card,
+.kk-coop-card,
+.kk-multiplayer-log {
+  color: #2d174d;
+}
+
+.kk-ar-steps {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.kk-ar-steps span {
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: #fff9e8;
+  border: 2px solid #ffd166;
+  font-weight: 900;
+}
+
+.kk-multiplayer-layout {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.kk-multiplayer-log {
+  grid-column: 1 / -1;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.kk-room-code-card input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px 14px;
+  border: 3px solid #d8caff;
+  border-radius: 16px;
+  font: inherit;
+  font-weight: 900;
+  color: #2d174d;
+}
+
+@media (max-width: 860px) {
+  .kk-phaser-only-map {
+    min-height: 680px;
+    height: calc(100dvh - 12px);
+  }
+
+  .kk-ar-layout,
+  .kk-multiplayer-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .kk-ar-viewfinder {
+    min-height: 430px;
+  }
+}
