@@ -68,7 +68,7 @@ function render() {
   } else {
     destroyPhaserMap();
     if (state.view !== "ar") stopARCamera();
-    root.insertAdjacentHTML("beforeend", pageScrollControlsMarkup());
+    if (state.view !== "ar") root.insertAdjacentHTML("beforeend", pageScrollControlsMarkup());
   }
   if (state.view === "ar" && state.arCameraActive) requestAnimationFrame(attachARVideo);
   if (state.view === "ar") requestAnimationFrame(initARCreatures);
@@ -372,57 +372,57 @@ function renderJournal() {
 
 function renderARExperience() {
   const mission = arMissions().find((item) => item.id === state.arMissionId) || arMissions()[0];
-  const progress = PlayerData.loadProgress();
-  const steps = [
-    { number: "1", title: "Open the Camera", text: "Tap the AR button to scan your surroundings.", mode: "scan" },
-    { number: "2", title: "Discover Magic", text: "Magical creatures and portals appear around you.", mode: "discover" },
-    { number: "3", title: "Interact & Complete", text: "Tap the creature or portal to start a kindness challenge.", mode: "interact" },
-    { number: "4", title: "Earn & Grow", text: "Complete the challenge and earn rewards.", mode: "reward" }
-  ];
 
   return `
-    <section class="kk-dom-page kk-ar-page kk-ar-showcase-page">
-      <header class="kk-ar-showcase-head">
-        <button data-action="nav" data-view="dashboard" aria-label="Back to dashboard">←</button>
-        <div>
-          <h2>Kind Kingdom AR Experience</h2>
-          <p>Kindness comes to life in your world.</p>
-        </div>
-        <div class="kk-ar-mini-creature" data-kk-3d-creature data-creature-size="small"></div>
-      </header>
-      <div class="kk-ar-steps-grid">
-        ${steps.map((step) => arPhoneStep(step, mission)).join("")}
-      </div>
-      <div class="kk-ar-bottom-grid">
-        <article class="kk-ar-flow-card">
-          <h3>How the AR feature works</h3>
-          <div class="kk-ar-flow">
-            ${[
-              ["Camera", "You scan the real world"],
-              ["Creature", "AR places magical elements"],
-              ["Challenge", "You complete real-world missions"],
-              ["Reward", "You earn kindness points"],
-              ["Kingdom", "Your actions improve your kingdom"]
-            ].map(([label, text]) => `<div><span>${escapeHtml(label)}</span><p>${escapeHtml(text)}</p></div>`).join("<b>→</b>")}
+    <section class="kk-dom-page kk-ar-page kk-ar-single-page">
+      <button class="kk-ar-back-icon" data-action="nav" data-view="dashboard" aria-label="Back">←</button>
+      <div class="kk-phone kk-ar-live-phone">
+        <div class="kk-phone-screen discover ${state.arCameraActive ? "camera-on" : ""}">
+          <video data-ar-video autoplay playsinline muted></video>
+          <div class="kk-room-sim">
+            <div class="kk-room-window"></div>
+            <div class="kk-room-plant"></div>
+            <div class="kk-room-couch"></div>
+            <div class="kk-room-table"></div>
+            <div class="kk-ar-portal"></div>
+            <div class="kk-ar-crystal one"></div>
+            <div class="kk-ar-crystal two"></div>
+            <div class="kk-phone-creature kk-live-creature" data-kk-3d-creature></div>
+            <div class="kk-phone-mission kk-live-mission">
+              <b>${escapeHtml(mission.name)}</b>
+              <p>${escapeHtml(mission.prompt)}</p>
+              <small>Reward: +${mission.points} Kindness Points</small>
+            </div>
+            <div class="kk-phone-verify">
+              <select data-ar-proof-type aria-label="Challenge completed">
+                <option value="">Choose completed action</option>
+                ${mission.verifications.map((item) => `<option value="${escapeAttr(item)}">${escapeHtml(item)}</option>`).join("")}
+              </select>
+              <input data-ar-proof-text maxlength="110" placeholder="What happened?">
+              <label>
+                <input type="checkbox" data-ar-proof-check>
+                <span>I did this in real life.</span>
+              </label>
+              <button data-action="complete-ar-mission" data-mission="${mission.id}">Complete</button>
+            </div>
+            ${state.message ? `<div class="kk-phone-toast">${escapeHtml(state.message)}</div>` : ""}
           </div>
-        </article>
-        <aside class="kk-ar-challenge-list">
-          <h3>Examples of AR challenges</h3>
-          <button data-action="spawn-ar-mission" data-mission="gratitude-crystal">Find something you are grateful for</button>
-          <button data-action="spawn-ar-mission" data-mission="kindness-spirit">Give someone a kind compliment</button>
-          <button data-action="spawn-ar-mission" data-mission="empathy-lantern">Listen and repeat what you heard</button>
-          <button data-action="spawn-ar-mission" data-mission="calm-dragon">Do a breathing challenge</button>
-          <button data-action="nav" data-view="multiplayer">Work together with a friend</button>
-        </aside>
+          <div class="kk-phone-top"><button data-action="nav" data-view="dashboard">×</button><button data-action="spawn-ar-mission" data-mission="${nextARMissionId(mission.id)}">?</button></div>
+          <div class="kk-phone-bottom">
+            <button data-action="nav" data-view="map">Map</button>
+            <button data-action="start-ar-camera" class="kk-phone-ar-button">AR</button>
+            <button data-action="nav" data-view="closet">Bag</button>
+          </div>
+        </div>
       </div>
-      <div class="kk-ar-action-bar">
-        <button class="kk-primary" data-action="start-ar-camera">${state.arCameraActive ? "Restart Camera" : "Enter AR Camera"}</button>
-        <button data-action="complete-ar-mission" data-mission="${mission.id}">Complete ${escapeHtml(mission.name)}</button>
-        <span>${progress.points} Kindness Points</span>
-      </div>
-      ${messageMarkup()}
     </section>
   `;
+}
+
+function nextARMissionId(currentId) {
+  const missions = arMissions();
+  const index = missions.findIndex((item) => item.id === currentId);
+  return missions[(index + 1) % missions.length].id;
 }
 
 function arPhoneStep(step, mission) {
@@ -513,7 +513,8 @@ function arMissions() {
       points: 30,
       xp: 12,
       prompt: "A floating kindness spirit appears nearby. Give someone a sincere compliment that names something specific.",
-      steps: ["Find a person nearby or message someone kindly.", "Say exactly what you appreciate.", "Notice how the moment changes."]
+      steps: ["Find a person nearby or message someone kindly.", "Say exactly what you appreciate.", "Notice how the moment changes."],
+      verifications: ["I gave a specific compliment", "I encouraged someone", "I sent a kind message"]
     },
     {
       id: "gratitude-crystal",
@@ -524,7 +525,8 @@ function arMissions() {
       points: 25,
       xp: 12,
       prompt: "A crystal is glowing around something meaningful. Pick one object in your space and explain why you are thankful for it.",
-      steps: ["Choose an object in the room.", "Name who or what it reminds you of.", "Say why it matters today."]
+      steps: ["Choose an object in the room.", "Name who or what it reminds you of.", "Say why it matters today."],
+      verifications: ["I found a gratitude object", "I told someone why I am grateful", "I wrote a gratitude sentence"]
     },
     {
       id: "calm-dragon",
@@ -535,7 +537,8 @@ function arMissions() {
       points: 25,
       xp: 12,
       prompt: "A little dragon stirs up a storm. Take four slow breaths and let the storm fade before acting.",
-      steps: ["Breathe in for four counts.", "Hold for two counts.", "Breathe out slowly four times."]
+      steps: ["Breathe in for four counts.", "Hold for two counts.", "Breathe out slowly four times."],
+      verifications: ["I did four slow breaths", "I used a calm-down strategy", "I paused before reacting"]
     },
     {
       id: "empathy-lantern",
@@ -546,7 +549,8 @@ function arMissions() {
       points: 30,
       xp: 12,
       prompt: "A lantern lights up a feeling clue. Ask someone how they are doing and listen without interrupting.",
-      steps: ["Ask one kind question.", "Listen to the full answer.", "Repeat one thing you heard."]
+      steps: ["Ask one kind question.", "Listen to the full answer.", "Repeat one thing you heard."],
+      verifications: ["I asked how someone felt", "I listened without interrupting", "I repeated what I heard"]
     }
   ];
 }
@@ -584,6 +588,18 @@ function stopARCamera() {
   arCameraStream.getTracks().forEach((track) => track.stop());
   arCameraStream = null;
   state.arCameraActive = false;
+}
+
+function verifyARMission(mission) {
+  const type = root.querySelector("[data-ar-proof-type]")?.value || "";
+  const text = (root.querySelector("[data-ar-proof-text]")?.value || "").trim();
+  const checked = Boolean(root.querySelector("[data-ar-proof-check]")?.checked);
+  if (!type) return { ok: false, message: "Choose what real-world action you completed before claiming the AR reward." };
+  if (!checked) return { ok: false, message: "Check the verification box after you actually complete the real-world action." };
+  if (text.length < 18) return { ok: false, message: "Write one real sentence about what happened so the AR challenge is verified." };
+  const allowed = mission.verifications || [];
+  if (!allowed.includes(type)) return { ok: false, message: "That verification does not match the current AR challenge." };
+  return { ok: true };
 }
 
 async function initARCreatures() {
@@ -629,6 +645,14 @@ function createThreeKindnessCreature(THREE, mount, index = 0) {
   const dark = new THREE.MeshStandardMaterial({ color: 0x101032, roughness: 0.25 });
   const white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
   const blush = new THREE.MeshStandardMaterial({ color: 0xff8fab, roughness: 0.4 });
+  const glow = new THREE.MeshStandardMaterial({
+    color: 0x9b6dff,
+    emissive: 0x7b4dff,
+    emissiveIntensity: 0.7,
+    transparent: true,
+    opacity: 0.42,
+    roughness: 0.2
+  });
 
   const body = new THREE.Mesh(new THREE.SphereGeometry(1.05, 32, 24), blue);
   body.scale.set(1, 1.05, 0.82);
@@ -638,6 +662,10 @@ function createThreeKindnessCreature(THREE, mount, index = 0) {
   head.scale.set(1.05, 0.92, 0.9);
   head.position.y = 0.75;
   creature.add(head);
+  const aura = new THREE.Mesh(new THREE.SphereGeometry(1.58, 32, 20), glow);
+  aura.scale.set(1.1, 1.02, 0.8);
+  aura.position.y = 0.18;
+  creature.add(aura);
 
   [-0.55, 0.55].forEach((x) => {
     const eye = new THREE.Mesh(new THREE.SphereGeometry(0.18, 24, 16), dark);
@@ -663,7 +691,21 @@ function createThreeKindnessCreature(THREE, mount, index = 0) {
     wing.position.set(x * 1.38, 0.05, -0.1);
     wing.rotation.z = x * 0.82;
     creature.add(wing);
+    const arm = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 10), blue);
+    arm.scale.set(0.75, 1.55, 0.7);
+    arm.position.set(x * 0.92, -0.38, 0.62);
+    arm.rotation.z = -x * 0.45;
+    creature.add(arm);
   });
+
+  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.025, 8, 24, Math.PI), dark);
+  mouth.position.set(0, 0.56, 0.93);
+  mouth.rotation.x = Math.PI;
+  creature.add(mouth);
+  const tail = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.78, 24), purple);
+  tail.position.set(0, -0.76, -0.82);
+  tail.rotation.x = -Math.PI / 2.6;
+  creature.add(tail);
 
   [-0.42, 0.42].forEach((x) => {
     const foot = new THREE.Mesh(new THREE.SphereGeometry(0.25, 18, 12), blue);
@@ -688,6 +730,7 @@ function createThreeKindnessCreature(THREE, mount, index = 0) {
     frame += 0.018 + index * 0.001;
     creature.rotation.y = Math.sin(frame) * 0.22;
     creature.position.y = Math.sin(frame * 2.1) * 0.11;
+    aura.scale.setScalar(1.06 + Math.sin(frame * 2.8) * 0.045);
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
   };
@@ -1078,6 +1121,10 @@ async function handleClick(event) {
     KingdomNewsSystem.markAllRead();
     return setMessage("News marked as read.");
   }
+  if (action === "retry-map") {
+    destroyPhaserMap();
+    return render();
+  }
   if (action === "start-ar-camera") return startARCamera();
   if (action === "spawn-ar-mission") {
     state.arMissionId = target.dataset.mission;
@@ -1085,6 +1132,8 @@ async function handleClick(event) {
   }
   if (action === "complete-ar-mission") {
     const mission = arMissions().find((item) => item.id === target.dataset.mission) || arMissions()[0];
+    const verification = verifyARMission(mission);
+    if (!verification.ok) return setMessage(verification.message);
     UnlockSystem.addPoints(mission.points);
     PlayerData.addSkillXP(mission.skill, mission.xp);
     EmotionSystem.recordChoice(true, { skill: mission.skill, label: mission.name });
@@ -1232,31 +1281,48 @@ function moveFromPressedKeys() {
 async function initPhaserMap() {
   const parent = root.querySelector("[data-phaser-map]");
   if (!parent || phaserMapGame) return;
-  await loadPhaser();
-  if (!root.querySelector("[data-phaser-map]") || state.view !== "map") return;
+  parent.innerHTML = `<div class="kk-map-loading">Loading kingdom map...</div>`;
+  try {
+    await loadPhaser();
+    if (!root.querySelector("[data-phaser-map]") || state.view !== "map") return;
 
-  const width = Math.max(960, parent.clientWidth || 960);
-  const height = Math.max(760, parent.clientHeight || 760);
-  const { KingdomMapScene } = await import("./scenes/KingdomMapScene.js?v=79");
-  const scenes = createLegacyPhaserMapScenes(KingdomMapScene);
+    const width = Math.max(960, parent.clientWidth || 960);
+    const height = Math.max(760, parent.clientHeight || 760);
+    const { KingdomMapScene } = await import("./scenes/KingdomMapScene.js?v=79");
+    const scenes = createLegacyPhaserMapScenes(KingdomMapScene);
 
-  phaserMapGame = new window.Phaser.Game({
-    type: window.Phaser.AUTO,
-    parent,
-    width,
-    height,
-    backgroundColor: "#6fb7ff",
-    pixelArt: true,
-    physics: {
-      default: "arcade",
-      arcade: { debug: false }
-    },
-    scale: {
-      mode: window.Phaser.Scale.RESIZE,
-      autoCenter: window.Phaser.Scale.CENTER_BOTH
-    },
-    scene: scenes
-  });
+    phaserMapGame = new window.Phaser.Game({
+      type: window.Phaser.AUTO,
+      parent,
+      width,
+      height,
+      backgroundColor: "#6fb7ff",
+      pixelArt: true,
+      physics: {
+        default: "arcade",
+        arcade: { debug: false }
+      },
+      scale: {
+        mode: window.Phaser.Scale.RESIZE,
+        autoCenter: window.Phaser.Scale.CENTER_BOTH
+      },
+      scene: scenes,
+      callbacks: {
+        postBoot: () => {
+          parent.querySelector(".kk-map-loading")?.remove();
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Kind Kingdom map failed to boot", error);
+    parent.innerHTML = `
+      <div class="kk-map-loading kk-map-error">
+        <strong>The kingdom map could not start.</strong>
+        <span>${escapeHtml(error?.message || "Phaser failed to load.")}</span>
+        <button data-action="retry-map">Retry Map</button>
+      </div>
+    `;
+  }
 }
 
 function destroyPhaserMap() {
@@ -1270,13 +1336,14 @@ function loadPhaser() {
   if (window.Phaser) return Promise.resolve();
   if (phaserLoadingPromise) return phaserLoadingPromise;
   phaserLoadingPromise = new Promise((resolve, reject) => {
+    const finish = () => window.Phaser ? resolve() : reject(new Error("Phaser loaded, but the Phaser global was not created."));
     const script = document.createElement("script");
     script.src = "assets/vendor/phaser.min.js";
-    script.onload = resolve;
+    script.onload = finish;
     script.onerror = () => {
       const fallback = document.createElement("script");
       fallback.src = "https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js";
-      fallback.onload = resolve;
+      fallback.onload = finish;
       fallback.onerror = reject;
       document.head.appendChild(fallback);
     };

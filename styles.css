@@ -9633,6 +9633,33 @@ body * {
   background: linear-gradient(135deg, #6fb7ff, #3d2466);
 }
 
+.kk-map-error {
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.kk-map-error strong {
+  display: block;
+  font-size: clamp(1.4rem, 3vw, 2.3rem);
+}
+
+.kk-map-error span {
+  max-width: 620px;
+  font-weight: 900;
+  color: #fff9d8;
+}
+
+.kk-map-error button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 20px;
+  background: #ffd166;
+  color: #2d174d;
+  font-weight: 1000;
+  box-shadow: 0 5px 0 rgba(0,0,0,.22);
+}
+
 .kk-map-stage {
   position: relative;
   min-height: 560px !important;
@@ -10247,9 +10274,13 @@ body * {
 
 .kk-ar-showcase-page {
   width: min(1220px, 100%);
-  min-height: 100%;
-  padding: 16px !important;
-  gap: 10px;
+  height: min(760px, calc(100dvh - 20px));
+  min-height: 720px;
+  padding: 10px !important;
+  gap: 8px;
+  overflow: hidden !important;
+  display: grid;
+  grid-template-rows: 70px minmax(0, 1fr) 150px 84px 42px;
   background:
     radial-gradient(circle at 86% 4%, rgba(155,109,255,.32), transparent 14%),
     radial-gradient(circle at 18% 8%, rgba(255,209,102,.18), transparent 16%),
@@ -10260,7 +10291,7 @@ body * {
 .kk-ar-showcase-head {
   position: relative;
   width: min(1180px, 100%);
-  min-height: 92px;
+  min-height: 70px;
   display: grid;
   grid-template-columns: 72px 1fr 96px;
   align-items: center;
@@ -10273,7 +10304,7 @@ body * {
 .kk-ar-showcase-head h2 {
   margin: 0;
   font-family: "Nunito", Arial, sans-serif;
-  font-size: clamp(2rem, 4.3vw, 3.45rem);
+  font-size: clamp(1.9rem, 3.8vw, 3.05rem);
   line-height: .95;
   letter-spacing: .04em;
   text-transform: uppercase;
@@ -10281,8 +10312,8 @@ body * {
 }
 
 .kk-ar-showcase-head p {
-  margin: 8px 0 0;
-  font-size: clamp(1rem, 2vw, 1.45rem);
+  margin: 4px 0 0;
+  font-size: clamp(.95rem, 1.8vw, 1.25rem);
   font-weight: 1000;
 }
 
@@ -10301,8 +10332,8 @@ body * {
 .kk-phone-creature {
   position: relative;
   z-index: 8;
-  width: 96px;
-  height: 96px;
+  width: 112px;
+  height: 112px;
 }
 
 .kk-ar-mini-creature canvas,
@@ -10318,17 +10349,18 @@ body * {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   margin-inline: auto;
+  min-height: 0;
 }
 
 .kk-ar-step-card {
   display: grid;
   grid-template-rows: auto 1fr;
-  min-height: 580px;
+  min-height: 0;
   border-radius: 18px;
   border: 3px solid rgba(255,255,255,.75);
   background: linear-gradient(180deg, #f4f0ff, #eef1ff);
   box-shadow: inset 0 0 28px rgba(255,255,255,.55), 0 18px 32px rgba(2,5,24,.28);
-  padding: 16px 14px;
+  padding: 12px 12px;
   overflow: hidden;
 }
 
@@ -10336,7 +10368,7 @@ body * {
   display: grid;
   grid-template-columns: 42px 1fr;
   gap: 12px;
-  min-height: 118px;
+  min-height: 92px;
   align-items: start;
 }
 
@@ -10366,19 +10398,19 @@ body * {
 }
 
 .kk-ar-step-copy p {
-  margin-top: 10px;
-  font-size: .95rem;
-  line-height: 1.28;
+  margin-top: 6px;
+  font-size: .82rem;
+  line-height: 1.18;
   color: #171a42;
   font-weight: 850;
 }
 
 .kk-phone {
-  width: min(245px, 100%);
+  width: min(220px, 100%);
   aspect-ratio: 9 / 16.7;
   justify-self: center;
-  border-radius: 34px;
-  padding: 12px;
+  border-radius: 30px;
+  padding: 10px;
   background: #050509;
   box-shadow: inset 0 0 0 4px #24222c, 0 10px 22px rgba(0,0,0,.36);
 }
@@ -10417,9 +10449,9 @@ body * {
 .kk-room-window {
   position: absolute;
   left: 18px;
-  top: 52px;
-  width: 55px;
-  height: 92px;
+  top: 44px;
+  width: 50px;
+  height: 80px;
   border-radius: 10px;
   background: linear-gradient(135deg, #e8fbff, #9bdcff);
   border: 6px solid #fff;
@@ -10429,7 +10461,7 @@ body * {
 .kk-room-couch {
   position: absolute;
   left: 24px;
-  top: 176px;
+  top: 150px;
   width: 112px;
   height: 74px;
   border-radius: 22px 22px 16px 16px;
@@ -10440,7 +10472,7 @@ body * {
 .kk-room-table {
   position: absolute;
   left: 82px;
-  bottom: 132px;
+  bottom: 112px;
   width: 88px;
   height: 38px;
   border-radius: 50%;
@@ -10451,7 +10483,7 @@ body * {
 .kk-room-plant {
   position: absolute;
   right: 28px;
-  top: 48px;
+  top: 40px;
   width: 34px;
   height: 124px;
   border-radius: 50% 50% 8px 8px;
@@ -10464,9 +10496,9 @@ body * {
 .kk-ar-portal {
   position: absolute;
   right: 18px;
-  top: 152px;
-  width: 88px;
-  height: 160px;
+  top: 128px;
+  width: 78px;
+  height: 140px;
   border-radius: 48% 48% 14px 14px;
   background: radial-gradient(circle, #1f0c3d 18%, #6823ba 52%, #c185ff 70%, transparent 72%);
   box-shadow: 0 0 38px #9b6dff, inset 0 0 30px #120524;
@@ -10489,14 +10521,14 @@ body * {
 }
 
 .kk-ar-crystal.one { left: 112px; bottom: 154px; }
-.kk-ar-crystal.two { right: 40px; bottom: 118px; }
+.kk-ar-crystal.two { right: 40px; bottom: 100px; }
 
 .kk-phone-creature {
   position: absolute;
   left: 50%;
-  bottom: 72px;
-  width: 128px;
-  height: 128px;
+  bottom: 56px;
+  width: 150px;
+  height: 150px;
   transform: translateX(-50%);
 }
 
@@ -10504,27 +10536,27 @@ body * {
 .kk-phone-reward {
   position: absolute;
   left: 50%;
-  top: 112px;
+  top: 92px;
   transform: translateX(-50%);
   width: 76%;
   border-radius: 18px;
   background: rgba(255,250,239,.94);
   color: #14163c;
-  padding: 14px;
+  padding: 11px;
   z-index: 12;
   box-shadow: 0 10px 20px rgba(0,0,0,.24);
   font-weight: 900;
 }
 
 .kk-phone-mission p {
-  margin: 8px 0;
-  font-size: .8rem;
-  line-height: 1.25;
+  margin: 6px 0;
+  font-size: .72rem;
+  line-height: 1.18;
 }
 
 .kk-phone-reward {
   text-align: center;
-  top: 130px;
+  top: 112px;
   background: linear-gradient(180deg, #fff5dc, #ffe3aa);
 }
 
@@ -10539,7 +10571,7 @@ body * {
 .kk-phone-shutter {
   position: absolute;
   left: 50%;
-  bottom: 64px;
+  bottom: 54px;
   transform: translateX(-50%);
   z-index: 13;
   border: 0;
@@ -10551,9 +10583,9 @@ body * {
 }
 
 .kk-phone-shutter {
-  bottom: 42px;
-  width: 62px;
-  height: 62px;
+  bottom: 34px;
+  width: 56px;
+  height: 56px;
   padding: 0;
   border: 5px solid #fff;
   display: grid;
@@ -10577,8 +10609,8 @@ body * {
 .kk-phone-top { top: 14px; }
 .kk-phone-bottom { bottom: 16px; font-size: .78rem; }
 .kk-phone-bottom b {
-  width: 54px;
-  height: 54px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -10593,6 +10625,54 @@ body * {
   grid-template-columns: minmax(0, 1.65fr) minmax(300px, .7fr);
   gap: 10px;
   margin-inline: auto;
+  min-height: 0;
+}
+
+.kk-ar-verify-card {
+  width: min(1180px, 100%);
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  gap: 10px;
+  margin-inline: auto;
+  border-radius: 16px;
+  border: 3px solid rgba(255,255,255,.72);
+  background: rgba(244,240,255,.96);
+  padding: 10px;
+  color: #10143b;
+  box-shadow: 0 12px 24px rgba(2,5,24,.2);
+}
+
+.kk-ar-verify-card label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  font-weight: 1000;
+  font-size: .82rem;
+}
+
+.kk-ar-verify-card select,
+.kk-ar-verify-card input[type="text"],
+.kk-ar-verify-card input:not([type]) {
+  width: 100%;
+  min-width: 0;
+  border: 2px solid #cbbcff;
+  border-radius: 11px;
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 900;
+  color: #10143b;
+  background: #fff;
+}
+
+.kk-ar-proof-check {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  align-content: center;
+}
+
+.kk-ar-proof-check input {
+  width: 20px;
+  height: 20px;
 }
 
 .kk-ar-flow-card,
@@ -10600,13 +10680,13 @@ body * {
   border-radius: 18px;
   border: 3px solid rgba(255,255,255,.75);
   background: linear-gradient(180deg, #f4f0ff, #eef1ff);
-  padding: 18px;
+  padding: 12px;
   text-align: center;
 }
 
 .kk-ar-flow-card h3,
 .kk-ar-challenge-list h3 {
-  margin: 0 0 14px;
+  margin: 0 0 8px;
   text-transform: uppercase;
   color: #1b1a58;
 }
@@ -10626,7 +10706,7 @@ body * {
   display: grid;
   place-items: center;
   width: 70px;
-  height: 58px;
+  height: 46px;
   border-radius: 18px;
   margin: 0 auto 8px;
   background: #dfd1ff;
@@ -10636,14 +10716,14 @@ body * {
 
 .kk-ar-flow p {
   margin: 0;
-  font-size: .85rem;
+  font-size: .76rem;
   line-height: 1.2;
   font-weight: 900;
 }
 
 .kk-ar-challenge-list {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   text-align: left;
 }
 
@@ -10652,7 +10732,7 @@ body * {
   border-radius: 12px;
   background: #fff;
   color: #1b1a58;
-  padding: 9px 11px;
+  padding: 7px 10px;
   font-weight: 900;
   text-align: left;
 }
@@ -10666,6 +10746,7 @@ body * {
   flex-wrap: wrap;
   color: #fff;
   font-weight: 1000;
+  align-self: center;
 }
 
 .kk-css-creature {
@@ -10682,8 +10763,15 @@ body * {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .kk-ar-bottom-grid {
+  .kk-ar-bottom-grid,
+  .kk-ar-verify-card {
     grid-template-columns: 1fr;
+  }
+
+  .kk-ar-showcase-page {
+    height: auto;
+    overflow: auto !important;
+    grid-template-rows: auto;
   }
 }
 
@@ -10696,4 +10784,203 @@ body * {
   .kk-ar-step-card {
     min-height: auto;
   }
+}
+
+.kk-ar-single-page {
+  position: relative;
+  width: min(980px, 100%);
+  min-height: min(760px, calc(100dvh - 20px));
+  height: min(760px, calc(100dvh - 20px));
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 82% 8%, rgba(155,109,255,.34), transparent 16%),
+    radial-gradient(circle at 20% 16%, rgba(123,223,242,.22), transparent 18%),
+    linear-gradient(180deg, #070b29, #111747 48%, #070b29);
+}
+
+.kk-ar-back-icon {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 30;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.72);
+  background: rgba(255,255,255,.14);
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 1000;
+}
+
+.kk-ar-live-phone {
+  width: min(410px, 82vw);
+  max-height: calc(100% - 36px);
+  border-radius: 46px;
+  padding: 14px;
+  box-shadow:
+    inset 0 0 0 5px #24222c,
+    0 26px 60px rgba(0,0,0,.45),
+    0 0 55px rgba(155,109,255,.34);
+}
+
+.kk-ar-live-phone .kk-phone-screen {
+  border-radius: 34px;
+}
+
+.kk-ar-live-phone .kk-room-window {
+  left: 28px;
+  top: 58px;
+  width: 76px;
+  height: 122px;
+}
+
+.kk-ar-live-phone .kk-room-couch {
+  left: 34px;
+  top: 218px;
+  width: 170px;
+  height: 100px;
+}
+
+.kk-ar-live-phone .kk-room-table {
+  left: 135px;
+  bottom: 178px;
+  width: 128px;
+  height: 54px;
+}
+
+.kk-ar-live-phone .kk-room-plant {
+  right: 46px;
+  top: 56px;
+  transform: scale(1.28);
+  transform-origin: top right;
+}
+
+.kk-ar-live-phone .kk-ar-portal {
+  right: 32px;
+  top: 166px;
+  width: 120px;
+  height: 210px;
+}
+
+.kk-ar-live-phone .kk-ar-crystal.one {
+  left: 178px;
+  bottom: 224px;
+  transform: scale(1.2);
+}
+
+.kk-ar-live-phone .kk-ar-crystal.two {
+  right: 52px;
+  bottom: 178px;
+  transform: scale(1.05);
+}
+
+.kk-live-creature {
+  width: 210px;
+  height: 210px;
+  bottom: 108px;
+}
+
+.kk-live-mission {
+  top: 76px;
+  width: 76%;
+  padding: 13px;
+}
+
+.kk-live-mission p {
+  font-size: .86rem;
+  line-height: 1.22;
+}
+
+.kk-phone-verify {
+  position: absolute;
+  left: 50%;
+  bottom: 78px;
+  transform: translateX(-50%);
+  z-index: 17;
+  width: 82%;
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(255,250,239,.96);
+  color: #14163c;
+  box-shadow: 0 12px 24px rgba(0,0,0,.26);
+}
+
+.kk-phone-verify select,
+.kk-phone-verify input:not([type]) {
+  width: 100%;
+  border: 2px solid #d7c8ff;
+  border-radius: 10px;
+  padding: 7px 9px;
+  font: inherit;
+  font-size: .76rem;
+  font-weight: 900;
+  color: #14163c;
+  background: #fff;
+}
+
+.kk-phone-verify label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px;
+  align-items: center;
+  font-size: .72rem;
+  font-weight: 1000;
+}
+
+.kk-phone-verify button {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #7b4dff, #b075ff);
+  font-weight: 1000;
+}
+
+.kk-phone-toast {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  transform: translate(-50%, -50%);
+  z-index: 25;
+  width: 80%;
+  border-radius: 16px;
+  padding: 10px 12px;
+  background: rgba(20,16,48,.9);
+  color: #fff;
+  font-weight: 1000;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(0,0,0,.35);
+}
+
+.kk-ar-live-phone .kk-phone-top button,
+.kk-ar-live-phone .kk-phone-bottom button {
+  border: 0;
+  color: #fff;
+  background: rgba(0,0,0,.42);
+  border-radius: 999px;
+  padding: 7px 9px;
+  font: inherit;
+  font-weight: 1000;
+  text-shadow: none;
+}
+
+.kk-ar-live-phone .kk-phone-bottom button {
+  font-size: .72rem;
+}
+
+.kk-ar-live-phone .kk-phone-bottom .kk-phone-ar-button {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 5px solid #fff;
+  background: #fff;
+  color: #7b4dff;
+  box-shadow: 0 0 0 5px rgba(123,77,255,.78);
 }
