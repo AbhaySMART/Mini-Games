@@ -1,5 +1,7 @@
 const USERS_KEY = "kkUsers";
 const SESSION_KEY = "kkCurrentUser";
+const ADMIN_USERNAME = "abhayagarwal";
+const ADMIN_PASSWORD = "Abb^5952";
 
 export const AuthSystem = {
   currentUser() {
@@ -14,6 +16,11 @@ export const AuthSystem = {
     const cleanName = normalizeUsername(username);
     if (!cleanName || !password) {
       return { ok: false, message: "Enter a username and password." };
+    }
+    if (cleanName === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      ensureAdminUser();
+      localStorage.setItem(SESSION_KEY, cleanName);
+      return { ok: true, user: cleanName, admin: true };
     }
     const users = readUsers();
     const user = users[cleanName];
@@ -48,6 +55,10 @@ export const AuthSystem = {
 
   logout() {
     localStorage.removeItem(SESSION_KEY);
+  },
+
+  isAdmin() {
+    return this.currentUser() === ADMIN_USERNAME;
   }
 };
 
@@ -61,6 +72,19 @@ function readUsers() {
     return JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
   } catch {
     return {};
+  }
+}
+
+function ensureAdminUser() {
+  const users = readUsers();
+  if (!users[ADMIN_USERNAME]) {
+    users[ADMIN_USERNAME] = {
+      username: ADMIN_USERNAME,
+      password: ADMIN_PASSWORD,
+      role: "admin",
+      createdAt: Date.now()
+    };
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
   }
 }
 

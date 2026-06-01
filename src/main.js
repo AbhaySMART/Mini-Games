@@ -1,4 +1,4 @@
-import { AuthSystem } from "./systems/AuthSystem.js?v=79";
+import { AuthSystem } from "./systems/AuthSystem.js?v=89";
 import { PlayerData } from "./systems/PlayerData.js?v=79";
 import { QuestSystem } from "./systems/QuestSystem.js?v=79";
 import { UnlockSystem } from "./systems/UnlockSystem.js?v=79";
@@ -14,9 +14,10 @@ const root = document.querySelector("#game");
 const SHOP_CATEGORIES = ["outfits", "capes", "crowns", "pets", "trails", "room", "effects"];
 const MAP_WIDTH = 3200;
 const MAP_HEIGHT = 2100;
+const ADMIN_USERNAME = "abhayagarwal";
 
 const state = {
-  view: AuthSystem.isLoggedIn() ? "dashboard" : "login",
+  view: AuthSystem.isLoggedIn() ? AuthSystem.isAdmin() ? "admin" : "dashboard" : "login",
   message: "",
   shopCategory: "outfits",
   storySkill: "empathy",
@@ -65,6 +66,7 @@ window.addEventListener("load", () => {
 
 function render() {
   if (!AuthSystem.isLoggedIn() && state.view !== "login") state.view = "login";
+  if (AuthSystem.isLoggedIn() && state.view === "admin" && !AuthSystem.isAdmin()) state.view = "dashboard";
 
   root.className = `kind-kingdom-app-shell kk-view-${state.view}`;
   root.innerHTML = AuthSystem.isLoggedIn() ? renderAuthedView() : renderLogin();
@@ -92,7 +94,8 @@ function renderAuthedView() {
     news: renderNews,
     journal: renderJournal,
     ar: renderARExperience,
-    multiplayer: renderMultiplayer
+    multiplayer: renderMultiplayer,
+    admin: renderAdminPortal
   };
   return (views[state.view] || renderDashboard)();
 }
@@ -154,12 +157,87 @@ function renderDashboard() {
         <button data-action="nav" data-view="closet">Closet</button>
       </div>
       <div class="kk-old-button-row secondary">
+        ${AuthSystem.isAdmin() ? `<button data-action="nav" data-view="admin">Admin Portal</button>` : ""}
         <button data-action="nav" data-view="news">Kingdom News</button>
         <button data-action="nav" data-view="journal">Journal</button>
         <button data-action="nav" data-view="room">My Room</button>
         <button data-action="nav" data-view="character">Choose Hero</button>
         <a href="card-view.html">Card View</a>
         <button data-action="logout">Log Out</button>
+      </div>
+      ${messageMarkup()}
+    </section>
+  `;
+}
+
+function renderAdminPortal() {
+  const stats = adminStats();
+  return `
+    <section class="kk-dom-page kk-admin-page">
+      ${panelHead("Admin Portal", "Usage statistics", "Track local users, points, completed games, skill XP, journal entries, favorites, and multiplayer rooms saved in this browser.", false, "Admin")}
+      <div class="kk-admin-actions">
+        <button data-action="nav" data-view="dashboard">Student Dashboard</button>
+        <button data-action="nav" data-view="map">Map</button>
+        <button data-action="logout">Log Out</button>
+      </div>
+      <div class="kk-admin-stat-grid">
+        ${adminStatCard("Users", stats.totalUsers, "Local accounts")}
+        ${adminStatCard("Total Points", stats.totalPoints, "Across users")}
+        ${adminStatCard("Games Completed", stats.totalCompletions, "All completions")}
+        ${adminStatCard("Journal Entries", stats.totalReflections, "Saved reflections")}
+        ${adminStatCard("Favorites", stats.totalFavorites, "Marked games")}
+        ${adminStatCard("Public Rooms", stats.publicRooms.length, "Open room list")}
+      </div>
+      <div class="kk-admin-layout">
+        <article class="kk-dom-card kk-admin-card">
+          <h3>User Progress</h3>
+          <div class="kk-admin-table-wrap">
+            <table class="kk-admin-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role</th>
+                  <th>Points</th>
+                  <th>Completed</th>
+                  <th>XP</th>
+                  <th>Journal</th>
+                  <th>Favorites</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${stats.users.map((user) => `
+                  <tr>
+                    <td>${escapeHtml(user.username)}</td>
+                    <td>${escapeHtml(user.role)}</td>
+                    <td>${user.points}</td>
+                    <td>${user.completedCount}</td>
+                    <td>${user.totalXP}</td>
+                    <td>${user.reflections}</td>
+                    <td>${user.favorites}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </article>
+        <article class="kk-dom-card kk-admin-card">
+          <h3>Most Completed Games</h3>
+          <div class="kk-admin-list">
+            ${stats.topGames.map((item) => `<p><b>${escapeHtml(item.title)}</b><span>${item.count} completion${item.count === 1 ? "" : "s"}</span></p>`).join("") || "<p>No completed games yet.</p>"}
+          </div>
+        </article>
+        <article class="kk-dom-card kk-admin-card">
+          <h3>Skill XP Totals</h3>
+          <div class="kk-admin-list">
+            ${stats.skillTotals.map((item) => `<p><b>${escapeHtml(item.skill)}</b><span>${item.xp} XP</span></p>`).join("") || "<p>No skill XP yet.</p>"}
+          </div>
+        </article>
+        <article class="kk-dom-card kk-admin-card">
+          <h3>Public Multiplayer Rooms</h3>
+          <div class="kk-admin-list">
+            ${stats.publicRooms.map((room) => `<p><b>${escapeHtml(room.code)}</b><span>Host: ${escapeHtml(room.host || "Unknown")}</span></p>`).join("") || "<p>No public rooms have been created yet.</p>"}
+          </div>
+        </article>
       </div>
       ${messageMarkup()}
     </section>
@@ -1361,7 +1439,7 @@ function handleSubmit(event) {
   const result = AuthSystem[method](formData.get("username"), formData.get("password"));
   if (!result.ok) return setMessage(result.message);
   RewardSystem.awardDailyVisit();
-  state.view = "dashboard";
+  state.view = AuthSystem.isAdmin() ? "admin" : "dashboard";
   state.message = method === "signup" ? "Account created." : "Welcome back.";
   render();
 }
@@ -1872,6 +1950,82 @@ function journalEntry(entry) {
       <p><b>How I might feel:</b> ${escapeHtml(entry.feeling || "Not answered")}</p>
       <p><b>My connection:</b> ${escapeHtml(entry.experience || "Not answered")}</p>
       <p><b>Next time:</b> ${escapeHtml(entry.nextStep || "Not answered")}</p>
+    </article>
+  `;
+}
+
+function adminStats() {
+  const users = adminUsers();
+  const gameLookup = new Map(games().map((game) => [game.slug, game]));
+  const gameCounts = new Map();
+  const skillTotals = new Map();
+  const rows = users.map((user) => {
+    const progress = adminReadJson(`kindKingdomProgress:${user.username}`, { points: 0, completed: [] });
+    const player = adminReadJson(`kindKingdomPlayer:${user.username}`, { skillXP: {} });
+    const journal = adminReadJson(`kindKingdomReflectionJournal:${user.username}`, { entries: [] });
+    const favorites = adminReadJson(`kindKingdomFavorites:${user.username}`, []);
+    const completed = Array.isArray(progress.completed) ? progress.completed : [];
+    const skillXP = player.skillXP || {};
+
+    completed.forEach((slug) => gameCounts.set(slug, Number(gameCounts.get(slug) || 0) + 1));
+    Object.entries(skillXP).forEach(([skill, xp]) => {
+      skillTotals.set(skill, Number(skillTotals.get(skill) || 0) + Number(xp || 0));
+    });
+
+    return {
+      username: user.username,
+      role: user.username === ADMIN_USERNAME ? "Admin" : "Student",
+      points: Number(progress.points || 0),
+      completedCount: completed.length,
+      totalXP: Object.values(skillXP).reduce((sum, value) => sum + Number(value || 0), 0),
+      reflections: Array.isArray(journal.entries) ? journal.entries.length : 0,
+      favorites: Array.isArray(favorites) ? favorites.length : 0
+    };
+  });
+
+  return {
+    users: rows,
+    totalUsers: rows.length,
+    totalPoints: rows.reduce((sum, user) => sum + user.points, 0),
+    totalCompletions: rows.reduce((sum, user) => sum + user.completedCount, 0),
+    totalReflections: rows.reduce((sum, user) => sum + user.reflections, 0),
+    totalFavorites: rows.reduce((sum, user) => sum + user.favorites, 0),
+    publicRooms: adminReadJson("kkPublicRooms", []),
+    topGames: [...gameCounts.entries()]
+      .map(([slug, count]) => ({ title: gameLookup.get(slug)?.title || slug, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8),
+    skillTotals: [...skillTotals.entries()]
+      .map(([skill, xp]) => ({ skill, xp }))
+      .sort((a, b) => b.xp - a.xp)
+      .slice(0, 10)
+  };
+}
+
+function adminUsers() {
+  const stored = adminReadJson("kkUsers", {});
+  const users = Object.values(stored)
+    .map((user) => ({ username: String(user.username || "").trim().toLowerCase() }))
+    .filter((user) => user.username);
+  if (!users.some((user) => user.username === ADMIN_USERNAME)) users.unshift({ username: ADMIN_USERNAME });
+  return users.sort((a, b) => (a.username === ADMIN_USERNAME ? -1 : b.username === ADMIN_USERNAME ? 1 : a.username.localeCompare(b.username)));
+}
+
+function adminReadJson(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function adminStatCard(label, value, note) {
+  return `
+    <article class="kk-dom-card kk-admin-stat-card">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(String(value))}</strong>
+      <p>${escapeHtml(note)}</p>
     </article>
   `;
 }

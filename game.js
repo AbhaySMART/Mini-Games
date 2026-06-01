@@ -48,19 +48,19 @@ function renderPage() {
       ${flowMapMarkup(game)}
       <h1 class="story-title">${game.title}</h1>
       <div class="storybook">
-        ${speech("intro", `Before we set out on our noble quest, let's watch a quick clip about ${game.category.toLowerCase()}.`, "boy", "left")}
+        ${speech("intro", `This game teaches ${game.category.toLowerCase()}. First, watch the short example. Then you will practice the skill yourself.`, "boy", "left")}
         ${lessonVideoMarkup(game)}
-        ${speech("lesson", `Now you've seen it, ${game.lesson.toLowerCase()} Let's get ready for the mission.`, "girl", "right")}
+        ${speech("lesson", `What to learn: ${directLesson(game)} Use this skill when a real person needs care, patience, respect, or help.`, "girl", "right")}
         ${applicationsMarkup(game)}
         <div class="arrow-down" aria-hidden="true">&darr;</div>
-        ${speech("mission", `Greetings, royal helper! Your mission is to ${game.mission.toLowerCase()}`, "boy", "left")}
-        ${speech("success", `Ready, champion? Step into the royal challenge and practice ${game.category.toLowerCase()} until the kingdom shines.`, "girl", "right")}
+        ${speech("mission", `What to do in the game: ${directMission(game)}`, "boy", "left")}
+        ${speech("success", `Goal: make choices you could also use in real life. After you play, answer the quiz to show what you learned.`, "girl", "right")}
       </div>
       <section class="play-card">
         <div class="play-head">
           <div>
             <h2>${game.icon} ${game.title}</h2>
-            <p>${game.mechanicName}: ${game.lesson}</p>
+            <p><b>Lesson:</b> ${directLesson(game)}</p>
           </div>
           <div class="stats">
             <span>Time: <b id="time">60</b>s</span>
@@ -70,8 +70,8 @@ function renderPage() {
         </div>
         <div class="play-body">
           <div class="start-panel">
-            <h3>${game.mechanicName}</h3>
-            <p>${game.mission}</p>
+            <h3>What You Practice</h3>
+            <p>${directMission(game)}</p>
             <div class="difficulty-row">
               <button type="button" class="active" data-level="60">Easy (60s)</button>
               <button type="button" data-level="50">Medium (50s)</button>
@@ -191,16 +191,16 @@ function lessonVideoMarkup(game) {
 function fallbackVideoScript(game) {
   return {
     narration: [
-      `In ${game.title}, a young helper discovers a real-life moment that needs ${game.category.toLowerCase()}.`,
-      `The challenge feels tricky because one quick choice could make the problem harder.`,
-      `The helper pauses, notices what matters, and practices the ${game.mechanicName.toLowerCase()} skill.`,
-      `The kingdom grows brighter when the helper uses ${game.category.toLowerCase()} in daily life.`
+      `This game teaches ${game.category.toLowerCase()}.`,
+      `The challenge is to notice the problem before reacting.`,
+      directMission(game),
+      directLesson(game)
     ],
     scenes: [
       game.scene,
       `A choice appears that tests ${game.category.toLowerCase()}.`,
-      game.mission,
-      game.lesson
+      directMission(game),
+      directLesson(game)
     ]
   };
 }
@@ -209,7 +209,7 @@ function applicationsMarkup(game) {
   const apps = realWorldApplications(game);
   return `
     <section class="applications-card" aria-label="${game.title} real world applications">
-      <h2>Real World Applications</h2>
+      <h2>Where You Use This</h2>
       <div class="application-grid">
         ${apps.map((item, index) => `
           <article class="application-item">
@@ -399,13 +399,123 @@ function realWorldApplications(game) {
   return (bySkill[game.category] || fallback).map(([title, text]) => ({ title, text }));
 }
 
+function directLesson(game) {
+  const lessons = {
+    "Kind Words": "A good compliment says exactly what someone did and why it mattered.",
+    Generosity: "Sharing means giving someone else a real turn, choice, or chance.",
+    Accountability: "When you make a mistake, tell the truth, apologize, and help fix it.",
+    Communication: "Good listening means paying attention to the important words and feelings.",
+    "Emotional Awareness": "Name the feeling first so you can choose a helpful response.",
+    Empathy: "Empathy means noticing how someone feels and choosing care that fits.",
+    "Self-Control": "Patience means slowing down before you react.",
+    "Calm Choices": "Calm choices start with breathing, pausing, and using a steady voice.",
+    Service: "Helpful action starts by noticing what the person actually needs.",
+    Honesty: "Honesty means telling what really happened, even when it feels hard.",
+    Gratitude: "Strong gratitude names the person, what they did, and why it helped.",
+    Respect: "Respect means listening and disagreeing without insulting or dismissing people.",
+    Belonging: "Belonging grows when you invite people in and help them feel welcome.",
+    Courage: "Courage means taking one safe next step even when you feel nervous.",
+    Cooperation: "Teamwork works when people share roles and help each other succeed.",
+    Fairness: "Fairness means giving each person the support they need to join in.",
+    Reliability: "Reliability means planning ahead so you can keep your promise.",
+    Wellness: "Healthy habits help your body and mood work better.",
+    Safety: "Safe choices happen when you stop and think about what could happen next.",
+    Learning: "Curiosity means asking better questions so you can understand more.",
+    "Growth Mindset": "Growth mindset means changing your strategy instead of giving up.",
+    Courtesy: "Courtesy means using small respectful actions in everyday moments.",
+    "Problem Solving": "Problem solving means comparing choices before you act.",
+    "Environmental Care": "Caring for nature means noticing how one choice affects living things.",
+    "Digital Citizenship": "Digital kindness means remembering that online words affect real people.",
+    Rest: "Rest is easier when you follow a calm routine in order.",
+    "Conflict Repair": "Repair conflict by calming down, naming the problem, and choosing a fair fix.",
+    Giving: "Generosity is offering help without making someone feel small.",
+    Attention: "Focus means noticing distractions and returning to the task.",
+    Boundaries: "A healthy boundary protects your space, time, or comfort with clear words.",
+    Mindfulness: "Mindfulness means noticing your thoughts and feelings before reacting.",
+    Friendship: "Friendship grows through listening, keeping promises, repair, and shared joy.",
+    Responsibility: "Responsibility means owning your job, your mistake, and your next step.",
+    Forgiveness: "Forgiveness can let go of hurt while still keeping safe boundaries.",
+    Leadership: "Good leaders guide, listen, include others, and share credit.",
+    Confidence: "Confidence grows when you use honest self-talk and take one brave step.",
+    Adaptability: "Adaptability means changing your plan when the situation changes.",
+    Conversation: "Good conversation balances asking, listening, sharing, and connecting.",
+    "Decision Making": "Wise decisions compare safety, kindness, and consequences.",
+    Reflection: "Reflection helps you see what worked, what hurt, and what to try next.",
+    "Self-Advocacy": "Self-advocacy means saying what you need clearly and respectfully.",
+    "Turn Taking": "Taking turns helps games, talks, and shared spaces feel fair.",
+    Collaboration: "Collaboration means dividing jobs and combining strengths.",
+    Encouragement: "Encouragement names effort and gives someone hope to keep trying.",
+    Perspective: "Perspective means trying to understand how the situation looks to someone else.",
+    Trust: "Trust grows when actions match words over time.",
+    Resilience: "Resilience means recovering after a hard moment and trying again.",
+    Creativity: "Creative problem solving means trying a new idea when the first plan does not work."
+  };
+  return lessons[game.category] || game.lesson;
+}
+
+function directMission(game) {
+  const missions = {
+    wordForge: "Build a compliment with three parts: what they did, what strength it showed, and why it helped.",
+    crownBalance: "Pass the crown around so no one person controls everything for too long.",
+    bridgeSequence: "Put the apology steps in order: notice, name the hurt, apologize, repair, and do better.",
+    signalFilter: "Catch the important listening clues and ignore the distractions.",
+    emotionGarden: "Choose the feeling and the response that would help the person calm down or feel understood.",
+    timeDilation: "Wait for the right moment before clicking. Do not rush.",
+    hiddenNeeds: "Read what the person says, figure out what they need, and choose the best help.",
+    truthTimeline: "Choose the honest action and compare it with the cover-up path.",
+    memoryLink: "Make a thank-you message that names the real person, action, and impact.",
+    reputationNetwork: "Choose words that help everyone at the table feel respected.",
+    belongingMeters: "Pick the invitation or support that helps each guest feel included.",
+    fearCave: "Name the fear and choose one brave next step.",
+    breathingDragon: "Match the breathing rhythm to help the dragon calm down.",
+    teamRoles: "Use each teammate's role at the right time.",
+    equityFountain: "Give each person the tool or support they need, not always the same thing.",
+    futurePath: "Choose a plan that helps you keep the promise later.",
+    habitsHarbor: "Balance sleep, food, water, movement, and clean habits.",
+    predictiveShield: "Think about the outcome before choosing the safe action.",
+    questionClock: "Choose deeper questions that help you learn more.",
+    adaptivePeak: "After a setback, choose a new strategy and keep climbing.",
+    empathyWaves: "Match the caring response to the feeling.",
+    microManners: "Use polite words and actions at the right moments.",
+    solutionPortal: "Preview the results and choose the solution that solves the problem kindly.",
+    ecosystemNook: "Make choices that protect plants, animals, water, and shared spaces.",
+    chatGate: "Sort online messages by whether they help or hurt real people.",
+    relaxSequence: "Put the calming bedtime steps in the best order."
+  };
+  const byCategory = {
+    "Conflict Repair": "Choose the calm repair step that lowers the conflict.",
+    Giving: "Choose the helpful gift of time, attention, or care.",
+    Attention: "Choose what to focus on now and what to save for later.",
+    Boundaries: "Choose clear words that protect comfort without being mean.",
+    Mindfulness: "Name what is happening now before choosing your response.",
+    Friendship: "Choose the action that builds or repairs the friendship.",
+    Responsibility: "Choose the responsible next step instead of blaming or avoiding.",
+    Forgiveness: "Choose how to let go of hurt while keeping wise boundaries.",
+    Leadership: "Choose the leadership action that helps the whole group.",
+    Confidence: "Choose realistic self-talk and one brave next step.",
+    Adaptability: "Choose a new plan when the first plan changes.",
+    Conversation: "Choose when to ask, listen, share, or follow up.",
+    "Decision Making": "Choose the safest and kindest option after checking the consequences.",
+    Reflection: "Sort the memory by what you learned, what needs repair, and what to repeat.",
+    "Self-Advocacy": "Name the need, explain the reason, and make a respectful request.",
+    "Turn Taking": "Choose who should get the next turn and how to wait fairly.",
+    Collaboration: "Choose the role or action that helps the team finish together.",
+    Encouragement: "Choose words that name effort and help someone keep going.",
+    Perspective: "Choose the answer that shows you understand another person's view.",
+    Trust: "Choose actions that prove words can be believed.",
+    Resilience: "Choose how to recover and try again after a hard moment.",
+    Creativity: "Choose a new solution when the first idea does not work."
+  };
+  return missions[game.mechanic] || byCategory[game.category] || `Choose the action that best practices ${game.category.toLowerCase()} in real life.`;
+}
+
 function quizQuestions(game) {
   const apps = realWorldApplications(game);
   return [
     {
       prompt: "What is the main lesson this game is teaching?",
       options: shuffle([
-        { text: game.lesson, correct: true },
+        { text: directLesson(game), correct: true },
         { text: "Rush through the challenge without thinking.", correct: false },
         { text: "Ignore how other people feel.", correct: false }
       ])
@@ -421,7 +531,7 @@ function quizQuestions(game) {
     {
       prompt: "What should you practice in the mini game?",
       options: shuffle([
-        { text: game.mission, correct: true },
+        { text: directMission(game), correct: true },
         { text: "Click random choices and hope they work.", correct: false },
         { text: "Skip the lesson and move on.", correct: false }
       ])
@@ -580,8 +690,8 @@ function flowMapMarkup(game) {
   const steps = [
     {
       label: "Hook",
-      title: "Enter the Lesson",
-      text: script.narration[0] || `Meet the challenge in ${game.title}.`
+      title: "What You Learn",
+      text: directLesson(game)
     },
     {
       label: "Problem",
@@ -590,8 +700,8 @@ function flowMapMarkup(game) {
     },
     {
       label: "Skill",
-      title: game.mechanicName,
-      text: game.mission
+      title: "What You Do",
+      text: directMission(game)
     },
     {
       label: "Real Life",
@@ -606,7 +716,7 @@ function flowMapMarkup(game) {
     {
       label: "Practice",
       title: "Try the Mini Game",
-      text: `Use the ${game.mechanicName.toLowerCase()} mechanic to make kind choices yourself.`
+      text: "Choose the answer or action that would help in real life."
     },
     {
       label: "Check",
@@ -628,7 +738,7 @@ function flowMapMarkup(game) {
         <button class="flow-close" type="button" data-flow-close aria-label="Close lesson flow">×</button>
         <div class="flow-kicker">Storyboard Flow</div>
         <h2>${game.title}</h2>
-        <p class="flow-summary">${game.lesson}</p>
+        <p class="flow-summary">${directLesson(game)}</p>
         <div class="flow-steps">
           ${steps.map((step, index) => `
             <article class="flow-step">
