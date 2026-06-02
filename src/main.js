@@ -176,6 +176,7 @@ function renderAdminPortal() {
     <section class="kk-dom-page kk-admin-page">
       ${panelHead("Admin Portal", "Usage statistics", "Track local users, points, completed games, skill XP, journal entries, favorites, and multiplayer rooms saved in this browser.", false, "Admin")}
       <div class="kk-admin-actions">
+        <button class="kk-primary" data-action="download-admin-report">Download PDF Report</button>
         <button data-action="nav" data-view="dashboard">Student Dashboard</button>
         <button data-action="nav" data-view="map">Map</button>
         <button data-action="logout">Log Out</button>
@@ -184,6 +185,9 @@ function renderAdminPortal() {
         ${adminStatCard("Users", stats.totalUsers, "Local accounts")}
         ${adminStatCard("Total Points", stats.totalPoints, "Across users")}
         ${adminStatCard("Games Completed", stats.totalCompletions, "All completions")}
+        ${adminStatCard("Average Points", stats.averagePoints, "Per user")}
+        ${adminStatCard("Average Completed", stats.averageCompletions, "Per user")}
+        ${adminStatCard("Total Skill XP", stats.totalSkillXP, "All tracked skills")}
         ${adminStatCard("Journal Entries", stats.totalReflections, "Saved reflections")}
         ${adminStatCard("Favorites", stats.totalFavorites, "Marked games")}
         ${adminStatCard("Public Rooms", stats.publicRooms.length, "Open room list")}
@@ -230,6 +234,24 @@ function renderAdminPortal() {
           <h3>Skill XP Totals</h3>
           <div class="kk-admin-list">
             ${stats.skillTotals.map((item) => `<p><b>${escapeHtml(item.skill)}</b><span>${item.xp} XP</span></p>`).join("") || "<p>No skill XP yet.</p>"}
+          </div>
+        </article>
+        <article class="kk-dom-card kk-admin-card">
+          <h3>Completions by Skill</h3>
+          <div class="kk-admin-list">
+            ${stats.categoryTotals.map((item) => `<p><b>${escapeHtml(item.category)}</b><span>${item.count} completion${item.count === 1 ? "" : "s"}</span></p>`).join("") || "<p>No category completion data yet.</p>"}
+          </div>
+        </article>
+        <article class="kk-dom-card kk-admin-card">
+          <h3>Favorite Games</h3>
+          <div class="kk-admin-list">
+            ${stats.favoriteGames.map((item) => `<p><b>${escapeHtml(item.title)}</b><span>${item.count} favorite${item.count === 1 ? "" : "s"}</span></p>`).join("") || "<p>No favorites marked yet.</p>"}
+          </div>
+        </article>
+        <article class="kk-dom-card kk-admin-card kk-admin-wide-card">
+          <h3>Recent Reflection Journal Entries</h3>
+          <div class="kk-admin-list kk-admin-reflection-list">
+            ${stats.recentReflections.map((entry) => `<p><b>${escapeHtml(entry.user)} • ${escapeHtml(entry.gameTitle)}</b><span>${escapeHtml(entry.preview)}</span></p>`).join("") || "<p>No reflections saved yet.</p>"}
           </div>
         </article>
         <article class="kk-dom-card kk-admin-card">
@@ -1307,6 +1329,7 @@ async function handleClick(event) {
     const result = RewardSystem.claimPassReward(target.dataset.level);
     return setMessage(result.message);
   }
+  if (action === "download-admin-report") return downloadAdminReportPDF();
   if (action === "generate-story") {
     target.disabled = true;
     state.story = await StoryForgeSystem.generate({ skill: state.storySkill });
@@ -1958,7 +1981,10 @@ function adminStats() {
   const users = adminUsers();
   const gameLookup = new Map(games().map((game) => [game.slug, game]));
   const gameCounts = new Map();
+  const categoryCounts = new Map();
+  const favoriteCounts = new Map();
   const skillTotals = new Map();
+  const recentReflections = [];
   const rows = users.map((user) => {
     const progress = adminReadJson(`kindKingdomProgress:${user.username}`, { points: 0, completed: [] });
     const player = adminReadJson(`kindKingdomPlayer:${user.username}`, { skillXP: {} });
@@ -1967,7 +1993,24 @@ function adminStats() {
     const completed = Array.isArray(progress.completed) ? progress.completed : [];
     const skillXP = player.skillXP || {};
 
-    completed.forEach((slug) => gameCounts.set(slug, Number(gameCounts.get(slug) || 0) + 1));
+    completed.forEach((slug) => {
+      const game = gameLookup.get(slug);
+      gameCounts.set(slug, Number(gameCounts.get(slug) || 0) + 1);
+      if (game?.category) categoryCounts.set(game.category, Number(categoryCounts.get(game.category) || 0) + 1);
+    });
+    if (Array.isArray(favorites)) {
+      favorites.forEach((slug) => favoriteCounts.set(slug, Number(favoriteCounts.get(slug) || 0) + 1));
+    }
+    if (Array.isArray(journal.entries)) {
+      journal.entries.forEach((entry) => {
+        recentReflections.push({
+          user: user.username,
+          gameTitle: entry.gameTitle || "Kindness Quest",
+          preview: entry.nextStep || entry.feeling || entry.experience || "Reflection saved.",
+          createdAt: entry.createdAt || ""
+        });
+      });
+    }
     Object.entries(skillXP).forEach(([skill, xp]) => {
       skillTotals.set(skill, Number(skillTotals.get(skill) || 0) + Number(xp || 0));
     });
@@ -1983,17 +2026,34 @@ function adminStats() {
     };
   });
 
+  const totalPoints = rows.reduce((sum, user) => sum + user.points, 0);
+  const totalCompletions = rows.reduce((sum, user) => sum + user.completedCount, 0);
+  const totalSkillXP = rows.reduce((sum, user) => sum + user.totalXP, 0);
   return {
     users: rows,
     totalUsers: rows.length,
-    totalPoints: rows.reduce((sum, user) => sum + user.points, 0),
-    totalCompletions: rows.reduce((sum, user) => sum + user.completedCount, 0),
+    totalPoints,
+    totalCompletions,
+    averagePoints: rows.length ? Math.round(totalPoints / rows.length) : 0,
+    averageCompletions: rows.length ? (totalCompletions / rows.length).toFixed(1) : "0.0",
+    totalSkillXP,
     totalReflections: rows.reduce((sum, user) => sum + user.reflections, 0),
     totalFavorites: rows.reduce((sum, user) => sum + user.favorites, 0),
     publicRooms: adminReadJson("kkPublicRooms", []),
     topGames: [...gameCounts.entries()]
       .map(([slug, count]) => ({ title: gameLookup.get(slug)?.title || slug, count }))
       .sort((a, b) => b.count - a.count)
+      .slice(0, 8),
+    categoryTotals: [...categoryCounts.entries()]
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8),
+    favoriteGames: [...favoriteCounts.entries()]
+      .map(([slug, count]) => ({ title: gameLookup.get(slug)?.title || slug, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8),
+    recentReflections: recentReflections
+      .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
       .slice(0, 8),
     skillTotals: [...skillTotals.entries()]
       .map(([skill, xp]) => ({ skill, xp }))
@@ -2028,6 +2088,186 @@ function adminStatCard(label, value, note) {
       <p>${escapeHtml(note)}</p>
     </article>
   `;
+}
+
+function downloadAdminReportPDF() {
+  if (!AuthSystem.isAdmin()) return setMessage("Only the admin can download reports.");
+  const stats = adminStats();
+  const pdf = buildAdminReportPDF(stats);
+  const stamp = new Date().toISOString().slice(0, 10);
+  const blob = new Blob([pdf], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `kind-kingdom-admin-report-${stamp}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return setMessage("Admin PDF report downloaded.");
+}
+
+function buildAdminReportPDF(stats) {
+  const width = 612;
+  const height = 792;
+  const pages = [];
+  const today = new Date().toLocaleDateString();
+  let ops = "";
+
+  const color = (hex) => {
+    const value = hex.replace("#", "");
+    const r = parseInt(value.slice(0, 2), 16) / 255;
+    const g = parseInt(value.slice(2, 4), 16) / 255;
+    const b = parseInt(value.slice(4, 6), 16) / 255;
+    return `${r.toFixed(3)} ${g.toFixed(3)} ${b.toFixed(3)}`;
+  };
+  const rect = (x, y, w, h, fill) => {
+    ops += `q ${color(fill)} rg ${x} ${y} ${w} ${h} re f Q\n`;
+  };
+  const text = (value, x, y, size = 11, fill = "#2d174d", font = "F1") => {
+    ops += `q ${color(fill)} rg BT /${font} ${size} Tf ${x} ${y} Td (${pdfEscape(value)}) Tj ET Q\n`;
+  };
+  const wrappedText = (value, x, y, maxChars, size = 10, fill = "#443361", font = "F1", lineGap = 13) => {
+    const lines = wrapPdfText(value, maxChars).slice(0, 4);
+    lines.forEach((line, index) => text(line, x, y - index * lineGap, size, fill, font));
+    return y - lines.length * lineGap;
+  };
+  const startPage = (subtitle = "Admin Progress Report") => {
+    ops = "";
+    rect(0, 0, width, height, "#f4f0ff");
+    rect(0, 704, width, 88, "#251640");
+    rect(28, 684, 556, 72, "#ffffff");
+    rect(28, 684, 8, 72, "#7b4dff");
+    text("Kind Kingdom", 48, 728, 28, "#2d174d", "F2");
+    text(subtitle, 50, 708, 13, "#6a4aa5", "F2");
+    text(`Generated ${today}`, 460, 722, 10, "#443361", "F1");
+  };
+  const finishPage = () => pages.push(ops);
+
+  startPage();
+  const cards = [
+    ["Users", stats.totalUsers],
+    ["Total Points", stats.totalPoints],
+    ["Completed", stats.totalCompletions],
+    ["Avg Points", stats.averagePoints],
+    ["Avg Completed", stats.averageCompletions],
+    ["Total XP", stats.totalSkillXP],
+    ["Journal Entries", stats.totalReflections],
+    ["Favorites", stats.totalFavorites],
+    ["Public Rooms", stats.publicRooms.length]
+  ];
+  cards.forEach(([label, value], index) => {
+    const col = index % 3;
+    const row = Math.floor(index / 3);
+    const x = 48 + col * 184;
+    const y = 602 - row * 74;
+    rect(x, y, 160, 54, index % 2 ? "#fff9df" : "#e8fbff");
+    rect(x, y, 160, 5, index % 2 ? "#ffd166" : "#2ec4b6");
+    text(label, x + 12, y + 34, 10, "#6a4aa5", "F2");
+    text(String(value), x + 12, y + 13, 19, "#2d174d", "F2");
+  });
+
+  text("User Progress", 48, 372, 17, "#2d174d", "F2");
+  rect(48, 344, 516, 24, "#2d174d");
+  ["User", "Role", "Points", "Done", "XP", "Journal"].forEach((label, index) => {
+    text(label, [58, 178, 266, 334, 406, 474][index], 352, 9, "#ffffff", "F2");
+  });
+  stats.users.slice(0, 11).forEach((user, index) => {
+    const y = 320 - index * 22;
+    rect(48, y - 4, 516, 20, index % 2 ? "#ffffff" : "#f8f3ff");
+    text(user.username, 58, y + 2, 9);
+    text(user.role, 178, y + 2, 9);
+    text(user.points, 266, y + 2, 9);
+    text(user.completedCount, 334, y + 2, 9);
+    text(user.totalXP, 406, y + 2, 9);
+    text(user.reflections, 474, y + 2, 9);
+  });
+  text("Report includes local browser data only: accounts, progress, XP, journal, favorites, and room data saved on this device.", 48, 58, 9, "#5f4e75");
+  finishPage();
+
+  startPage("Learning Details");
+  const lists = [
+    ["Most Completed Games", stats.topGames.map((item) => `${item.title}: ${item.count}`)],
+    ["Completions by Skill", stats.categoryTotals.map((item) => `${item.category}: ${item.count}`)],
+    ["Skill XP Totals", stats.skillTotals.map((item) => `${item.skill}: ${item.xp} XP`)],
+    ["Favorite Games", stats.favoriteGames.map((item) => `${item.title}: ${item.count}`)]
+  ];
+  lists.forEach(([title, items], index) => {
+    const col = index % 2;
+    const row = Math.floor(index / 2);
+    const x = 48 + col * 274;
+    const y = 606 - row * 230;
+    rect(x, y - 170, 242, 188, "#ffffff");
+    rect(x, y, 242, 18, index % 2 ? "#ffd166" : "#77e5dc");
+    text(title, x + 12, y + 4, 11, "#2d174d", "F2");
+    (items.length ? items : ["No data yet"]).slice(0, 8).forEach((item, itemIndex) => {
+      wrappedText(`- ${item}`, x + 14, y - 22 - itemIndex * 18, 36, 8.5);
+    });
+  });
+  text("Recent Reflections", 48, 190, 15, "#2d174d", "F2");
+  rect(48, 50, 516, 128, "#ffffff");
+  stats.recentReflections.slice(0, 5).forEach((entry, index) => {
+    const y = 154 - index * 23;
+    text(`${entry.user} - ${entry.gameTitle}`, 62, y, 9, "#2d174d", "F2");
+    wrappedText(entry.preview, 62, y - 11, 78, 8, "#5f4e75", "F1", 9);
+  });
+  finishPage();
+
+  return createPdfDocument(pages);
+}
+
+function createPdfDocument(pageStreams) {
+  const encoder = new TextEncoder();
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    `<< /Type /Pages /Kids ${pageStreams.map((_, index) => `${3 + index * 2} 0 R`).join(" ")} /Count ${pageStreams.length} >>`
+  ];
+  pageStreams.forEach((stream, index) => {
+    const pageId = 3 + index * 2;
+    const contentId = pageId + 1;
+    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> >> >> /Contents ${contentId} 0 R >>`);
+    objects.push(`<< /Length ${encoder.encode(stream).length} >>\nstream\n${stream}endstream`);
+  });
+
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(encoder.encode(pdf).length);
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xrefOffset = encoder.encode(pdf).length;
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+  return pdf;
+}
+
+function pdfEscape(value) {
+  return String(value ?? "")
+    .normalize("NFKD")
+    .replace(/[^\x20-\x7E]/g, "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\(/g, "\\(")
+    .replace(/\)/g, "\\)");
+}
+
+function wrapPdfText(value, maxChars) {
+  const words = String(value || "").replace(/\s+/g, " ").trim().split(" ");
+  const lines = [];
+  let current = "";
+  words.forEach((word) => {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length > maxChars && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = next;
+    }
+  });
+  if (current) lines.push(current);
+  return lines.length ? lines : [""];
 }
 
 function badgeTile(badge, unlockedBadges) {

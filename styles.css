@@ -8722,6 +8722,10 @@ body * {
   grid-row: span 3;
 }
 
+.kk-admin-wide-card {
+  grid-column: 1 / -1;
+}
+
 .kk-admin-card h3 {
   margin: 0 0 12px;
   color: #2d174d;
@@ -8777,6 +8781,16 @@ body * {
 .kk-admin-list span {
   text-align: right;
   color: #5a4c78;
+}
+
+.kk-admin-reflection-list p {
+  display: grid;
+  justify-items: start;
+}
+
+.kk-admin-reflection-list span {
+  text-align: left;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 820px) {
