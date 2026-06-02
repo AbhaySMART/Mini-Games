@@ -8734,7 +8734,8 @@ body * {
 
 .kk-admin-table-wrap {
   max-width: 100%;
-  overflow-x: auto;
+  max-height: 460px;
+  overflow: auto;
   border-radius: 16px;
   border: 2px solid #e4dcff;
 }
@@ -8756,9 +8757,19 @@ body * {
 }
 
 .kk-admin-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   background: #efe7ff;
   color: #4d2c83;
   font-weight: 1000;
+}
+
+.kk-admin-table-note {
+  margin-top: 10px !important;
+  color: #5a4c78 !important;
+  font-size: .9rem;
+  text-align: center;
 }
 
 .kk-admin-user-link {

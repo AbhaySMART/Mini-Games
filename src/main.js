@@ -200,7 +200,7 @@ function renderAdminPortal() {
       </div>
       <div class="kk-admin-layout">
         <article class="kk-dom-card kk-admin-card">
-          <h3>User Progress</h3>
+          <h3>All People (${stats.users.length})</h3>
           <div class="kk-admin-table-wrap">
             <table class="kk-admin-table">
               <thead>
@@ -229,6 +229,7 @@ function renderAdminPortal() {
               </tbody>
             </table>
           </div>
+          <p class="kk-admin-table-note">Showing accounts and all user-scoped saved progress found on this device.</p>
         </article>
         ${adminUserDetailMarkup(detail)}
         <article class="kk-dom-card kk-admin-card">
@@ -2219,12 +2220,37 @@ function adminUserDetail(username) {
 }
 
 function adminUsers() {
+  const names = new Set();
+  const addName = (value) => {
+    const clean = String(value || "").trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "");
+    if (clean) names.add(clean);
+  };
   const stored = adminReadJson("kkUsers", {});
-  const users = Object.values(stored)
-    .map((user) => ({ username: String(user.username || "").trim().toLowerCase() }))
-    .filter((user) => user.username);
-  if (!users.some((user) => user.username === ADMIN_USERNAME)) users.unshift({ username: ADMIN_USERNAME });
-  return users.sort((a, b) => (a.username === ADMIN_USERNAME ? -1 : b.username === ADMIN_USERNAME ? 1 : a.username.localeCompare(b.username)));
+  Object.entries(stored).forEach(([key, user]) => addName(user?.username || key));
+  addName(localStorage.getItem("kkCurrentUser"));
+  [
+    "kindKingdomProgress:",
+    "kindKingdomPlayer:",
+    "kindKingdomReflectionJournal:",
+    "kindKingdomFavorites:",
+    "kindKingdomRewards:",
+    "kindKingdomRewardClaims:",
+    "kindKingdomStoryForge:",
+    "kindKingdomAIStories:",
+    "kindKingdomNews:",
+    "kindKingdomEmotion:",
+    "kindKingdomNPCMemory:",
+    "kindKingdomQuestProgress:"
+  ].forEach((prefix) => {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index) || "";
+      if (key.startsWith(prefix)) addName(key.slice(prefix.length));
+    }
+  });
+  addName(ADMIN_USERNAME);
+  return [...names]
+    .map((username) => ({ username }))
+    .sort((a, b) => (a.username === ADMIN_USERNAME ? -1 : b.username === ADMIN_USERNAME ? 1 : a.username.localeCompare(b.username)));
 }
 
 function adminReadJson(key, fallback) {
