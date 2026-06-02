@@ -20,6 +20,7 @@ const state = {
   view: AuthSystem.isLoggedIn() ? AuthSystem.isAdmin() ? "admin" : "dashboard" : "login",
   message: "",
   shopCategory: "outfits",
+  selectedAdminUser: "",
   storySkill: "empathy",
   story: null,
   selectedNewsId: null,
@@ -172,6 +173,11 @@ function renderDashboard() {
 
 function renderAdminPortal() {
   const stats = adminStats();
+  const selectedUser = state.selectedAdminUser && stats.users.some((user) => user.username === state.selectedAdminUser)
+    ? state.selectedAdminUser
+    : stats.users[0]?.username || ADMIN_USERNAME;
+  state.selectedAdminUser = selectedUser;
+  const detail = adminUserDetail(selectedUser);
   return `
     <section class="kk-dom-page kk-admin-page">
       ${panelHead("Admin Portal", "Usage statistics", "Track local users, points, completed games, skill XP, journal entries, favorites, and multiplayer rooms saved in this browser.", false, "Admin")}
@@ -211,7 +217,7 @@ function renderAdminPortal() {
               <tbody>
                 ${stats.users.map((user) => `
                   <tr>
-                    <td>${escapeHtml(user.username)}</td>
+                    <td><button class="kk-admin-user-link ${user.username === selectedUser ? "active" : ""}" data-action="select-admin-user" data-user="${escapeAttr(user.username)}">${escapeHtml(user.username)}</button></td>
                     <td>${escapeHtml(user.role)}</td>
                     <td>${user.points}</td>
                     <td>${user.completedCount}</td>
@@ -224,6 +230,7 @@ function renderAdminPortal() {
             </table>
           </div>
         </article>
+        ${adminUserDetailMarkup(detail)}
         <article class="kk-dom-card kk-admin-card">
           <h3>Most Completed Games</h3>
           <div class="kk-admin-list">
@@ -1329,7 +1336,13 @@ async function handleClick(event) {
     const result = RewardSystem.claimPassReward(target.dataset.level);
     return setMessage(result.message);
   }
+  if (action === "select-admin-user") {
+    state.selectedAdminUser = target.dataset.user || "";
+    state.message = "";
+    return render();
+  }
   if (action === "download-admin-report") return downloadAdminReportPDF();
+  if (action === "download-user-report") return downloadAdminUserReportPDF(target.dataset.user);
   if (action === "generate-story") {
     target.disabled = true;
     state.story = await StoryForgeSystem.generate({ skill: state.storySkill });
@@ -1977,6 +1990,91 @@ function journalEntry(entry) {
   `;
 }
 
+function adminUserDetailMarkup(detail) {
+  return `
+    <article class="kk-dom-card kk-admin-card kk-admin-user-detail kk-admin-wide-card">
+      <div class="kk-admin-detail-head">
+        <div>
+          <p class="kk-eyebrow">Individual Analytics</p>
+          <h3>${escapeHtml(detail.username)}</h3>
+          <p>Detailed activity, learning progress, favorites, reflections, and downloadable individual report.</p>
+        </div>
+        <button class="kk-primary" data-action="download-user-report" data-user="${escapeAttr(detail.username)}">Download ${escapeHtml(detail.username)} PDF</button>
+      </div>
+      <div class="kk-admin-mini-grid">
+        ${adminMiniMetric("Points", detail.points)}
+        ${adminMiniMetric("Completed", detail.completedCount)}
+        ${adminMiniMetric("Skill XP", detail.totalXP)}
+        ${adminMiniMetric("Journal", detail.reflections.length)}
+        ${adminMiniMetric("Favorites", detail.favoriteGames.length)}
+        ${adminMiniMetric("Completion Rate", `${detail.completionRate}%`)}
+      </div>
+      <div class="kk-admin-analytics-grid">
+        <section>
+          <h4>Completion Path</h4>
+          <div class="kk-admin-trend-chart">
+            ${detail.completionTrend.map((item) => `<span style="--h:${item.height}%" title="${escapeAttr(item.label)}"></span>`).join("") || "<p>No completed games yet.</p>"}
+          </div>
+          <small>Bars show the order this student completed games.</small>
+        </section>
+        <section>
+          <h4>Skill XP</h4>
+          ${adminBarList(detail.skillRows, "xp")}
+        </section>
+        <section>
+          <h4>Completed by Skill</h4>
+          ${adminBarList(detail.categoryRows, "count")}
+        </section>
+        <section>
+          <h4>Journal Trend</h4>
+          <div class="kk-admin-trend-chart">
+            ${detail.reflectionTrend.map((item) => `<span style="--h:${item.height}%" title="${escapeAttr(item.label)}"></span>`).join("") || "<p>No journal entries yet.</p>"}
+          </div>
+          <small>Bars show saved reflections by date.</small>
+        </section>
+      </div>
+      <div class="kk-admin-detail-columns">
+        <div>
+          <h4>Completed Games</h4>
+          <div class="kk-admin-chip-list">
+            ${detail.completedGames.map((game) => `<span>${escapeHtml(game.title)} <small>${escapeHtml(game.category)}</small></span>`).join("") || "<p>No completed games yet.</p>"}
+          </div>
+        </div>
+        <div>
+          <h4>Favorite Games</h4>
+          <div class="kk-admin-chip-list">
+            ${detail.favoriteGames.map((game) => `<span>${escapeHtml(game.title)} <small>${escapeHtml(game.category)}</small></span>`).join("") || "<p>No favorites yet.</p>"}
+          </div>
+        </div>
+        <div>
+          <h4>Recent Reflections</h4>
+          <div class="kk-admin-list kk-admin-reflection-list">
+            ${detail.reflections.slice(0, 5).map((entry) => `<p><b>${escapeHtml(entry.gameTitle)}</b><span>${escapeHtml(entry.preview)}</span></p>`).join("") || "<p>No reflections saved yet.</p>"}
+          </div>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function adminMiniMetric(label, value) {
+  return `<div class="kk-admin-mini-metric"><span>${escapeHtml(label)}</span><b>${escapeHtml(String(value))}</b></div>`;
+}
+
+function adminBarList(rows, valueKey) {
+  return `
+    <div class="kk-admin-bar-list">
+      ${rows.map((row) => `
+        <div class="kk-admin-bar-row">
+          <b>${escapeHtml(row.label)}</b>
+          <span>${escapeHtml(String(row[valueKey]))}</span>
+          <i style="--w:${row.percent}%"></i>
+        </div>
+      `).join("") || "<p>No data yet.</p>"}
+    </div>
+  `;
+}
+
 function adminStats() {
   const users = adminUsers();
   const gameLookup = new Map(games().map((game) => [game.slug, game]));
@@ -2062,6 +2160,64 @@ function adminStats() {
   };
 }
 
+function adminUserDetail(username) {
+  const user = String(username || ADMIN_USERNAME).toLowerCase();
+  const gameLookup = new Map(games().map((game) => [game.slug, game]));
+  const progress = adminReadJson(`kindKingdomProgress:${user}`, { points: 0, completed: [] });
+  const player = adminReadJson(`kindKingdomPlayer:${user}`, { skillXP: {} });
+  const journal = adminReadJson(`kindKingdomReflectionJournal:${user}`, { entries: [] });
+  const favorites = adminReadJson(`kindKingdomFavorites:${user}`, []);
+  const completedSlugs = Array.isArray(progress.completed) ? progress.completed : [];
+  const favoriteSlugs = Array.isArray(favorites) ? favorites : [];
+  const skillXP = player.skillXP || {};
+  const completedGames = completedSlugs.map((slug) => gameLookup.get(slug) || { slug, title: slug, category: "Unknown" });
+  const favoriteGames = favoriteSlugs.map((slug) => gameLookup.get(slug) || { slug, title: slug, category: "Unknown" });
+  const categoryMap = new Map();
+  completedGames.forEach((game) => categoryMap.set(game.category, Number(categoryMap.get(game.category) || 0) + 1));
+  const maxXP = Math.max(1, ...Object.values(skillXP).map((value) => Number(value || 0)));
+  const maxCategory = Math.max(1, ...categoryMap.values());
+  const reflections = (Array.isArray(journal.entries) ? journal.entries : [])
+    .map((entry) => ({
+      gameTitle: entry.gameTitle || "Kindness Quest",
+      category: entry.category || "Kindness",
+      preview: entry.nextStep || entry.feeling || entry.experience || "Reflection saved.",
+      createdAt: entry.createdAt || ""
+    }))
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  const reflectionDateMap = new Map();
+  reflections.forEach((entry) => {
+    const day = entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : "No date";
+    reflectionDateMap.set(day, Number(reflectionDateMap.get(day) || 0) + 1);
+  });
+  const maxReflection = Math.max(1, ...reflectionDateMap.values());
+
+  return {
+    username: user,
+    points: Number(progress.points || 0),
+    completedCount: completedGames.length,
+    totalXP: Object.values(skillXP).reduce((sum, value) => sum + Number(value || 0), 0),
+    completionRate: games().length ? Math.round((completedGames.length / games().length) * 100) : 0,
+    completedGames,
+    favoriteGames,
+    reflections,
+    skillRows: Object.entries(skillXP)
+      .map(([label, xp]) => ({ label, xp: Number(xp || 0), percent: Math.max(8, Math.round((Number(xp || 0) / maxXP) * 100)) }))
+      .sort((a, b) => b.xp - a.xp)
+      .slice(0, 8),
+    categoryRows: [...categoryMap.entries()]
+      .map(([label, count]) => ({ label, count, percent: Math.max(8, Math.round((count / maxCategory) * 100)) }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8),
+    completionTrend: completedGames.map((game, index) => ({
+      label: `${index + 1}. ${game.title}`,
+      height: Math.max(12, Math.round(((index + 1) / Math.max(1, completedGames.length)) * 100))
+    })),
+    reflectionTrend: [...reflectionDateMap.entries()]
+      .slice(0, 12)
+      .map(([label, count]) => ({ label: `${label}: ${count}`, height: Math.max(12, Math.round((count / maxReflection) * 100)) }))
+  };
+}
+
 function adminUsers() {
   const stored = adminReadJson("kkUsers", {});
   const users = Object.values(stored)
@@ -2095,16 +2251,107 @@ function downloadAdminReportPDF() {
   const stats = adminStats();
   const pdf = buildAdminReportPDF(stats);
   const stamp = new Date().toISOString().slice(0, 10);
-  const blob = new Blob([pdf], { type: "application/pdf" });
+  triggerPdfDownload(pdf, `kind-kingdom-admin-report-${stamp}.pdf`);
+  state.message = "Admin PDF report downloaded.";
+  window.setTimeout(render, 80);
+}
+
+function downloadAdminUserReportPDF(username) {
+  if (!AuthSystem.isAdmin()) return setMessage("Only the admin can download reports.");
+  const detail = adminUserDetail(username || state.selectedAdminUser);
+  const pdf = buildAdminUserReportPDF(detail);
+  const stamp = new Date().toISOString().slice(0, 10);
+  triggerPdfDownload(pdf, `kind-kingdom-${detail.username}-report-${stamp}.pdf`);
+  state.message = `${detail.username} PDF report downloaded.`;
+  window.setTimeout(render, 80);
+}
+
+function triggerPdfDownload(pdfBytes, filename) {
+  const blob = new Blob([pdfBytes], { type: "application/pdf" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `kind-kingdom-admin-report-${stamp}.pdf`;
+  link.download = filename;
+  link.rel = "noopener";
+  link.style.display = "none";
   document.body.appendChild(link);
   link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-  return setMessage("Admin PDF report downloaded.");
+  window.setTimeout(() => {
+    link.remove();
+    URL.revokeObjectURL(url);
+  }, 1500);
+}
+
+function buildAdminUserReportPDF(detail) {
+  const width = 612;
+  const height = 792;
+  const today = new Date().toLocaleDateString();
+  let ops = "";
+  const color = (hex) => {
+    const value = hex.replace("#", "");
+    return `${(parseInt(value.slice(0, 2), 16) / 255).toFixed(3)} ${(parseInt(value.slice(2, 4), 16) / 255).toFixed(3)} ${(parseInt(value.slice(4, 6), 16) / 255).toFixed(3)}`;
+  };
+  const rect = (x, y, w, h, fill) => {
+    ops += `q ${color(fill)} rg ${x} ${y} ${w} ${h} re f Q\n`;
+  };
+  const text = (value, x, y, size = 11, fill = "#2d174d", font = "F1") => {
+    ops += `q ${color(fill)} rg BT /${font} ${size} Tf ${x} ${y} Td (${pdfEscape(value)}) Tj ET Q\n`;
+  };
+  const wrappedText = (value, x, y, maxChars, size = 9, fill = "#443361", font = "F1", lineGap = 11) => {
+    wrapPdfText(value, maxChars).slice(0, 3).forEach((line, index) => text(line, x, y - index * lineGap, size, fill, font));
+  };
+  const bar = (label, value, percent, x, y, fill = "#77e5dc") => {
+    text(label, x, y + 8, 9, "#2d174d", "F2");
+    text(String(value), x + 190, y + 8, 9, "#5a4c78");
+    rect(x, y - 6, 220, 7, "#eee8ff");
+    rect(x, y - 6, Math.max(8, Math.min(220, 220 * percent / 100)), 7, fill);
+  };
+
+  rect(0, 0, width, height, "#f4f0ff");
+  rect(0, 704, width, 88, "#251640");
+  rect(28, 684, 556, 72, "#ffffff");
+  rect(28, 684, 8, 72, "#7b4dff");
+  text("Kind Kingdom", 48, 728, 28, "#2d174d", "F2");
+  text(`Individual Learner Report: ${detail.username}`, 50, 708, 13, "#6a4aa5", "F2");
+  text(`Generated ${today}`, 460, 722, 10, "#443361", "F1");
+
+  [
+    ["Points", detail.points],
+    ["Completed", detail.completedCount],
+    ["Completion Rate", `${detail.completionRate}%`],
+    ["Skill XP", detail.totalXP],
+    ["Journal", detail.reflections.length],
+    ["Favorites", detail.favoriteGames.length]
+  ].forEach(([label, value], index) => {
+    const col = index % 3;
+    const row = Math.floor(index / 3);
+    const x = 48 + col * 184;
+    const y = 606 - row * 68;
+    rect(x, y, 160, 48, index % 2 ? "#fff9df" : "#e8fbff");
+    rect(x, y, 160, 5, index % 2 ? "#ffd166" : "#2ec4b6");
+    text(label, x + 12, y + 29, 9, "#6a4aa5", "F2");
+    text(value, x + 12, y + 11, 16, "#2d174d", "F2");
+  });
+
+  text("Skill XP", 48, 462, 15, "#2d174d", "F2");
+  detail.skillRows.slice(0, 7).forEach((row, index) => bar(row.label, `${row.xp} XP`, row.percent, 48, 430 - index * 26, "#77e5dc"));
+  text("Completed by Skill", 334, 462, 15, "#2d174d", "F2");
+  detail.categoryRows.slice(0, 7).forEach((row, index) => bar(row.label, row.count, row.percent, 334, 430 - index * 26, "#ffd166"));
+
+  text("Completed Games", 48, 230, 14, "#2d174d", "F2");
+  detail.completedGames.slice(0, 8).forEach((game, index) => wrappedText(`- ${game.title} (${game.category})`, 58, 210 - index * 18, 42));
+  text("Favorite Games", 334, 230, 14, "#2d174d", "F2");
+  detail.favoriteGames.slice(0, 8).forEach((game, index) => wrappedText(`- ${game.title} (${game.category})`, 344, 210 - index * 18, 42));
+
+  rect(48, 34, 516, 88, "#ffffff");
+  text("Recent Reflections", 60, 102, 13, "#2d174d", "F2");
+  detail.reflections.slice(0, 3).forEach((entry, index) => {
+    const y = 82 - index * 22;
+    text(`${entry.gameTitle}:`, 60, y, 8.5, "#2d174d", "F2");
+    wrappedText(entry.preview, 160, y, 70, 8, "#5f4e75", "F1", 9);
+  });
+
+  return createPdfDocument([ops]);
 }
 
 function buildAdminReportPDF(stats) {
@@ -2225,11 +2472,12 @@ function createPdfDocument(pageStreams) {
   pageStreams.forEach((stream, index) => {
     const pageId = 3 + index * 2;
     const contentId = pageId + 1;
+    const cleanStream = stream.endsWith("\n") ? stream : `${stream}\n`;
     objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> >> >> /Contents ${contentId} 0 R >>`);
-    objects.push(`<< /Length ${encoder.encode(stream).length} >>\nstream\n${stream}endstream`);
+    objects.push(`<< /Length ${encoder.encode(cleanStream).length} >>\nstream\n${cleanStream}endstream`);
   });
 
-  let pdf = "%PDF-1.4\n";
+  let pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
   const offsets = [0];
   objects.forEach((object, index) => {
     offsets.push(encoder.encode(pdf).length);
@@ -2241,7 +2489,7 @@ function createPdfDocument(pageStreams) {
     pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
   });
   pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-  return pdf;
+  return encoder.encode(pdf);
 }
 
 function pdfEscape(value) {

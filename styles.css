@@ -8761,6 +8761,182 @@ body * {
   font-weight: 1000;
 }
 
+.kk-admin-user-link {
+  width: 100%;
+  justify-content: flex-start !important;
+  border-radius: 12px !important;
+  padding: 8px 10px !important;
+  background: #f8f3ff !important;
+  box-shadow: none !important;
+  color: #2d174d !important;
+}
+
+.kk-admin-user-link.active {
+  background: #ffd166 !important;
+  color: #3a2900 !important;
+}
+
+.kk-admin-user-detail {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(123,223,242,.38), transparent 24%),
+    linear-gradient(135deg, rgba(255,255,255,.96), rgba(248,243,255,.96));
+}
+
+.kk-admin-detail-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.kk-admin-detail-head h3 {
+  margin-bottom: 2px;
+}
+
+.kk-admin-mini-grid,
+.kk-admin-analytics-grid,
+.kk-admin-detail-columns {
+  display: grid;
+  gap: 12px;
+}
+
+.kk-admin-mini-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin-bottom: 14px;
+}
+
+.kk-admin-mini-metric {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  border-radius: 18px;
+  border: 2px solid #e4dcff;
+  background: #ffffff;
+  padding: 12px;
+  text-align: center;
+}
+
+.kk-admin-mini-metric span {
+  color: #7b4dff;
+  font-size: .78rem;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.kk-admin-mini-metric b {
+  font-size: 1.55rem;
+  color: #2d174d;
+}
+
+.kk-admin-analytics-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 16px;
+}
+
+.kk-admin-analytics-grid section,
+.kk-admin-detail-columns > div {
+  min-width: 0;
+  border-radius: 18px;
+  border: 2px solid #e4dcff;
+  background: rgba(255,255,255,.82);
+  padding: 14px;
+}
+
+.kk-admin-analytics-grid h4,
+.kk-admin-detail-columns h4 {
+  margin: 0 0 10px;
+  color: #2d174d;
+}
+
+.kk-admin-trend-chart {
+  height: 120px;
+  display: flex;
+  align-items: end;
+  gap: 6px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f7f2ff, #e8fbff);
+  border: 2px solid #ffffff;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.kk-admin-trend-chart span {
+  flex: 1;
+  min-width: 8px;
+  height: var(--h);
+  border-radius: 999px 999px 4px 4px;
+  background: linear-gradient(180deg, #7b4dff, #2ec4b6);
+  box-shadow: 0 0 10px rgba(123,77,255,.28);
+}
+
+.kk-admin-bar-list {
+  display: grid;
+  gap: 9px;
+}
+
+.kk-admin-bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.kk-admin-bar-row b {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #2d174d;
+}
+
+.kk-admin-bar-row span {
+  color: #5a4c78;
+  font-weight: 1000;
+}
+
+.kk-admin-bar-row i {
+  grid-column: 1 / -1;
+  height: 10px;
+  width: 100%;
+  border-radius: 999px;
+  background: #eee8ff;
+  position: relative;
+  overflow: hidden;
+}
+
+.kk-admin-bar-row i::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--w);
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7b4dff, #2ec4b6, #ffd166);
+}
+
+.kk-admin-detail-columns {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.kk-admin-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kk-admin-chip-list span {
+  display: inline-grid;
+  gap: 2px;
+  border-radius: 14px;
+  background: #f8f3ff;
+  border: 2px solid #e4dcff;
+  padding: 8px 10px;
+  color: #2d174d;
+  font-weight: 1000;
+}
+
+.kk-admin-chip-list small {
+  color: #6a4aa5;
+}
+
 .kk-admin-list {
   display: grid;
   gap: 9px;
@@ -8809,6 +8985,12 @@ body * {
 
   .kk-admin-list span {
     text-align: left;
+  }
+
+  .kk-admin-detail-head,
+  .kk-admin-analytics-grid,
+  .kk-admin-detail-columns {
+    grid-template-columns: 1fr;
   }
 }
 
